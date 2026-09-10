@@ -27,10 +27,7 @@ void main() {
 
   test('Flask 서버의 error 필드를 메시지로 쓴다', () {
     final exception = ApiException.from(
-      _errorWith(
-        statusCode: 400,
-        body: {'error': '사진에서 얼굴을 찾지 못했습니다.'},
-      ),
+      _errorWith(statusCode: 400, body: {'error': '사진에서 얼굴을 찾지 못했습니다.'}),
     );
 
     expect(exception.message, '사진에서 얼굴을 찾지 못했습니다.');
