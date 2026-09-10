@@ -12,6 +12,10 @@ Flutter 앱. 백엔드는 FastAPI 서버(+ Firebase, AWS, Python AI)를 사용�
 | Dart | 3.11.x |
 | Android minSdk | 23 |
 
+대상 플랫폼은 **Android · iOS**뿐이다. 웹/데스크톱(`web`, `linux`, `macos`,
+`windows`) 폴더는 제거했다. 나중에 필요해지면 `flutter create --platforms=web .`
+로 다시 만들 수 있다.
+
 ## 시작하기
 
 ```bash
