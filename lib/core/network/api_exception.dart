@@ -2,8 +2,8 @@ import 'package:dio/dio.dart';
 
 /// 화면에서 그대로 보여줄 수 있는 형태로 정리한 API 오류.
 ///
-/// FastAPI는 오류를 `{"detail": "..."}` 또는 422 검증 오류일 때
-/// `{"detail": [{"loc": [...], "msg": "..."}]}` 형태로 돌려준다.
+/// 서버는 오류를 `{"error": "..."}` 형태로 돌려준다 (Flask).
+/// `{"detail": ...}`(FastAPI/검증 오류) 형태도 함께 받아둔다.
 class ApiException implements Exception {
   const ApiException(
     this.message, {
@@ -55,6 +55,9 @@ class ApiException implements Exception {
   /// FastAPI 응답 본문에서 사람이 읽을 메시지를 뽑아낸다.
   static String? _messageFromBody(Object? body) {
     if (body is! Map) return null;
+
+    final error = body['error'];
+    if (error is String && error.isNotEmpty) return error;
 
     final detail = body['detail'];
     if (detail is String && detail.isNotEmpty) return detail;

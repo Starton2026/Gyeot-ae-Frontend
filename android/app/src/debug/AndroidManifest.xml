@@ -4,4 +4,8 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- 로컬 Flask 서버(http://10.0.2.2:5001)를 호출할 수 있도록 디버그 빌드에서만
+         평문 HTTP를 허용한다. release 빌드는 HTTPS만 허용된 상태로 남는다. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>

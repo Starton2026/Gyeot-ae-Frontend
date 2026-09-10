@@ -5,10 +5,13 @@
 class Env {
   const Env._();
 
-  /// FastAPI 서버 주소. 안드로이드 에뮬레이터에서 로컬 서버는 10.0.2.2 를 쓴다.
+  /// Flask 서버 주소 (기본 포트 5001).
+  ///
+  /// 안드로이드 에뮬레이터에서 호스트의 localhost는 10.0.2.2 로 접근한다.
+  /// 실기기나 데모에서는 ngrok URL을 넣는다.
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000',
+    defaultValue: 'http://10.0.2.2:5001',
   );
 
   /// true면 dio 요청/응답 로그를 콘솔에 찍는다.

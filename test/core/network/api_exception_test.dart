@@ -25,6 +25,18 @@ void main() {
     expect(exception.statusCode, 400);
   });
 
+  test('Flask 서버의 error 필드를 메시지로 쓴다', () {
+    final exception = ApiException.from(
+      _errorWith(
+        statusCode: 400,
+        body: {'error': '사진에서 얼굴을 찾지 못했습니다.'},
+      ),
+    );
+
+    expect(exception.message, '사진에서 얼굴을 찾지 못했습니다.');
+    expect(exception.statusCode, 400);
+  });
+
   test('422 검증 오류는 detail 리스트의 첫 msg를 메시지로 쓴다', () {
     final exception = ApiException.from(
       _errorWith(
