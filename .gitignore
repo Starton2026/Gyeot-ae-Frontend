@@ -18,10 +18,11 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code: 실행 설정은 팀에서 공유하고, 개인 설정만 제외한다.
+.vscode/*
+!.vscode/launch.json
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -39,7 +40,24 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
+# Kotlin 빌드 산출물
+android/.kotlin/
+
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# 환경설정 (실제 값은 각자 로컬에만 둔다. env/dev.json.example 복사해서 사용)
+env/*.json
+!env/*.json.example
+
+# Firebase 설정 파일 (flutterfire configure로 생성)
+lib/firebase_options.dart
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+ios/firebase_app_id_file.json
+macos/Runner/GoogleService-Info.plist
+macos/firebase_app_id_file.json
+firebase.json
+.firebase/

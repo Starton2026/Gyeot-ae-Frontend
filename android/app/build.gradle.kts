@@ -8,7 +8,10 @@ plugins {
 android {
     namespace = "com.starton.gyeotae"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // 이 앱은 네이티브 코드를 직접 컴파일하지 않아 NDK가 필요 없다.
+    // NDK를 요구하는 플러그인을 추가하면 아래 줄의 주석을 풀고
+    // Android Studio SDK Manager에서 해당 NDK를 설치한다.
+    // ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -20,10 +23,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.starton.gyeotae"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // firebase_auth가 최소 23을 요구한다.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
