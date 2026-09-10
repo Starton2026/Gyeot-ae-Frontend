@@ -21,7 +21,7 @@ dependencies:
   # 라우팅
   go_router: ^17.5.0
 
-  # 네트워크 (FastAPI 서버 통신)
+  # 네트워크 (API 서버 통신)
   dio: ^5.11.1
 
   # 로컬 저장 (토큰 등)
@@ -35,6 +35,14 @@ dependencies:
   firebase_auth: ^6.6.1
   cloud_firestore: ^6.9.0
   firebase_storage: ^13.5.0
+
+  # 제보 화면 — 사진 촬영/선택, 위치, 권한
+  image_picker: ^1.2.3
+  geolocator: ^14.0.3
+  permission_handler: 12.0.0
+
+  # 지도 (네이티브 카카오맵) — 네이티브 앱 키를 env의 KAKAO_MAP_KEY로 주입
+  kakao_map_sdk: ^1.3.0
 
 dev_dependencies:
   flutter_test:

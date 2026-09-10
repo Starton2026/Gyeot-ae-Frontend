@@ -14,6 +14,11 @@ class Env {
     defaultValue: 'http://10.0.2.2:5001',
   );
 
+  /// 카카오맵 **네이티브 앱 키**. 비어 있으면 지도 SDK를 초기화하지 않는다.
+  ///
+  /// Kakao Developers에서 앱 등록 후 발급받아 env/dev.json에 넣는다.
+  static const String kakaoMapKey = String.fromEnvironment('KAKAO_MAP_KEY');
+
   /// true면 dio 요청/응답 로그를 콘솔에 찍는다.
   static const bool enableApiLog = bool.fromEnvironment(
     'ENABLE_API_LOG',

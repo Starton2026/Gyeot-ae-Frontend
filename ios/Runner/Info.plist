@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Gyeotae</string>
+	<string>곁애</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -24,6 +24,14 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<!-- 제보 사진 촬영/선택, 위치 첨부에 필요한 권한 안내 문구 -->
+	<key>NSCameraUsageDescription</key>
+	<string>목격 사진을 촬영하기 위해 카메라를 사용합니다.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>목격 사진을 선택하기 위해 사진에 접근합니다.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>제보 위치를 함께 전달하기 위해 현재 위치를 사용합니다.</string>
+
 	<!-- 로컬 개발 서버(http://localhost:5001) 호출 허용. 로컬 네트워크에만 적용되며
 	     외부 도메인은 여전히 HTTPS만 허용된다. -->
 	<key>NSAppTransportSecurity</key>

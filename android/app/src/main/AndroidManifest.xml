@@ -1,6 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 서버 API 호출 (release 빌드에도 필요하다) -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- 제보 위치 첨부 (geolocator) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+    <!-- 사진 촬영/선택은 image_picker가 시스템 카메라·사진 선택기를 띄우므로
+         CAMERA, READ_MEDIA_IMAGES 권한 선언이 필요하지 않다. -->
+
     <application
-        android:label="gyeotae"
+        android:label="곁애"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

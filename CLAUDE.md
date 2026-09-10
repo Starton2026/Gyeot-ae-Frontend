@@ -13,6 +13,8 @@ Firestore는 관제 화면 실시간 갱신용으로 선택 사용. 자세한 AP
   화면은 home(실종자 목록) · missing(신고 등록) · report(제보) · monitor(관제 지도) · auth(선택 로그인).
 - `lib/core/`: 여러 기능이 함께 쓰는 것만 (network, router, theme, storage, config, widgets).
 - 상태관리 Riverpod 3 / 라우팅 go_router / HTTP dio.
+- 사진 image_picker · 위치 geolocator · 권한 permission_handler (네이티브 권한 설정 완료).
+- 지도 SDK는 아직 미정 (카카오맵 후보 2개, README 참고).
 - **코드 생성(freezed, json_serializable, riverpod_generator)은 쓰지 않는다.** 모델은 손으로 `fromJson`을 쓴다.
 - Riverpod은 `Provider`, `FutureProvider`, `Notifier`, `AsyncNotifier`만 쓴다 (레거시 `StateProvider`, `StateNotifierProvider` 금지).
 
@@ -27,6 +29,7 @@ Firestore는 관제 화면 실시간 갱신용으로 선택 사용. 자세한 AP
 - 경로 문자열은 `core/router/app_router.dart`의 `AppRoute` 상수만 참조한다.
 - 환경 값은 `String.fromEnvironment`가 아니라 `Env` 클래스에 추가해서 쓴다.
 - 로그인은 선택 사항이다. 로그인을 강제하는 리다이렉트를 추가하지 않는다.
+- 위치·카메라 권한 거부는 정상 경로다. 기능을 막지 말고 대안(위치 없이 제보 등)을 준다.
 - `print` 대신 `debugPrint`.
 
 ## 명령어
