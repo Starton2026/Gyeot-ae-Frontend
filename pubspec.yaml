@@ -51,6 +51,32 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+# 앱 아이콘 생성 설정. 아이콘을 바꾸면 아래를 한 번 돌린다.
+#   dart run flutter_launcher_icons
+#
+# 돌린 뒤 ios/Runner.xcodeproj/project.pbxproj의 변경을 꼭 확인할 것.
+# 이 도구가 ASSETCATALOG_COMPILER_APPICON_NAME 대신 이름이 비슷한
+# ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS를 AppIcon으로
+# 덮어쓴다(YES/NO만 들어가는 값이다). 아이콘 이름은 이미 맞게 설정돼 있으니
+# 그 변경은 되돌리면 된다.
+#
+# 원본은 assets/images/app_icon.png 하나이고, 안드로이드·iOS 리소스는 전부
+# 여기서 만들어진다. 생성된 파일은 손으로 고치지 않는다.
+flutter_launcher_icons:
+  image_path: "assets/images/app_icon.png"
+
+  android: true
+  # 적응형 아이콘. 기기 모양(원·둥근네모)에 맞춰 잘리므로 배경은 흰색으로 두고
+  # 마크만 얹는다. 마크가 이미 여백을 갖고 있어 안전 영역 안에 들어온다.
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+  min_sdk_android: 24
+
+  ios: true
+  # iOS 아이콘은 알파를 허용하지 않는다. 투명한 부분을 흰색으로 메운다.
+  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true
