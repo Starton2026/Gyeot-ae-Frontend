@@ -46,12 +46,12 @@ void main() {
       );
     });
 
-    test('아동과 치매노인이 모두 있다', () async {
+    test('아동과 어르신이 모두 있다', () async {
       final list = await _repository().fetchCases(status: CaseStatusFilter.all);
       final categories = list.items.map((c) => c.category).toSet();
 
       expect(categories, contains(MissingCategory.child));
-      expect(categories, contains(MissingCategory.dementia));
+      expect(categories, contains(MissingCategory.elderly));
     });
   });
 
@@ -98,13 +98,13 @@ void main() {
 
     test('분류로 거른다', () async {
       final list = await _repository().fetchCases(
-        category: MissingCategory.dementia,
+        category: MissingCategory.elderly,
         status: CaseStatusFilter.all,
       );
 
       expect(list.items, isNotEmpty);
       expect(
-        list.items.every((c) => c.category == MissingCategory.dementia),
+        list.items.every((c) => c.category == MissingCategory.elderly),
         isTrue,
       );
     });

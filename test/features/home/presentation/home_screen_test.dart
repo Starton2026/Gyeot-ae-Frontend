@@ -93,7 +93,7 @@ void main() {
       name: '이순자',
       age: 81,
       gender: Gender.female,
-      category: MissingCategory.dementia,
+      category: MissingCategory.elderly,
       elapsedMinutes: 100,
     );
 

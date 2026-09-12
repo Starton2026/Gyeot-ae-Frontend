@@ -7,7 +7,7 @@ import '../data/missing_repository.dart';
 
 /// 목록 필터 칩(F-2.2).
 ///
-/// 구분(아동·치매노인)과 상태(진행중·발견)가 한 줄에 섞여 있지만, **하나만
+/// 구분(아동·어르신)과 상태(진행중·발견)가 한 줄에 섞여 있지만, **하나만
 /// 고를 수 있다.** 조합을 열면 칩 하나가 켜진 디자인과 맞지 않고, 사용자가
 /// 조합 규칙을 배워야 한다.
 ///
@@ -16,7 +16,7 @@ import '../data/missing_repository.dart';
 enum MissingListFilter {
   all('전체', '전체', null, CaseStatusFilter.all),
   child('아동', '아동', MissingCategory.child, CaseStatusFilter.all),
-  dementia('치매노인', '치매노인', MissingCategory.dementia, CaseStatusFilter.all),
+  elderly('어르신', '어르신', MissingCategory.elderly, CaseStatusFilter.all),
   active('진행중', '진행 중', null, CaseStatusFilter.active),
   resolved('발견', '발견', null, CaseStatusFilter.resolved);
 

@@ -125,10 +125,10 @@ void main() {
 
       container
           .read(missingListQueryProvider.notifier)
-          .setFilter(MissingListFilter.dementia);
+          .setFilter(MissingListFilter.elderly);
       await container.read(missingListProvider.future);
 
-      expect(repository.lastCategory, MissingCategory.dementia);
+      expect(repository.lastCategory, MissingCategory.elderly);
       expect(
         repository.lastStatus,
         CaseStatusFilter.all,

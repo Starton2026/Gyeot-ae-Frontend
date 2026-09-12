@@ -140,7 +140,7 @@ void main() {
         'name': '이순자',
         'age': 81,
         'gender': 'female',
-        'category': 'dementia',
+        'category': 'elderly',
         'description': '베이지 카디건.',
         'photos': <String>[],
         'last_lat': 37.4,

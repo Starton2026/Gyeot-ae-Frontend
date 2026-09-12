@@ -200,7 +200,7 @@ class MockReportRepository implements ReportRepository {
     }).toList();
   }
 
-  /// 8방위 문자열. 치매 부모를 찾는 보호자가 방향을 판단할 때 쓴다.
+  /// 8방위 문자열. 배회가 잦은 부모를 찾는 보호자가 방향을 판단할 때 쓴다.
   String _bearing(double lat1, double lng1, double lat2, double lng2) {
     const names = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
     double toRadians(double degrees) => degrees * math.pi / 180;
