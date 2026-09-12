@@ -12,7 +12,7 @@ import '../theme/app_text_styles.dart';
 enum AppTab {
   home('홈', Icons.home_outlined, AppRoute.home),
   missing('실종자', Icons.people_outline, AppRoute.missingList),
-  map('지도', Icons.place_outlined, null),
+  map('지도', Icons.place_outlined, AppRoute.map),
   my('MY', Icons.person_outline, null);
 
   const AppTab(this.label, this.icon, this.path);
@@ -22,7 +22,7 @@ enum AppTab {
 
   /// 갈 곳. **아직 화면이 없는 탭은 null이다.**
   ///
-  /// TODO(S5·S8): 지도·MY 화면이 생기면 경로를 채운다. 그러면 [AppBottomNav]가
+  /// TODO(S8): MY 화면이 생기면 경로를 채운다. 그러면 [AppBottomNav]가
   /// 알아서 눌리는 탭으로 그린다.
   final String? path;
 
