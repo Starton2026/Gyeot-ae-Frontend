@@ -40,6 +40,23 @@ void main() {
     });
   });
 
+  test('relative를 끄면 오늘도 월일로 적는다', () {
+    final now = DateTime(2026, 9, 12, 16, 0);
+
+    expect(
+      koreanDateLabel(DateTime(2026, 9, 12, 14, 40), now: now, relative: false),
+      '9월 12일',
+    );
+    expect(
+      koreanDateTimeLabel(
+        DateTime(2026, 9, 12, 14, 40),
+        now: now,
+        relative: false,
+      ),
+      '9월 12일 오후 2시 40분',
+    );
+  });
+
   group('koreanDateTimeLabel', () {
     final now = DateTime(2026, 9, 12, 16, 0);
 
