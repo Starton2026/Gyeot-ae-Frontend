@@ -14,6 +14,21 @@ class Env {
     defaultValue: 'http://10.0.2.2:5001',
   );
 
+  /// 서버가 준 상대 경로(`/uploads/xxx.jpg`)를 절대 URL로 바꾼다.
+  ///
+  /// 이미 `http`로 시작하는 값이면 그대로 돌려준다. 백엔드가 절대 URL을 주기
+  /// 시작해도 화면을 고치지 않기 위한 것이다.
+  static String photoUrl(String path) {
+    if (path.startsWith('http')) return path;
+
+    final base = apiBaseUrl.endsWith('/')
+        ? apiBaseUrl.substring(0, apiBaseUrl.length - 1)
+        : apiBaseUrl;
+    final suffix = path.startsWith('/') ? path : '/$path';
+
+    return '$base$suffix';
+  }
+
   /// 카카오맵 **네이티브 앱 키**. 비어 있으면 지도 SDK를 초기화하지 않는다.
   ///
   /// Kakao Developers에서 앱 등록 후 발급받아 env/dev.json에 넣는다.
