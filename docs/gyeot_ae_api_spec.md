@@ -73,8 +73,7 @@ Content-Type: multipart/form-data # 업로드 시
 
 | # | 메서드 | 경로 | 인증 | 사용 화면 |
 |---|---|---|:---:|---|
-| 1 | `POST` | `/auth/signup` | — | S6 |
-| 2 | `POST` | `/auth/login` | — | S6 |
+| 1 | `POST` | `/auth/kakao` | — | S6 |
 | 3 | `GET` | `/auth/me` | 토큰 | S8 |
 | 4 | `POST` | `/devices` | 게스트 | 온보딩·S8 |
 | 5 | `POST` | `/missing` | 토큰 | S7 |
@@ -97,36 +96,63 @@ Content-Type: multipart/form-data # 업로드 시
 
 ## 3. 인증
 
-### 1) 회원가입
+**로그인은 카카오 하나뿐이다.** 이메일·비밀번호 가입은 두지 않는다. 보호자가 등록을
+시도하는 순간은 손이 떨리는 상황이고, 그 자리에서 가입 폼을 채우게 하면 등록 자체가
+사라진다. 제보자에게는 애초에 로그인을 요구하지 않는다.
 
-`POST /auth/signup`
+### 1) 카카오 로그인
 
-```json
-// Request
-{ "email": "user@example.com", "password": "...", "name": "김수진", "phone": "01012343821" }
-
-// 201
-{ "token": "eyJhbG...", "user": { "id": "u_a1b2", "name": "김수진", "email": "..." } }
-```
-
-### 2) 로그인
-
-`POST /auth/login`
+`POST /auth/kakao`
 
 ```json
 // Request
-{ "email": "...", "password": "..." }
+{ "access_token": "kakao_access_token..." }
 
 // 200
-{ "token": "eyJhbG...", "user": { ... },
-  "claimed_reports": 2 }
+{
+  "token": "eyJhbG...",
+  "user": {
+    "id": "u_a1b2",
+    "kakao_id": "3921847562",
+    "name": "김수진",
+    "profile_image_url": "https://k.kakaocdn.net/.../profile.jpg",
+    "created_at": "2026-09-11T09:12:00+09:00"
+  },
+  "claimed_reports": 2
+}
 ```
 
-`claimed_reports` — 같은 `X-Device-Hash`로 남긴 게스트 제보를 계정에 귀속시킨 건수. **S4-2에서 "로그인하고 알림 받기"를 눌렀을 때 방금 제보가 이력에 남으려면 이 처리가 필요하다.**
+클라이언트가 카카오 SDK로 받은 `access_token`을 보내면 서버가 카카오에 확인한 뒤
+자기 토큰을 발급한다. **가입과 로그인을 구분하지 않는다.** 처음 보는 `kakao_id`면
+그 자리에서 계정을 만든다.
+
+| 필드 | 설명 |
+|---|---|
+| `kakao_id` | 카카오 회원번호. 계정을 찾는 키다 |
+| `name` | 카카오 닉네임 |
+| `profile_image_url` | 카카오 프로필 이미지. 없을 수 있다(`null`) |
+| `claimed_reports` | 같은 `X-Device-Hash`로 남긴 게스트 제보를 계정에 귀속시킨 건수 |
+
+**카카오에서 받는 정보는 닉네임과 프로필 이미지뿐이다.** 이메일·전화번호는 동의
+항목에 넣지 않는다. 동의 화면이 길어질수록 로그인에서 이탈하고, 이 서비스는 그
+이탈을 감당할 수 없다.
+
+**보호자 연락처는 등록 폼에서 따로 받는다**(F-7.10). 계정 전화번호를 그대로 쓰지
+않는 이유는 두 가지다. 사건마다 연락 받을 번호가 다를 수 있고(본인 번호가 아니라
+집전화·다른 보호자), 계정 정보를 사건에 자동으로 붙이면 제보자에게 공개될 경로가
+생긴다.
+
+`claimed_reports`가 필요한 이유 — **S4-2에서 "로그인하고 알림 받기"를 눌렀을 때
+방금 한 제보가 이력에 남아야 한다.** 게스트 제보를 허용한 대가로 생기는 공백을
+메우는 유일한 자리다.
 
 ### 3) 내 정보
 
 `GET /auth/me` → `{ "user": {...}, "cases": 1, "reports": 6 }`
+
+> 2)번은 비워 뒀다. 이메일 로그인(`POST /auth/login`)이 있던 자리다. 번호를 당기면
+> 뒤의 모든 항목이 밀리는데, 앱 코드 주석과 백엔드가 이 번호로 엔드포인트를
+> 가리키고 있어 그대로 뒀다.
 
 ---
 
@@ -139,7 +165,7 @@ Content-Type: multipart/form-data # 업로드 시
 ```json
 // Request
 { "device_hash": "d4f8a91c", "push_token": "fcm:...",
-  "radius_km": 5, "categories": ["child","dementia"],
+  "radius_km": 5, "categories": ["child","elderly"],
   "quiet_hours": { "from": "23:00", "to": "07:00" } }
 
 // 200
@@ -161,7 +187,7 @@ Content-Type: multipart/form-data # 업로드 시
 | `name` | string | O | |
 | `age` | int | O | |
 | `gender` | enum | O | `male` \| `female` \| `other` |
-| `category` | enum | O | `child` \| `dementia` \| `other` — 긴급도 취약도 가중치 |
+| `category` | enum | O | `child` \| `elderly` \| `other` — 긴급도 취약도 가중치 |
 | `description` | string | O | 인상착의 + 습관 |
 | `last_lat` / `last_lng` | float | O | |
 | `last_address` | string | X | 미전송 시 서버 역지오코딩 |
@@ -200,7 +226,7 @@ Content-Type: multipart/form-data # 업로드 시
 | 쿼리 | 기본 | 설명 |
 |---|---|---|
 | `q` | — | 이름·지역 검색 |
-| `category` | all | `child` \| `dementia` \| `other` |
+| `category` | all | `child` \| `elderly` \| `other` |
 | `status` | active | `active` \| `resolved` \| `all` |
 | `sort` | urgency | `urgency` \| `recent` \| `distance` |
 | `lat` / `lng` | — | 거리 계산·긴급도용 |
@@ -315,7 +341,7 @@ Content-Type: multipart/form-data # 업로드 시
 
 ```json
 { "prefill": { "name": "이순자", "age": 81, "gender": "female",
-  "category": "dementia", "description": "...", "height_cm": 152,
+  "category": "elderly", "description": "...", "height_cm": 152,
   "guardian_phone": "...", "photo_ids": ["p_1","p_2"] } }
 ```
 
@@ -486,7 +512,7 @@ Content-Type: multipart/form-data # 업로드 시
 | `reports` | **최신순 정렬** (타임라인 표시 순서) |
 | `path` | **시간순 정렬**, `route_index` 있는 것만 + 최초 실종 지점 포함. 폴리라인에 그대로 사용 |
 | `gap_minutes` | 이전 제보와의 간격. 60분 이상이면 타임라인에 "⋯ N분 공백" 표시 |
-| `bearing` / `distance_from_prev_km` | 이동 방향·거리. P2(치매 부모)가 방향 판단에 사용 |
+| `bearing` / `distance_from_prev_km` | 이동 방향·거리. P2(배회가 잦은 부모)의 방향 판단에 사용 |
 | `time_range.ticks` | 시간 슬라이더 눈금 위치 |
 
 **`reports`와 `path`의 정렬 방향이 반대인 것은 의도된 것이다.** 타임라인은 최신이 위, 경로는 시간순이어야 한다.
@@ -574,7 +600,7 @@ similarity = round((1 - distance) * 100, 1)
 def urgency(case, user_lat=None, user_lng=None):
     h = elapsed_hours(case.missing_at)
     golden   = 3.0 if h < 3 else 2.0 if h < 12 else 1.5 if h < 48 else 1.0
-    vuln     = 1.5 if case.category in ("child", "dementia") else 1.0
+    vuln     = 1.5 if case.category in ("child", "elderly") else 1.0
     dist     = 1.0
     if user_lat:
         km = haversine(case.last_lat, case.last_lng, user_lat, user_lng)

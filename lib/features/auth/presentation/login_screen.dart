@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
-/// 선택 로그인 화면.
+/// 선택 로그인 화면(S6).
 ///
-/// 로그인 방식(FastAPI 이메일 로그인 / Firebase Auth)이 정해지면
-/// `features/auth/data/`에 API·리포지토리를 추가하고 여기서 호출한다.
-/// 네트워크 호출 패턴은 README의 "기능 추가하는 법"을 참고.
+/// **로그인 방식은 카카오 하나로 정해졌다**(API 명세서 3절). 가입과 로그인을
+/// 구분하지 않고, 카카오에서 받는 정보는 닉네임과 프로필 이미지뿐이다.
+/// 보호자 연락처는 계정이 아니라 등록 폼에서 받는다(F-7.10).
+///
+/// TODO(auth): 카카오 SDK로 받은 `access_token`을 `POST /auth/kakao`에 넘기는
+/// 리포지토리를 `features/auth/data/`에 추가하고 여기서 호출한다.
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
@@ -25,9 +28,9 @@ class LoginScreen extends StatelessWidget {
               ),
               const Spacer(),
               const FilledButton(
-                // TODO(auth): 로그인 방식이 정해지면 연결하기
+                // TODO(auth): 카카오 SDK를 붙이면 연결한다.
                 onPressed: null,
-                child: Text('로그인'),
+                child: Text('카카오로 시작하기'),
               ),
             ],
           ),
