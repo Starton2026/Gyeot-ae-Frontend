@@ -107,6 +107,17 @@ class AppTheme {
         thickness: 1,
         space: 1,
       ),
+      switchTheme: SwitchThemeData(
+        // 꺼짐일 때 손잡이를 흰색으로 둔다. 기본값은 옅은 파랑이라 트랙과
+        // 색이 붙어서 켜졌는지 꺼졌는지 눈으로 구분되지 않는다.
+        thumbColor: const WidgetStatePropertyAll(AppColors.white),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          return states.contains(WidgetState.selected)
+              ? AppColors.primary
+              : AppColors.textDisabled;
+        }),
+        trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+      ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.backgroundSubtle,
         labelStyle: AppTextStyles.body1,

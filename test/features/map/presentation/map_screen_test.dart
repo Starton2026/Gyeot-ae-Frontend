@@ -5,9 +5,13 @@ import 'package:gyeotae/core/mock/mock_backend.dart';
 import 'package:gyeotae/core/router/app_router.dart';
 import 'package:gyeotae/features/map/presentation/map_screen.dart';
 import 'package:gyeotae/features/map/presentation/widgets/map_case_carousel.dart';
+import 'package:gyeotae/features/map/presentation/widgets/map_case_select_bar.dart';
+import 'package:gyeotae/features/map/presentation/widgets/map_route_panel.dart';
 import 'package:gyeotae/features/map/presentation/widgets/map_search_bar.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
+import 'package:gyeotae/features/report/data/mock_report_repository.dart';
+import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 지도 화면을 띄운다.
@@ -15,10 +19,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// 네이티브 지도(PlatformView)는 테스트에서 그려지지 않는다. 지도 위에 얹은
 /// 검색·칩·카드만 확인한다. 핀과 카메라는 실기기에서 봐야 한다.
 Future<ProviderContainer> _pumpMap(WidgetTester tester) async {
+  final backend = MockBackend.seeded();
   final container = ProviderContainer.test(
     overrides: [
       missingRepositoryProvider.overrideWithValue(
-        MockMissingRepository(MockBackend.seeded(), latency: Duration.zero),
+        MockMissingRepository(backend, latency: Duration.zero),
+      ),
+      reportRepositoryProvider.overrideWithValue(
+        MockReportRepository(backend, latency: Duration.zero),
       ),
     ],
   );
@@ -100,5 +108,71 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(MapScreen), findsOneWidget);
+  });
+
+  group('사건 선택 모드', () {
+    Future<void> selectDemoCase(WidgetTester tester) async {
+      // 캐러셀 첫 카드가 시연용 사건(김하준)이다.
+      await tester.tap(find.text('김하준'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('카드를 누르면 경로 패널이 열리고 캐러셀이 물러난다', (tester) async {
+      await _pumpMap(tester);
+      await selectDemoCase(tester);
+
+      expect(find.byType(MapRoutePanel), findsOneWidget);
+      expect(find.byType(MapCaseCarousel), findsNothing);
+      expect(find.byType(MapCaseSelectBar), findsOneWidget);
+      expect(find.byKey(MapSearchBar.fieldKey), findsNothing);
+    });
+
+    testWidgets('기본은 60% 이상만 세고, 토글을 끄면 전부 센다', (tester) async {
+      await _pumpMap(tester);
+      await selectDemoCase(tester);
+
+      // 시드 제보 6건 중 60% 이상은 3건이다.
+      expect(find.text('제보 3건으로 복원한 경로'), findsOneWidget);
+
+      await tester.tap(find.byKey(MapRoutePanel.filterSwitchKey));
+      await tester.pumpAndSettle();
+
+      expect(find.text('제보 6건으로 복원한 경로'), findsOneWidget);
+    });
+
+    testWidgets('슬라이더를 왼쪽으로 끌면 그 시점까지만 남는다', (tester) async {
+      await _pumpMap(tester);
+      await selectDemoCase(tester);
+
+      final slider = find.byKey(MapRoutePanel.sliderKey);
+      final box = tester.getRect(slider);
+      // 트랙의 왼쪽 끝(실종 시각)을 누른다.
+      await tester.tapAt(Offset(box.left + 1, box.center.dy));
+      await tester.pumpAndSettle();
+
+      expect(find.text('아직 이 시점의 제보가 없어요'), findsOneWidget);
+      expect(find.textContaining('까지'), findsOneWidget);
+    });
+
+    testWidgets('사건 바를 누르면 전체 보기로 돌아온다', (tester) async {
+      await _pumpMap(tester);
+      await selectDemoCase(tester);
+
+      await tester.tap(find.byKey(MapCaseSelectBar.barKey));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MapRoutePanel), findsNothing);
+      expect(find.byType(MapCaseCarousel), findsOneWidget);
+    });
+
+    testWidgets('/map?case=로 들어오면 그 사건이 바로 펴진다', (tester) async {
+      final container = await _pumpMap(tester);
+
+      container.read(routerProvider).go(AppRoute.mapForCase(MockBackend.demoCaseId));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MapRoutePanel), findsOneWidget);
+      expect(find.text('김하준 · 7세'), findsOneWidget);
+    });
   });
 }

@@ -52,3 +52,17 @@ abstract interface class ReportRepository {
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {
   return MockReportRepository(ref.watch(mockBackendProvider));
 });
+
+/// 한 사건의 제보 묶음.
+///
+/// **거르지 않고 전부 받아서 화면에서 거른다.** 유사도 토글이나 시간 슬라이더를
+/// 움직일 때마다 다시 부르면 그때마다 목록이 사라졌다 나타나고, 몇 건이
+/// 숨었는지 세려면 어차피 전체가 필요하다.
+///
+/// S3 타임라인과 S5 경로가 같은 묶음을 본다.
+final caseReportsProvider = FutureProvider.family<ReportBundle, String>((
+  ref,
+  caseId,
+) async {
+  return ref.watch(reportRepositoryProvider).fetchReports(caseId);
+});

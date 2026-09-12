@@ -8,7 +8,9 @@ import '../../../core/router/app_router.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/widgets/map_preview_card.dart';
+import '../../report/data/report_repository.dart';
 import '../data/missing_case.dart';
+import '../data/missing_repository.dart';
 import 'missing_detail_providers.dart';
 import 'widgets/detail_fact_list.dart';
 import 'widgets/detail_name_line.dart';
@@ -263,12 +265,12 @@ class _ReportsSection extends ConsumerWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // TODO(S5): 지도 화면이 생기면 사건 선택 모드로 연결한다.
             MapPreviewCard(
               height: 126,
               label: bundle.count == 0
                   ? '마지막 목격 위치'
                   : '제보 ${bundle.count}건으로 복원한 이동 경로',
+              onTap: () => context.go(AppRoute.mapForCase(caseId)),
             ),
             const SizedBox(height: 26),
             ReportTimeline(

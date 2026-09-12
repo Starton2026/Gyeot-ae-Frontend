@@ -21,6 +21,9 @@ class AppRoute {
   static String missingDetail(String caseId) => '/missing/$caseId';
 
   static const String map = '/map';
+
+  /// 지도를 열면서 사건 하나를 바로 편다(S3 미니 지도 → S5 사건 선택 모드).
+  static String mapForCase(String caseId) => '/map?case=$caseId';
   static const String login = '/login';
 }
 
@@ -47,7 +50,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoute.map,
-        builder: (context, state) => const MapScreen(),
+        builder: (context, state) =>
+            MapScreen(initialCaseId: state.uri.queryParameters['case']),
       ),
       GoRoute(
         path: AppRoute.login,
