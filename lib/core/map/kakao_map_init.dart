@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_map_sdk/kakao_map_sdk.dart';
 
 import '../config/env.dart';
@@ -17,3 +18,12 @@ Future<bool> initKakaoMapSdk({
   await init(key);
   return true;
 }
+
+/// 지도를 그릴 수 있는 상태인가.
+///
+/// 키가 비어 있으면 [initKakaoMapSdk]가 초기화를 건너뛰고, 그 상태로 지도를
+/// 올리면 **아무 설명 없는 흰 판**이 된다. 키를 못 받은 팀원도 앱은 그대로
+/// 써야 하므로, 지도 화면은 이 값을 보고 이유를 적어 보여준다.
+final kakaoMapReadyProvider = Provider<bool>((ref) {
+  return Env.kakaoMapKey.isNotEmpty;
+});

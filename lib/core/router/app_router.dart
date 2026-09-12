@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/map/presentation/map_screen.dart';
 import '../../features/missing/presentation/missing_detail_screen.dart';
 import '../../features/missing/presentation/missing_list_screen.dart';
 
@@ -18,6 +19,8 @@ class AppRoute {
 
   /// `/missing/m_ab12cd34`.
   static String missingDetail(String caseId) => '/missing/$caseId';
+
+  static const String map = '/map';
   static const String login = '/login';
 }
 
@@ -41,6 +44,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoute.missingDetailPath,
         builder: (context, state) =>
             MissingDetailScreen(caseId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AppRoute.map,
+        builder: (context, state) => const MapScreen(),
       ),
       GoRoute(
         path: AppRoute.login,

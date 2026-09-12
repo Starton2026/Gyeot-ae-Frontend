@@ -116,7 +116,8 @@ Firestore는 관제 화면 실시간 갱신용으로 선택 사용. 자세한 AP
 ## 아키텍처
 
 - **feature-first**: `lib/features/<기능>/{data,presentation}`. 기능 하나가 폴더 하나.
-  화면은 home(실종자 목록) · missing(신고 등록) · report(제보) · monitor(관제 지도) · auth(선택 로그인).
+  home(S1 홈) · missing(S2 목록·S3 상세·S7 등록) · map(S5 지도) · report(S4 제보) ·
+  auth(S6 로그인).
 - `lib/core/`: 여러 기능이 함께 쓰는 것만 (network, router, theme, storage, config, widgets).
 - 상태관리 Riverpod 3 / 라우팅 go_router / HTTP dio.
 - 사진 image_picker · 위치 geolocator · 권한 permission_handler (네이티브 권한 설정 완료).
