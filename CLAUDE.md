@@ -182,6 +182,8 @@ Firestore는 관제 화면 실시간 갱신용으로 선택 사용. 자세한 AP
 - 사진 업로드는 `FormData` + `MultipartFile.fromFile`. 사진 URL은
   `${Env.apiBaseUrl}/uploads/<filename>`.
 - 로딩/에러 UI는 `core/widgets`의 `LoadingView`, `ErrorView`를 쓴다.
+- SVG 아이콘은 `core/widgets`의 `AppIcon`을 쓰고 경로는 `AppIcons` 상수로 넘긴다.
+  `SvgPicture`를 직접 부르지 않는다.
 - 경로 문자열은 `core/router/app_router.dart`의 `AppRoute` 상수만 참조한다.
 - 환경 값은 `String.fromEnvironment`가 아니라 `Env` 클래스에 추가해서 쓴다.
 - 로그인은 선택 사항이다. 로그인을 강제하는 리다이렉트를 추가하지 않는다.
