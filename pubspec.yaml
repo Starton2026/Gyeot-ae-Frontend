@@ -74,6 +74,7 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/characters/
 
   # 폴더 단위로 등록해서 파일을 추가할 때마다 여기를 고치지 않아도 되게 한다.
   # assets/fonts/는 일부러 넣지 않는다. 폰트는 위 fonts: 가 등록하고, 여기에
