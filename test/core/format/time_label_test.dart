@@ -19,6 +19,12 @@ void main() {
     expect(koreanTimeLabel(DateTime(2026, 9, 12, 14, 0)), '오후 2시');
   });
 
+  test('슬라이더용 짧은 시각은 "오후 2:40"', () {
+    expect(koreanClockLabel(DateTime(2026, 9, 12, 14, 40)), '오후 2:40');
+    expect(koreanClockLabel(DateTime(2026, 9, 12, 9, 5)), '오전 9:05');
+    expect(koreanClockLabel(DateTime(2026, 9, 12, 0, 0)), '오전 12:00');
+  });
+
   group('koreanDateLabel', () {
     final now = DateTime(2026, 9, 12, 16, 0);
 

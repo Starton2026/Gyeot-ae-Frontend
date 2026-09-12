@@ -49,3 +49,14 @@ String koreanDateTimeLabel(
 }
 
 DateTime _dateOnly(DateTime time) => DateTime(time.year, time.month, time.day);
+
+/// 시각을 짧게 읽는다. `오후 2:40`.
+///
+/// 시간 슬라이더처럼 폭이 좁아 `오후 2시 40분`이 들어가지 않는 자리에 쓴다.
+String koreanClockLabel(DateTime time) {
+  final isMorning = time.hour < 12;
+  final hour12 = time.hour % 12 == 0 ? 12 : time.hour % 12;
+  final minute = time.minute.toString().padLeft(2, '0');
+
+  return '${isMorning ? '오전' : '오후'} $hour12:$minute';
+}
