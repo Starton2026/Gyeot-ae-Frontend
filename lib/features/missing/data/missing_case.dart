@@ -1,0 +1,375 @@
+import '../../../core/network/json.dart';
+
+/// 성별. API 명세서 5) 실종자 등록의 `gender`.
+enum Gender {
+  male('male'),
+  female('female'),
+  other('other');
+
+  const Gender(this.wire);
+
+  /// 서버와 주고받는 문자열.
+  final String wire;
+
+  static Gender fromJson(Object? value) {
+    return switch (value) {
+      'male' => Gender.male,
+      'female' => Gender.female,
+      _ => Gender.other,
+    };
+  }
+}
+
+/// 실종자 분류. 긴급도의 취약도 가중치를 정한다(기능정의서 5.1).
+enum MissingCategory {
+  child('child'),
+  dementia('dementia'),
+  other('other');
+
+  const MissingCategory(this.wire);
+
+  final String wire;
+
+  /// 아동·치매노인은 취약도 ×1.5.
+  bool get isVulnerable => this != MissingCategory.other;
+
+  static MissingCategory fromJson(Object? value) {
+    return switch (value) {
+      'child' => MissingCategory.child,
+      'dementia' => MissingCategory.dementia,
+      _ => MissingCategory.other,
+    };
+  }
+}
+
+/// 사건 상태. 발견 완료도 목록에서 지우지 않는다(설계 결정 7번).
+enum CaseStatus {
+  active('active'),
+  resolved('resolved');
+
+  const CaseStatus(this.wire);
+
+  final String wire;
+
+  static CaseStatus fromJson(Object? value) {
+    return value == 'resolved' ? CaseStatus.resolved : CaseStatus.active;
+  }
+}
+
+/// 긴급도 뱃지 색을 정하는 등급. 점수가 아니라 등급으로 받는다.
+enum UrgencyLevel {
+  critical('critical'),
+  high('high'),
+  normal('normal'),
+  resolved('resolved');
+
+  const UrgencyLevel(this.wire);
+
+  final String wire;
+
+  static UrgencyLevel fromJson(Object? value) {
+    return switch (value) {
+      'critical' => UrgencyLevel.critical,
+      'high' => UrgencyLevel.high,
+      'resolved' => UrgencyLevel.resolved,
+      _ => UrgencyLevel.normal,
+    };
+  }
+}
+
+/// 목록 정렬 기준. API 명세서 6)의 `sort`.
+enum MissingSort {
+  urgency('urgency'),
+  recent('recent'),
+  distance('distance');
+
+  const MissingSort(this.wire);
+
+  final String wire;
+}
+
+/// 목록 상태 필터. API 명세서 6)의 `status`.
+enum CaseStatusFilter {
+  active('active'),
+  resolved('resolved'),
+  all('all');
+
+  const CaseStatusFilter(this.wire);
+
+  final String wire;
+}
+
+/// 목록 한 페이지. API 명세서 6) 실종자 목록.
+class MissingCaseList {
+  const MissingCaseList({
+    required this.count,
+    required this.items,
+    this.nextCursor,
+  });
+
+  /// 거른 뒤의 전체 건수. 이 페이지의 개수가 아니다.
+  final int count;
+
+  final List<MissingCaseSummary> items;
+
+  /// 다음 페이지 커서. 마지막 페이지면 null.
+  final String? nextCursor;
+
+  bool get hasMore => nextCursor != null;
+
+  factory MissingCaseList.fromJson(Map<String, dynamic> json) {
+    return MissingCaseList(
+      count: jsonInt(json['count']),
+      nextCursor: jsonStringOrNull(json['next_cursor']),
+      items: jsonMapList(
+        json['items'],
+      ).map(MissingCaseSummary.fromJson).toList(growable: false),
+    );
+  }
+}
+
+/// 목록에 한 줄로 뜨는 사건. 상세보다 필드가 적다.
+class MissingCaseSummary {
+  const MissingCaseSummary({
+    required this.id,
+    required this.name,
+    required this.age,
+    required this.gender,
+    required this.category,
+    required this.description,
+    required this.lastLat,
+    required this.lastLng,
+    required this.missingAt,
+    required this.elapsedMinutes,
+    required this.status,
+    required this.reportCount,
+    required this.urgencyLevel,
+    this.thumbnail,
+    this.lastAddress,
+    this.distanceKm,
+    this.urgencyScore,
+  });
+
+  final String id;
+  final String name;
+  final int age;
+  final Gender gender;
+  final MissingCategory category;
+
+  /// 인상착의 한 줄.
+  final String description;
+
+  /// 대표 사진 썸네일 경로.
+  final String? thumbnail;
+
+  final double lastLat;
+  final double lastLng;
+  final String? lastAddress;
+
+  final DateTime missingAt;
+
+  /// **서버가 계산한** 경과 분. 클라이언트가 다시 계산하지 않는다(설계 결정 6번).
+  final int elapsedMinutes;
+
+  final CaseStatus status;
+  final int reportCount;
+
+  /// 내 위치를 보냈을 때만 채워진다.
+  final double? distanceKm;
+
+  final double? urgencyScore;
+  final UrgencyLevel urgencyLevel;
+
+  /// 골든타임(3시간) 안이다. 긴급 배너 노출 판단에 쓴다.
+  bool get isWithinGoldenTime =>
+      status == CaseStatus.active && elapsedMinutes < 180;
+
+  factory MissingCaseSummary.fromJson(Map<String, dynamic> json) {
+    return MissingCaseSummary(
+      id: jsonString(json['id']),
+      name: jsonString(json['name']),
+      age: jsonInt(json['age']),
+      gender: Gender.fromJson(json['gender']),
+      category: MissingCategory.fromJson(json['category']),
+      description: jsonString(json['description']),
+      thumbnail: jsonStringOrNull(json['thumbnail']),
+      lastLat: jsonDouble(json['last_lat']),
+      lastLng: jsonDouble(json['last_lng']),
+      lastAddress: jsonStringOrNull(json['last_address']),
+      missingAt: jsonDate(json['missing_at']),
+      elapsedMinutes: jsonInt(json['elapsed_minutes']),
+      status: CaseStatus.fromJson(json['status']),
+      reportCount: jsonInt(json['report_count']),
+      distanceKm: jsonDoubleOrNull(json['distance_km']),
+      urgencyScore: jsonDoubleOrNull(json['urgency_score']),
+      urgencyLevel: UrgencyLevel.fromJson(json['urgency_level']),
+    );
+  }
+}
+
+/// 사건 상세. API 명세서 7) 실종자 상세.
+class MissingCaseDetail {
+  const MissingCaseDetail({
+    required this.id,
+    required this.name,
+    required this.age,
+    required this.gender,
+    required this.category,
+    required this.description,
+    required this.photos,
+    required this.lastLat,
+    required this.lastLng,
+    required this.missingAt,
+    required this.elapsedMinutes,
+    required this.status,
+    required this.reportCount,
+    required this.matchCount,
+    this.heightCm,
+    this.weightKg,
+    this.lastAddress,
+    this.lastPlaceDetail,
+    this.isGuardian = false,
+    this.boostAvailable = false,
+  });
+
+  final String id;
+  final String name;
+  final int age;
+  final Gender gender;
+  final MissingCategory category;
+
+  /// 인상착의 + 습관. 목록의 것보다 길다.
+  final String description;
+
+  final int? heightCm;
+  final int? weightKg;
+
+  /// 등록 사진 전부. 첫 장이 대표.
+  final List<String> photos;
+
+  final double lastLat;
+  final double lastLng;
+  final String? lastAddress;
+
+  /// "학원 차량 승차 지점"처럼 주소로는 안 잡히는 위치 설명.
+  final String? lastPlaceDetail;
+
+  final DateTime missingAt;
+
+  /// **서버가 계산한** 경과 분(설계 결정 6번).
+  final int elapsedMinutes;
+
+  final CaseStatus status;
+  final int reportCount;
+
+  /// 유사도 40% 이상으로 경로에 들어간 제보 수.
+  final int matchCount;
+
+  /// 내가 이 사건의 보호자다. 수정·발견완료·제보 관리 UI 노출 판단.
+  final bool isGuardian;
+
+  /// 긴급도 부스트를 아직 안 썼다. 사건당 1회.
+  final bool boostAvailable;
+
+  bool get isWithinGoldenTime =>
+      status == CaseStatus.active && elapsedMinutes < 180;
+
+  factory MissingCaseDetail.fromJson(Map<String, dynamic> json) {
+    return MissingCaseDetail(
+      id: jsonString(json['id']),
+      name: jsonString(json['name']),
+      age: jsonInt(json['age']),
+      gender: Gender.fromJson(json['gender']),
+      category: MissingCategory.fromJson(json['category']),
+      description: jsonString(json['description']),
+      heightCm: jsonIntOrNull(json['height_cm']),
+      weightKg: jsonIntOrNull(json['weight_kg']),
+      photos: jsonStringList(json['photos']),
+      lastLat: jsonDouble(json['last_lat']),
+      lastLng: jsonDouble(json['last_lng']),
+      lastAddress: jsonStringOrNull(json['last_address']),
+      lastPlaceDetail: jsonStringOrNull(json['last_place_detail']),
+      missingAt: jsonDate(json['missing_at']),
+      elapsedMinutes: jsonInt(json['elapsed_minutes']),
+      status: CaseStatus.fromJson(json['status']),
+      reportCount: jsonInt(json['report_count']),
+      matchCount: jsonInt(json['match_count']),
+      isGuardian: jsonBool(json['is_guardian']),
+      boostAvailable: jsonBool(json['boost_available']),
+    );
+  }
+}
+
+/// 등록 직후 응답. API 명세서 5). 상세와 형태가 다르다.
+class MissingCaseRegistration {
+  const MissingCaseRegistration({
+    required this.id,
+    required this.name,
+    required this.photos,
+    required this.faceEncodingCount,
+    required this.notifiedDevices,
+  });
+
+  final String id;
+  final String name;
+  final List<String> photos;
+
+  /// 얼굴 벡터를 뽑아낸 사진 수. 0이면 서버가 등록을 거부한다.
+  final int faceEncodingCount;
+
+  /// 알림이 나간 주변 기기 수. 완료 화면에 "N명에게 알렸어요"로 쓴다.
+  final int notifiedDevices;
+
+  factory MissingCaseRegistration.fromJson(Map<String, dynamic> json) {
+    return MissingCaseRegistration(
+      id: jsonString(json['id']),
+      name: jsonString(json['name']),
+      photos: jsonStringList(json['photos']),
+      faceEncodingCount: jsonInt(json['face_encoding_count']),
+      notifiedDevices: jsonInt(json['notified_devices']),
+    );
+  }
+}
+
+/// 등록 폼이 채워 넘기는 값. API 명세서 5)의 요청 필드.
+class MissingCaseDraft {
+  const MissingCaseDraft({
+    required this.name,
+    required this.age,
+    required this.gender,
+    required this.category,
+    required this.description,
+    required this.lastLat,
+    required this.lastLng,
+    required this.guardianPhone,
+    required this.photoPaths,
+    this.lastAddress,
+    this.missingAt,
+    this.heightCm,
+    this.weightKg,
+  });
+
+  final String name;
+  final int age;
+  final Gender gender;
+  final MissingCategory category;
+  final String description;
+
+  final double lastLat;
+  final double lastLng;
+
+  /// 안 보내면 서버가 역지오코딩한다.
+  final String? lastAddress;
+
+  /// 실종 일시. 안 주면 지금으로 본다.
+  final DateTime? missingAt;
+
+  final int? heightCm;
+  final int? weightKg;
+
+  /// 제보자에게는 공개하지 않는다.
+  final String guardianPhone;
+
+  /// 올릴 사진 경로. 첫 장이 대표. 여러 장일수록 대조 정확도가 오른다.
+  final List<String> photoPaths;
+}

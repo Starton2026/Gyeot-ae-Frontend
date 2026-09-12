@@ -178,7 +178,13 @@ Firestore는 관제 화면 실시간 갱신용으로 선택 사용. 자세한 AP
 
 - 새 기능은 `features/` 안에서 끝낸다. `core/`를 고쳐야 할 때만 범위를 넓힌다.
 - 네트워크 오류는 `DioException`을 잡아 `ApiException.from(e)`로 바꿔서 던진다.
-  서버 오류 본문은 `{"error": "..."}` 형식이다.
+  서버 오류 본문은 `{"error": {"code", "message", "field"}}` 형식이다(API 명세서 1절).
+  화면이 오류마다 다르게 굴어야 하면 메시지 문자열이 아니라 `ApiException.code`를
+  본다. 코드 상수는 `ApiErrorCode`에 있다.
+- 데이터는 `features/<기능>/data/`의 Repository 추상 타입으로만 가져온다. 화면이
+  dio를 직접 쓰지 않는다. 지금은 `core/mock/`의 인메모리 구현이 물려 있고,
+  백엔드가 붙으면 `missingRepositoryProvider`·`reportRepositoryProvider` 두 줄만
+  바꾼다. **`core/mock/`은 그때 통째로 지운다.**
 - 사진 업로드는 `FormData` + `MultipartFile.fromFile`. 사진 URL은
   `${Env.apiBaseUrl}/uploads/<filename>`.
 - 로딩/에러 UI는 `core/widgets`의 `LoadingView`, `ErrorView`를 쓴다.

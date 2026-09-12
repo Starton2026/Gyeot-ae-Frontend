@@ -83,4 +83,76 @@ void main() {
 
     expect(exception.isUnauthorized, isTrue);
   });
+  test('명세의 error 객체에서 message·code·field를 읽는다', () {
+    final exception = ApiException.from(
+      _errorWith(
+        statusCode: 400,
+        body: {
+          'error': {
+            'code': 'FACE_NOT_FOUND',
+            'message': '사진에서 얼굴을 찾지 못했습니다.',
+            'field': 'photo',
+          },
+        },
+      ),
+    );
+
+    expect(exception.message, '사진에서 얼굴을 찾지 못했습니다.');
+    expect(exception.code, ApiErrorCode.faceNotFound);
+    expect(exception.field, 'photo');
+  });
+
+  test('분석 만료를 코드로 구분한다', () {
+    final exception = ApiException.from(
+      _errorWith(
+        statusCode: 410,
+        body: {
+          'error': {
+            'code': 'ANALYSIS_EXPIRED',
+            'message': '분석 결과가 만료되었습니다. 다시 분석해 주세요.',
+          },
+        },
+      ),
+    );
+
+    expect(exception.code, ApiErrorCode.analysisExpired);
+    expect(exception.isAnalysisExpired, isTrue);
+  });
+
+  test('제보 횟수 초과를 코드로 구분한다', () {
+    final exception = ApiException.from(
+      _errorWith(
+        statusCode: 429,
+        body: {
+          'error': {'code': 'RATE_LIMITED', 'message': '잠시 후 다시 시도해 주세요.'},
+        },
+      ),
+    );
+
+    expect(exception.code, ApiErrorCode.rateLimited);
+    expect(exception.isRateLimited, isTrue);
+  });
+
+  test('error 객체에 message가 없어도 code는 남긴다', () {
+    final exception = ApiException.from(
+      _errorWith(
+        statusCode: 403,
+        body: {
+          'error': {'code': 'FORBIDDEN'},
+        },
+      ),
+    );
+
+    expect(exception.message, isNotEmpty);
+    expect(exception.code, ApiErrorCode.forbidden);
+  });
+
+  test('코드가 없는 오류는 code가 null이다', () {
+    final exception = ApiException.from(
+      _errorWith(statusCode: 400, body: {'error': '옛 형식의 문자열 오류'}),
+    );
+
+    expect(exception.message, '옛 형식의 문자열 오류');
+    expect(exception.code, isNull);
+  });
 }
