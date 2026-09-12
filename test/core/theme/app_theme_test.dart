@@ -28,6 +28,23 @@ void main() {
     expect(appBarTheme.surfaceTintColor, Colors.transparent);
   });
 
+  test('스위치 손잡이는 꺼져 있어도 흰색이다', () {
+    // 기본값은 옅은 파랑이라 꺼진 트랙과 색이 붙어 구분되지 않는다.
+    final switchTheme = AppTheme.light.switchTheme;
+
+    expect(
+      switchTheme.thumbColor?.resolve({}),
+      AppColors.white,
+      reason: '꺼짐',
+    );
+    expect(
+      switchTheme.thumbColor?.resolve({WidgetState.selected}),
+      AppColors.white,
+      reason: '켜짐',
+    );
+    expect(switchTheme.trackColor?.resolve({}), AppColors.textDisabled);
+  });
+
   test('주요 액션 색은 디자인 토큰의 primary다', () {
     final colorScheme = AppTheme.light.colorScheme;
 
