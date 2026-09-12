@@ -123,6 +123,51 @@ Firestore는 관제 화면 실시간 갱신용으로 선택 사용. 자세한 AP
 - **코드 생성(freezed, json_serializable, riverpod_generator)은 쓰지 않는다.** 모델은 손으로 `fromJson`을 쓴다.
 - Riverpod은 `Provider`, `FutureProvider`, `Notifier`, `AsyncNotifier`만 쓴다 (레거시 `StateProvider`, `StateNotifierProvider` 금지).
 
+## 위젯 · 컴포넌트
+
+화면은 위젯을 조립하는 자리다. 화면 파일에 UI를 직접 그리지 않는다.
+
+### 배치와 승격
+
+- 한 기능 안에서만 쓰는 위젯 → `features/<기능>/presentation/widgets/<위젯>.dart`
+- **두 개 이상의 기능이 쓰는 위젯 → `core/widgets/`로 옮긴다.** 세 번째가 아니라
+  두 번째가 쓸 때 옮긴다.
+- 기능 폴더끼리 위젯을 직접 import하지 않는다. 필요하면 `core/widgets/`로 승격시킨다.
+- 파일 하나에 공개 위젯 하나. 그 위젯만 쓰는 비공개 하위 위젯(`_XxxRow`)은 같은 파일에 둔다.
+
+### 작성 규칙
+
+- `StatelessWidget` 기본, 생성자에 `const`를 붙인다.
+- `build` 안에서 `_buildXxx()` 메서드로 UI를 쪼개지 않는다. 별도 위젯 클래스로 뺀다.
+  메서드는 리빌드 범위를 줄이지 못한다.
+- 화면(`*_screen.dart`)은 라우팅·상태 구독·조립만 한다. 300줄을 넘으면 위젯을 덜 뺀 것이다.
+- **공용 위젯은 Riverpod을 직접 읽지 않는다.** 값과 콜백을 파라미터로 받는다.
+  `ref.watch`는 화면이나 기능 전용 위젯에서 한다.
+- 위젯 클래스 위에 `///` 한 줄로 쓰임새를 적는다 (`LoadingView`, `ErrorView` 참고).
+- 테스트에서 찾아야 하는 버튼·입력은 `static const Key`로 노출한다
+  (`ErrorView.retryButtonKey` 참고).
+
+### 색과 모양
+
+- 브랜드 5색과 유사도 등급 색은 `core/theme/app_colors.dart`의 `AppColors`로만 쓴다.
+- `features/` 코드에 `Color(0x...)` 리터럴을 쓰지 않는다. 없는 색이 필요하면 임의로
+  만들지 말고 물어본다.
+- 버튼·입력·카드 모양은 `AppTheme`이 이미 정한다. 위젯에서 `shape`·`borderRadius`를
+  다시 지정하지 않는다.
+
+### 공용 위젯 후보
+
+두 화면 이상에서 반복된다. 새로 그리기 전에 `core/widgets/`에 이미 있는지 본다.
+
+| 위젯 | 쓰이는 곳 |
+|---|---|
+| 사건 카드 | S1 주변 사건 · S2 목록 |
+| 실종자 썸네일 | S1 · S2 · S3 · S5 |
+| 경과 시간 뱃지 | S1 · S2 · S3 |
+| 유사도 등급 뱃지 | S3 타임라인 · S4-1 · S5 |
+| 마스코트 블록 | S1 평상시 · S4-2 · 빈 상태 · 온보딩 |
+| 상단바 | 5.5 규칙의 5종 변형 |
+
 ## 규칙
 
 - 새 기능은 `features/` 안에서 끝낸다. `core/`를 고쳐야 할 때만 범위를 넓힌다.
