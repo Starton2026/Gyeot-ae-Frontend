@@ -14,3 +14,27 @@ String koreanTimeLabel(DateTime time) {
 
   return '$meridiem $hour12시 ${time.minute}분';
 }
+
+/// 날짜를 한국어로 읽는다. `오늘` · `어제` · `9월 9일`.
+///
+/// 시각이 아니라 **날짜**로 가른다. 자정을 막 넘긴 제보는 몇 시간 전이어도
+/// "오늘"이 아니라 "어제"다.
+///
+/// [now]는 테스트에서만 넘긴다.
+String koreanDateLabel(DateTime time, {DateTime? now}) {
+  final today = _dateOnly(now ?? DateTime.now());
+  final target = _dateOnly(time);
+  final diffDays = today.difference(target).inDays;
+
+  if (diffDays == 0) return '오늘';
+  if (diffDays == 1) return '어제';
+
+  return '${time.month}월 ${time.day}일';
+}
+
+/// `오늘 오후 2시 40분` · `9월 9일 오후 6시`.
+String koreanDateTimeLabel(DateTime time, {DateTime? now}) {
+  return '${koreanDateLabel(time, now: now)} ${koreanTimeLabel(time)}';
+}
+
+DateTime _dateOnly(DateTime time) => DateTime(time.year, time.month, time.day);

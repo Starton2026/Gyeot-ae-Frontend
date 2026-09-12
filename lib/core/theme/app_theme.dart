@@ -37,12 +37,23 @@ class AppTheme {
       fontFamily: AppTextStyles.fontFamily,
       textTheme: _textTheme,
       scaffoldBackgroundColor: AppColors.background,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
+        // Material 3은 본문이 상단바 밑으로 지나가면 배경에 색을 덧씌우고
+        // 그림자를 준다. 스크롤하다 상단바 색이 바뀌어 보이는 이유다.
+        // 흰 배경 하나로 고정한다.
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         centerTitle: true,
-        titleTextStyle: AppTextStyles.title0,
+        // 색을 빼면 안 된다. AppBar는 appBarTheme.titleTextStyle이 있으면
+        // foregroundColor를 얹지 않아서, 색 없는 스타일이 그대로 흰 글자로
+        // 그려진다(흰 배경 위에서 제목이 사라진다).
+        titleTextStyle: AppTextStyles.title0.copyWith(
+          color: AppColors.textPrimary,
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(

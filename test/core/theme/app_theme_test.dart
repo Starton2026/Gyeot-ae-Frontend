@@ -12,6 +12,22 @@ void main() {
     expect(theme.textTheme.titleLarge?.fontFamily, AppTextStyles.fontFamily);
   });
 
+  test('상단바 제목에는 색이 들어 있다', () {
+    // AppBar는 appBarTheme.titleTextStyle이 있으면 foregroundColor를 얹지
+    // 않는다. 색 없는 스타일을 주면 제목이 흰 글자로 그려져 사라진다.
+    final titleStyle = AppTheme.light.appBarTheme.titleTextStyle;
+
+    expect(titleStyle?.color, AppColors.textPrimary);
+  });
+
+  test('상단바는 본문이 밑으로 지나가도 색이 변하지 않는다', () {
+    // Material 3 기본값은 스크롤 시 배경에 틴트를 덧씌우고 그림자를 준다.
+    final appBarTheme = AppTheme.light.appBarTheme;
+
+    expect(appBarTheme.scrolledUnderElevation, 0);
+    expect(appBarTheme.surfaceTintColor, Colors.transparent);
+  });
+
   test('주요 액션 색은 디자인 토큰의 primary다', () {
     final colorScheme = AppTheme.light.colorScheme;
 

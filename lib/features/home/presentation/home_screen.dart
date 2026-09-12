@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/location/current_location.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/widgets/app_bottom_nav.dart';
+import '../../../core/widgets/app_top_bar.dart';
 import '../../../core/widgets/error_view.dart';
+import '../../../core/widgets/guardian_shortcut_banner.dart';
 import '../../../core/widgets/loading_view.dart';
 import 'home_providers.dart';
 import 'widgets/guardian_register_block.dart';
-import 'widgets/guardian_shortcut_banner.dart';
-import 'widgets/home_app_bar.dart';
-import 'widgets/home_bottom_nav.dart';
 import 'widgets/nearby_cases_section.dart';
 import 'widgets/nearby_map_preview.dart';
 import 'widgets/quiet_state_card.dart';
@@ -28,8 +29,11 @@ class HomeScreen extends ConsumerWidget {
     final feed = ref.watch(homeFeedProvider);
 
     return Scaffold(
-      appBar: const HomeAppBar(),
-      bottomNavigationBar: const HomeBottomNav(),
+      appBar: const AppTopBar.brand(),
+      bottomNavigationBar: AppBottomNav(
+        current: AppTab.home,
+        onSelect: (tab) => context.go(tab.path!),
+      ),
       body: Column(
         children: [
           GuardianShortcutBanner(onTap: () => _goRegister(context)),
@@ -44,7 +48,7 @@ class HomeScreen extends ConsumerWidget {
               ),
               data: (data) => _HomeFeedView(
                 feed: data,
-                locationLabel: ref.watch(homeLocationProvider).label,
+                locationLabel: ref.watch(currentLocationProvider).label,
               ),
             ),
           ),

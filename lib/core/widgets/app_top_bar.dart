@@ -1,20 +1,31 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/widgets/app_icon.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import 'app_icon.dart';
 
-/// 홈 상단바. 상단바 규칙(기능정의서 5.5)의 "로고(중앙) + 알림" 변형이다.
-class HomeAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const HomeAppBar({super.key});
+/// 상단바(기능정의서 5.5).
+///
+/// 홈은 가운데에 로고를 두고([AppTopBar.brand]), 실종자·지도·MY는 화면 제목을
+/// 둔다([AppTopBar.title]). 오른쪽 알림 버튼은 네 탭이 함께 쓴다.
+class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
+  /// 홈 전용. 가운데에 워드마크를 둔다.
+  const AppTopBar.brand({super.key}) : title = null;
+
+  /// 실종자·지도·MY. 가운데에 화면 제목을 둔다.
+  const AppTopBar.title(String this.title, {super.key});
+
+  final String? title;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
+    final label = title;
+
     return AppBar(
-      title: const _Wordmark(),
+      title: label == null ? const _Wordmark() : Text(label),
       actions: [
         const IconButton(
           // TODO(알림): 알림 화면이 생기면 연결한다.
@@ -53,14 +64,8 @@ class _Wordmark extends StatelessWidget {
         const Text.rich(
           TextSpan(
             children: [
-              TextSpan(
-                text: '곁',
-                style: TextStyle(color: AppColors.primary),
-              ),
-              TextSpan(
-                text: '애',
-                style: TextStyle(color: AppColors.accent),
-              ),
+              TextSpan(text: '곁', style: TextStyle(color: AppColors.primary)),
+              TextSpan(text: '애', style: TextStyle(color: AppColors.accent)),
             ],
           ),
           style: AppTextStyles.headline0,
