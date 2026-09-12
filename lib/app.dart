@@ -14,7 +14,7 @@ class GyeotaeApp extends ConsumerWidget {
       title: '곁애',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.light,
       routerConfig: ref.watch(routerProvider),
       locale: const Locale('ko'),
       supportedLocales: const [Locale('ko'), Locale('en')],

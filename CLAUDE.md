@@ -147,13 +147,19 @@ Firestore는 관제 화면 실시간 갱신용으로 선택 사용. 자세한 AP
 - 테스트에서 찾아야 하는 버튼·입력은 `static const Key`로 노출한다
   (`ErrorView.retryButtonKey` 참고).
 
-### 색과 모양
+### 색과 글자, 모양
 
-- 브랜드 5색과 유사도 등급 색은 `core/theme/app_colors.dart`의 `AppColors`로만 쓴다.
-- `features/` 코드에 `Color(0x...)` 리터럴을 쓰지 않는다. 없는 색이 필요하면 임의로
-  만들지 말고 물어본다.
+- 색은 `core/theme/app_colors.dart`의 `AppColors`로만 쓴다. 브랜드 5색이 원본이고
+  `primary`·`accent`·`border`는 그것을 가리킨다.
+- 글자는 `core/theme/app_text_styles.dart`의 `AppTextStyles`로만 쓴다. 위젯에서
+  `TextStyle(fontSize: ...)`을 직접 만들지 않는다. 색은
+  `.copyWith(color: AppColors.textSecondary)`로 얹는다.
+- 폰트는 Pretendard 하나다. 위젯에서 `fontFamily`를 지정하지 않는다.
+- `features/` 코드에 `Color(0x...)` 리터럴이나 새 글자 크기를 만들지 않는다.
+  없는 값이 필요하면 임의로 만들지 말고 물어본다.
 - 버튼·입력·카드 모양은 `AppTheme`이 이미 정한다. 위젯에서 `shape`·`borderRadius`를
   다시 지정하지 않는다.
+- 다크 테마는 없다. 디자인 토큰이 라이트 전용이라 `ThemeMode.light`로 고정돼 있다.
 
 ### 공용 위젯 후보
 

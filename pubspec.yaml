@@ -52,6 +52,22 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700
+
+  # 텍스트 스타일이 실제로 쓰는 4종만 등록한다. assets/fonts/에 있는 나머지 5종
+  # (Thin·ExtraLight·Light·ExtraBold·Black)은 파일은 남아 있지만 번들에는
+  # 들어가지 않는다. 쓸 일이 생기면 weight와 함께 위에 추가하면 된다.
+
   # 에셋을 추가할 때 주석을 풀고 경로를 넣으세요.
   # assets:
   #   - assets/images/
