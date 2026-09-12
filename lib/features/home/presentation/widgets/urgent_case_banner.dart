@@ -82,7 +82,7 @@ class UrgentCaseBanner extends StatelessWidget {
               background: AppColors.white,
               foreground: AppColors.textCareAccent,
             ),
-            child: Text(_ctaLabel(summary.category)),
+            child: Text(summary.category.witnessCtaLabel),
           ),
         ],
       ),
@@ -159,11 +159,4 @@ String _lastSeenLabel(MissingCaseSummary summary) {
   final address = summary.lastAddress;
 
   return address == null || address.isEmpty ? time : '$address\n$time';
-}
-
-/// 시민이 하는 일을 시민의 말로 적는다.
-///
-/// 아동이 아닌 사건에 "이 아이를 봤어요"라고 적을 수는 없어서 두 가지를 둔다.
-String _ctaLabel(MissingCategory category) {
-  return category == MissingCategory.child ? '이 아이를 봤어요' : '이분을 봤어요';
 }

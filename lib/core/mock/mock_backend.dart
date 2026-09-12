@@ -326,7 +326,7 @@ class MockBackend {
 
   /// 데모용 데이터를 채워 만든다.
   ///
-  /// 사건 6건에 아동·치매노인·그 외가 섞여 있고, 한 건은 발견 완료다
+  /// 사건 6건에 아동·어르신·그 외가 섞여 있고, 한 건은 발견 완료다
   /// (설계 결정 7번 — 목록에서 지우지 않는다). 시연용 사건에는 유사도 등급
   /// 4종이 모두 달려 있어 타임라인과 경로 표시를 한 화면에서 확인할 수 있다.
   factory MockBackend.seeded() {
@@ -360,7 +360,7 @@ class MockBackend {
         'name': '이순자',
         'age': 81,
         'gender': 'female',
-        'category': 'dementia',
+        'category': 'elderly',
         'description': '베이지 카디건, 남색 몸뻬, 꽃무늬 손수건. 집 방향을 물으면 예전 주소를 말합니다.',
         'height_cm': 152,
         'weight_kg': 48,
@@ -398,7 +398,7 @@ class MockBackend {
         'name': '최영자',
         'age': 78,
         'gender': 'female',
-        'category': 'dementia',
+        'category': 'elderly',
         'description': '분홍 스웨터, 지팡이 사용. 다리가 불편해 멀리 가지 못합니다.',
         'height_cm': 148,
         'weight_kg': 44,
@@ -436,7 +436,7 @@ class MockBackend {
         'name': '한복순',
         'age': 84,
         'gender': 'female',
-        'category': 'dementia',
+        'category': 'elderly',
         'description': '하늘색 블라우스, 흰 운동화.',
         'height_cm': 150,
         'weight_kg': 46,

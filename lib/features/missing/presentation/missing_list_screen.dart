@@ -161,7 +161,9 @@ class _MissingListScreenState extends ConsumerState<MissingListScreen> {
           itemBuilder: (context, index) => MissingCaseTile(
             summary: page.items[index],
             variant: MissingCaseTileVariant.detailed,
-            // TODO(S3): 실종자 상세가 생기면 연결한다.
+            onTap: () => context.push(
+              AppRoute.missingDetail(page.items[index].id),
+            ),
           ),
         ),
       ),

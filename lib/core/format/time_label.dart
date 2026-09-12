@@ -20,8 +20,13 @@ String koreanTimeLabel(DateTime time) {
 /// 시각이 아니라 **날짜**로 가른다. 자정을 막 넘긴 제보는 몇 시간 전이어도
 /// "오늘"이 아니라 "어제"다.
 ///
+/// [relative]를 false로 주면 오늘·어제로 줄이지 않고 늘 `9월 11일`로 적는다.
+/// 실종 일시처럼 사건의 기록으로 읽는 값에 쓴다.
+///
 /// [now]는 테스트에서만 넘긴다.
-String koreanDateLabel(DateTime time, {DateTime? now}) {
+String koreanDateLabel(DateTime time, {DateTime? now, bool relative = true}) {
+  if (!relative) return '${time.month}월 ${time.day}일';
+
   final today = _dateOnly(now ?? DateTime.now());
   final target = _dateOnly(time);
   final diffDays = today.difference(target).inDays;
@@ -33,8 +38,14 @@ String koreanDateLabel(DateTime time, {DateTime? now}) {
 }
 
 /// `오늘 오후 2시 40분` · `9월 9일 오후 6시`.
-String koreanDateTimeLabel(DateTime time, {DateTime? now}) {
-  return '${koreanDateLabel(time, now: now)} ${koreanTimeLabel(time)}';
+String koreanDateTimeLabel(
+  DateTime time, {
+  DateTime? now,
+  bool relative = true,
+}) {
+  final date = koreanDateLabel(time, now: now, relative: relative);
+
+  return '$date ${koreanTimeLabel(time)}';
 }
 
 DateTime _dateOnly(DateTime time) => DateTime(time.year, time.month, time.day);

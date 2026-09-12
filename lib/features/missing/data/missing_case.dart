@@ -21,22 +21,28 @@ enum Gender {
 }
 
 /// 실종자 분류. 긴급도의 취약도 가중치를 정한다(기능정의서 5.1).
+///
+/// 구분을 진단명이 아니라 나이대로 잡는다. 배회는 진단과 상관없이 일어나고,
+/// 등록하는 순간에 진단 여부를 따지게 하면 손이 멈춘다.
 enum MissingCategory {
   child('child'),
-  dementia('dementia'),
+  elderly('elderly'),
   other('other');
 
   const MissingCategory(this.wire);
 
   final String wire;
 
-  /// 아동·치매노인은 취약도 ×1.5.
+  /// 아동·어르신은 취약도 ×1.5.
   bool get isVulnerable => this != MissingCategory.other;
 
   static MissingCategory fromJson(Object? value) {
     return switch (value) {
       'child' => MissingCategory.child,
-      'dementia' => MissingCategory.dementia,
+      'elderly' => MissingCategory.elderly,
+      // 백엔드가 아직 옛 값을 보낼 수 있다. 그때 조용히 '그 외'로 떨어지면
+      // 취약도 가중치가 빠져 목록 순서가 틀어진다.
+      'dementia' => MissingCategory.elderly,
       _ => MissingCategory.other,
     };
   }
@@ -185,18 +191,7 @@ class MissingCaseSummary {
       status == CaseStatus.active && elapsedMinutes < 180;
 
   /// 이름 옆에 붙는 한 줄. `7세 남아` · `81세 여성`.
-  ///
-  /// 나이와 성별을 합친 표기라 두 값을 따로 받는 화면마다 다시 조립하게 된다.
-  /// 디자인 시안의 표기(아동은 남아·여아)를 여기 한 곳에서만 정한다.
-  String get ageGenderLabel {
-    final suffix = switch (gender) {
-      Gender.male => age < 13 ? '남아' : '남성',
-      Gender.female => age < 13 ? '여아' : '여성',
-      Gender.other => null,
-    };
-
-    return suffix == null ? '$age세' : '$age세 $suffix';
-  }
+  String get ageGenderLabel => formatAgeGender(age, gender);
 
   factory MissingCaseSummary.fromJson(Map<String, dynamic> json) {
     return MissingCaseSummary(
@@ -287,6 +282,9 @@ class MissingCaseDetail {
 
   bool get isWithinGoldenTime =>
       status == CaseStatus.active && elapsedMinutes < 180;
+
+  /// 이름 옆에 붙는 한 줄. `7세 남아`.
+  String get ageGenderLabel => formatAgeGender(age, gender);
 
   factory MissingCaseDetail.fromJson(Map<String, dynamic> json) {
     return MissingCaseDetail(
@@ -386,4 +384,27 @@ class MissingCaseDraft {
 
   /// 올릴 사진 경로. 첫 장이 대표. 여러 장일수록 대조 정확도가 오른다.
   final List<String> photoPaths;
+}
+
+/// `7세 남아` · `81세 여성`. 나이와 성별을 합친 표기.
+///
+/// 두 값을 따로 받는 화면마다 다시 조립하게 되는 말이라 여기 한 곳에서만 정한다.
+/// 아동은 남아·여아로 적는 디자인 시안의 표기를 따른다.
+/// [separator]는 상세 화면처럼 `7세 · 남아`로 띄워 적을 때 쓴다.
+String formatAgeGender(int age, Gender gender, {String separator = ' '}) {
+  final suffix = switch (gender) {
+    Gender.male => age < 13 ? '남아' : '남성',
+    Gender.female => age < 13 ? '여아' : '여성',
+    Gender.other => null,
+  };
+
+  return suffix == null ? '$age세' : '$age세$separator$suffix';
+}
+
+/// 제보 버튼에 적는 말.
+///
+/// 81세 어르신 사건에 "이 아이를 봤어요"라고 적을 수는 없어서 두 가지를 둔다.
+extension MissingCategoryCta on MissingCategory {
+  String get witnessCtaLabel =>
+      this == MissingCategory.child ? '이 아이를 봤어요' : '이분을 봤어요';
 }
