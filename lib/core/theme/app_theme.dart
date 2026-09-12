@@ -107,6 +107,29 @@ class AppTheme {
     );
   }
 
+  /// 카드 안에 얹히는 버튼의 모양.
+  ///
+  /// 화면 아래를 가로지르는 주 버튼(높이 52)보다 한 치수 작다. 긴급 배너나
+  /// 등록 소개 블록처럼 이미 색이 있는 카드 위에 올라가는 버튼은 같은 크기로
+  /// 두면 카드보다 버튼이 먼저 읽힌다.
+  ///
+  /// 배경색·글자색은 카드마다 달라서 쓰는 쪽이 정하고, **크기와 모서리는 여기서만
+  /// 정한다.** 위젯이 제 마음대로 `shape`을 만들지 않게 하려는 것이다.
+  static ButtonStyle cardButton({
+    required Color background,
+    required Color foreground,
+  }) {
+    return FilledButton.styleFrom(
+      backgroundColor: background,
+      foregroundColor: foreground,
+      // 화면이 아직 없어 눌리지 않는 버튼도 색이 죽지 않게 같은 색을 준다.
+      disabledBackgroundColor: background,
+      disabledForegroundColor: foreground,
+      minimumSize: const Size.fromHeight(46),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    );
+  }
+
   /// [AppTextStyles]를 Material 슬롯에 연결한다.
   ///
   /// 위젯에서 `Theme.of(context).textTheme.*`를 써도, [AppTextStyles]를 직접

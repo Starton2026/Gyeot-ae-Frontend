@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gyeotae/app.dart';
 import 'package:gyeotae/features/auth/presentation/login_screen.dart';
 import 'package:gyeotae/features/home/presentation/home_screen.dart';
+import 'package:gyeotae/features/home/presentation/widgets/guardian_shortcut_banner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -17,11 +18,11 @@ void main() {
     expect(find.byType(HomeScreen), findsOneWidget);
   });
 
-  testWidgets('홈에서 로그인 버튼을 누르면 로그인 화면으로 이동한다', (tester) async {
+  testWidgets('실종자 등록 바로가기를 누르면 로그인 화면으로 이동한다', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: GyeotaeApp()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(HomeScreen.loginButtonKey));
+    await tester.tap(find.byKey(GuardianShortcutBanner.registerShortcutKey));
     await tester.pumpAndSettle();
 
     expect(find.byType(LoginScreen), findsOneWidget);

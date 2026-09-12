@@ -184,6 +184,20 @@ class MissingCaseSummary {
   bool get isWithinGoldenTime =>
       status == CaseStatus.active && elapsedMinutes < 180;
 
+  /// 이름 옆에 붙는 한 줄. `7세 남아` · `81세 여성`.
+  ///
+  /// 나이와 성별을 합친 표기라 두 값을 따로 받는 화면마다 다시 조립하게 된다.
+  /// 디자인 시안의 표기(아동은 남아·여아)를 여기 한 곳에서만 정한다.
+  String get ageGenderLabel {
+    final suffix = switch (gender) {
+      Gender.male => age < 13 ? '남아' : '남성',
+      Gender.female => age < 13 ? '여아' : '여성',
+      Gender.other => null,
+    };
+
+    return suffix == null ? '$age세' : '$age세 $suffix';
+  }
+
   factory MissingCaseSummary.fromJson(Map<String, dynamic> json) {
     return MissingCaseSummary(
       id: jsonString(json['id']),
