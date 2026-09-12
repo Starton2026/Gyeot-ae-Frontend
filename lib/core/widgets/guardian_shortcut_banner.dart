@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/widgets/app_icon.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import 'app_icon.dart';
 
-/// 상단 보호자 바로가기 띠(F-1.5). 상단바 바로 아래에 고정한다.
+/// 보호자 바로가기 띠(F-1.5). 홈과 실종자 목록이 상단바 바로 아래에 고정한다.
 ///
 /// 실종자 등록은 하단 네비게이션에 넣지 않는다. 평생 한 번도 누르지 않는 것이
 /// 최선인 기능이 4칸 중 하나를 차지할 이유가 없다. 대신 급한 보호자를 위해

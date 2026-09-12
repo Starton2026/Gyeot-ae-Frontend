@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gyeotae/app.dart';
 import 'package:gyeotae/features/auth/presentation/login_screen.dart';
 import 'package:gyeotae/features/home/presentation/home_screen.dart';
-import 'package:gyeotae/features/home/presentation/widgets/guardian_shortcut_banner.dart';
+import 'package:gyeotae/core/widgets/guardian_shortcut_banner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

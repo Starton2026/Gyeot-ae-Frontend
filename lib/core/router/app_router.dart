@@ -3,12 +3,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/auth/presentation/login_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/missing/presentation/missing_list_screen.dart';
 
 /// 경로 문자열은 여기서만 정의하고 화면에서는 상수로 참조한다.
 class AppRoute {
   const AppRoute._();
 
   static const String home = '/';
+  static const String missingList = '/missing';
   static const String login = '/login';
 }
 
@@ -23,6 +25,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoute.home,
         builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: AppRoute.missingList,
+        builder: (context, state) => const MissingListScreen(),
       ),
       GoRoute(
         path: AppRoute.login,
