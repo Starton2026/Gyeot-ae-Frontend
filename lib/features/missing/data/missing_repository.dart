@@ -41,3 +41,14 @@ abstract interface class MissingRepository {
 final missingRepositoryProvider = Provider<MissingRepository>((ref) {
   return MockMissingRepository(ref.watch(mockBackendProvider));
 });
+
+/// 사건 하나.
+///
+/// S3 상세와 S5 지도가 같은 사건을 보므로 조회를 여기 한 곳에 둔다. 화면마다
+/// provider를 따로 만들면 같은 사건을 두 번 받아온다.
+final missingDetailProvider = FutureProvider.family<MissingCaseDetail, String>((
+  ref,
+  caseId,
+) async {
+  return ref.watch(missingRepositoryProvider).fetchCase(caseId);
+});

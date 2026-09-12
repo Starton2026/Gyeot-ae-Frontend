@@ -24,6 +24,12 @@ enum SimilarityGrade {
   static const double highThreshold = 70;
   static const double pathThreshold = 40;
 
+  /// 화면에서 기본으로 거르는 기준(기능정의서 5.2).
+  ///
+  /// **삭제 기준이 아니라 표시 기준이다.** S3 타임라인과 S5 지도의 토글이
+  /// 같은 값을 쓴다.
+  static const double displayFilterThreshold = 60;
+
   /// 경로에 들어가는 등급이다. `route_index`는 40% 이상에만 붙는다.
   ///
   /// 임계값은 **표시와 경로 포함만** 정한다. 저장 여부와는 무관하다(설계 결정 3번).
