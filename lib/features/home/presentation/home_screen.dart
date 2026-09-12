@@ -10,10 +10,10 @@ import '../../../core/widgets/app_top_bar.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/guardian_shortcut_banner.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../../core/widgets/map_preview_card.dart';
 import 'home_providers.dart';
 import 'widgets/guardian_register_block.dart';
 import 'widgets/nearby_cases_section.dart';
-import 'widgets/nearby_map_preview.dart';
 import 'widgets/quiet_state_card.dart';
 import 'widgets/urgent_case_banner.dart';
 
@@ -86,13 +86,18 @@ class _HomeFeedView extends StatelessWidget {
             UrgentCaseBanner(summary: urgent),
           const SizedBox(height: 12),
           // TODO(S5): 지도 탭이 생기면 onTap을 연결한다.
-          NearbyMapPreview(nearbyCount: feed.nearbyCount),
+          MapPreviewCard(
+            height: 150,
+            label: '내 주변 실종 ${feed.nearbyCount}건',
+          ),
           const SizedBox(height: 22),
-          // TODO(S2·S3): 목록·상세 화면이 생기면 onTapCase·onTapMore를 연결한다.
+          // TODO(S2): 목록 화면이 생기면 onTapMore를 연결한다.
           NearbyCasesSection(
             cases: feed.nearbyCases,
             locationLabel: locationLabel,
             totalCount: feed.activeCount,
+            onTapCase: (summary) =>
+                context.push(AppRoute.missingDetail(summary.id)),
           ),
           const SizedBox(height: 22),
           GuardianRegisterBlock(onRegister: () => _goRegister(context)),
