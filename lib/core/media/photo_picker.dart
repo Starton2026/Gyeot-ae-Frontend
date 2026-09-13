@@ -47,6 +47,15 @@ abstract interface class PhotoPicker {
   /// **권한 거부는 정상 경로다**(CLAUDE.md 규칙). 예외를 던지지 않고 null을
   /// 돌려준다. 화면은 "안 골랐다"와 "못 골랐다"를 같게 다룬다.
   Future<PickedPhoto?> pick(PhotoSource source);
+
+  /// 앨범에서 여러 장을 한 번에 고른다. 고른 순서대로의 로컬 경로.
+  ///
+  /// 실종자 등록(S7)이 쓴다. 보호자는 그 사람을 눈앞에 두고 있지 않아서
+  /// 카메라가 아니라 앨범에 있는 사진을 올린다. 촬영 시각·좌표는 필요 없어
+  /// 읽지 않는다.
+  ///
+  /// [limit]장을 넘기지 않는다. 고르지 않았거나 권한이 없으면 빈 목록이다.
+  Future<List<String>> pickManyFromGallery({required int limit});
 }
 
 /// `image_picker`를 쓰는 실제 구현.
@@ -87,6 +96,25 @@ class ImagePickerPhotoPicker implements PhotoPicker {
     } on PlatformException {
       // 권한 거부, 카메라 없는 기기. 막지 않고 고르지 않은 것으로 둔다.
       return null;
+    }
+  }
+
+  @override
+  Future<List<String>> pickManyFromGallery({required int limit}) async {
+    if (limit < 1) return const [];
+
+    try {
+      final files = await _picker.pickMultiImage(
+        maxWidth: _maxWidth,
+        imageQuality: _quality,
+        limit: limit,
+      );
+
+      // limit은 플랫폼에 따라 무시될 수 있다. 넘치면 앞에서부터 자른다.
+      return [for (final file in files.take(limit)) file.path];
+    } on PlatformException {
+      // 권한 거부. 막지 않고 고르지 않은 것으로 둔다.
+      return const [];
     }
   }
 }
