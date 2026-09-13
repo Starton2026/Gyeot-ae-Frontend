@@ -10,18 +10,22 @@ import 'app_icon.dart';
 /// 정적 카드다. 확대·이동·핀 탭이 없고 **카드 전체가 지도 탭으로 가는 버튼**이다.
 /// 화면 안에서 지도를 조작하기 시작하면 그 화면이 지도 화면이 된다.
 ///
-/// TODO(지도): KAKAO_MAP_KEY가 준비되면 회색 판 자리에 실제 지도를 넣는다.
-/// 홈은 실종 위치 핀만, 상세는 경로 폴리라인까지 그린다.
+/// 지도는 [map]으로 받는다(보통 `StaticKakaoMap`). 없으면 회색 판이다.
 class MapPreviewCard extends StatelessWidget {
   const MapPreviewCard({
     required this.height,
     required this.label,
     this.onTap,
+    this.map,
     super.key,
   });
 
-  /// 지도 자리의 높이.
+  /// 지도 자리의 높이. **고정이다.** 지도(플랫폼 뷰)는 크기가 바뀌는 중에
+  /// 정리되면 엔진이 죽는다.
   final double height;
+
+  /// 지도 자리에 그릴 것. 손가락을 먹지 않아야 카드 탭이 산다.
+  final Widget? map;
 
   /// 푸터 왼쪽에 적는 말. "내 주변 실종 3건" · "제보 6건으로 복원한 이동 경로".
   final String label;
@@ -43,7 +47,7 @@ class MapPreviewCard extends StatelessWidget {
           SizedBox(
             height: height,
             width: double.infinity,
-            child: const ColoredBox(color: AppColors.neutralGray),
+            child: map ?? const ColoredBox(color: AppColors.neutralGray),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
@@ -56,9 +60,7 @@ class MapPreviewCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   '지도에서 보기',
-                  style: AppTextStyles.body1.copyWith(
-                    color: AppColors.primary,
-                  ),
+                  style: AppTextStyles.body1.copyWith(color: AppColors.primary),
                 ),
                 const SizedBox(width: 3),
                 const AppIcon(

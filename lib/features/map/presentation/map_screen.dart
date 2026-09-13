@@ -5,7 +5,8 @@ import 'package:kakao_map_sdk/kakao_map_sdk.dart' as kakao show Route;
 
 import '../../../core/location/current_location.dart';
 import '../../../core/map/kakao_map_init.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/map/map_overlay_styles.dart';
+import '../../../core/widgets/map_pin_icon.dart';
 import '../../missing/data/missing_case.dart';
 import '../../report/data/report.dart';
 import '../../report/data/report_repository.dart';
@@ -13,8 +14,6 @@ import 'map_providers.dart';
 import 'widgets/map_case_carousel.dart';
 import 'widgets/map_case_select_bar.dart';
 import 'widgets/map_overlay_chrome.dart';
-import 'widgets/map_pin_icon.dart';
-import 'widgets/map_report_pin_icon.dart';
 import 'widgets/map_report_sheet.dart';
 import 'widgets/map_route_panel.dart';
 import 'widgets/map_search_bar.dart';
@@ -61,8 +60,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   /// 지도에 올라가 있는 경로선.
   final List<kakao.Route> _routes = [];
 
-  /// 핀 스타일 캐시. 이미지를 굽는 비용이 있어 한 번만 만들어 돌려 쓴다.
-  final Map<String, PoiStyle> _styles = {};
+  /// 핀 스타일. 이미지를 굽는 비용이 있어 한 번만 만들어 돌려 쓴다.
+  final MapOverlayStyles _overlayStyles = MapOverlayStyles();
 
   /// 오버레이 갱신을 한 줄로 세운다. 슬라이더를 끌면 갱신이 겹친다.
   Future<void> _overlayQueue = Future<void>.value();
@@ -169,17 +168,19 @@ class _MapScreenState extends ConsumerState<MapScreen> {
           (
             id: report.id,
             position: LatLng(report.lat!, report.lng!),
-            styleKey:
-                'report:${report.grade.wire}:${report.routeIndex ?? 0}',
-            style: () => _reportPinStyle(report),
+            styleKey: 'report:${report.grade.wire}:${report.routeIndex ?? 0}',
+            style: () => _overlayStyles.reportPin(
+              report.grade,
+              routeIndex: report.routeIndex,
+              context: mounted ? context : null,
+            ),
             onClick: () => showMapReportSheet(context, report: report),
           ),
       ],
       // 경로는 실종 지점에서 시작해 시간순으로 잇는다(설계 결정 5번).
       route: [
         if (origin != null) LatLng(origin.lat, origin.lng),
-        for (final report in view.pathReports)
-          LatLng(report.lat!, report.lng!),
+        for (final report in view.pathReports) LatLng(report.lat!, report.lng!),
       ],
     );
   }
@@ -194,7 +195,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       id: id,
       position: position,
       styleKey: 'missing:${level.name}',
-      style: () => _missingPinStyle(level),
+      style: () =>
+          _overlayStyles.missingPin(level, context: mounted ? context : null),
       onClick: onClick,
     );
   }
@@ -273,71 +275,9 @@ class _MapScreenState extends ConsumerState<MapScreen> {
     if (points.length < 2) return;
 
     _routes.add(
-      await controller.routeLayer.addRoute(
-        points,
-        // 경로는 연결색이다. 시민과 사건이 이어진 자리라는 뜻이고, 실종
-        // 위치(관심색)·제보 핀(신뢰색)과도 색이 겹치지 않는다.
-        RouteStyle(
-          AppColors.brandConnection,
-          6,
-          strokeColor: AppColors.white,
-          strokeWidth: 2,
-        ),
-      ),
+      await controller.routeLayer.addRoute(points, MapOverlayStyles.route),
     );
   }
-
-  /// 실종 위치 핀 스타일. 끝이 좌표를 가리키도록 아래 가운데를 기준점으로 잡는다.
-  Future<PoiStyle> _missingPinStyle(MapPinLevel level) {
-    return _cachedStyle(
-      'missing:${level.name}',
-      () => MapPinIcon(level: level),
-      level.canvasSize,
-      const KPoint(0.5, 1),
-    );
-  }
-
-  /// 제보 핀 스타일. 원이라 한가운데가 좌표다.
-  Future<PoiStyle> _reportPinStyle(Report report) {
-    return _cachedStyle(
-      'report:${report.grade.wire}:${report.routeIndex ?? 0}',
-      () => MapReportPinIcon(
-        grade: report.grade,
-        routeIndex: report.routeIndex,
-      ),
-      MapReportPinIcon.sizeOf(report.grade),
-      const KPoint(0.5, 0.5),
-    );
-  }
-
-  Future<PoiStyle> _cachedStyle(
-    String key,
-    Widget Function() build,
-    Size size,
-    KPoint anchor,
-  ) async {
-    final cached = _styles[key];
-    if (cached != null) return cached;
-
-    // 화면 배율만큼 크게 구워야 핀이 선명하다. 대신 네이티브가 밀도 배율을
-    // 한 번 더 먹이지 않도록 applyDpScale을 끈다. 켜두면 3배율 기기에서
-    // 핀이 3배로 커진다.
-    final icon = await KImage.fromWidget(
-      build(),
-      size,
-      context: mounted ? context : null,
-    );
-
-    return _styles[key] = PoiStyle(
-      icon: icon,
-      anchor: anchor,
-      applyDpScale: false,
-      // 나타날 때만 부드럽게 띄우고 사라질 때는 바로 지운다. 슬라이더를 되감을
-      // 때 사라지는 애니메이션까지 기다리면 손보다 화면이 늦는다.
-      iconTransition: const PoiTransition(exit: Transition.none),
-    );
-  }
-
 
   // ── 조작 ────────────────────────────────────────────────────
 
@@ -495,9 +435,12 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   MapRoutePanel(
                     view: view,
                     highOnly: ref.watch(mapHighOnlyProvider),
-                    onHighOnlyChanged:
-                        ref.read(mapHighOnlyProvider.notifier).set,
-                    onCursorChanged: ref.read(mapTimeCursorProvider.notifier).set,
+                    onHighOnlyChanged: ref
+                        .read(mapHighOnlyProvider.notifier)
+                        .set,
+                    onCursorChanged: ref
+                        .read(mapTimeCursorProvider.notifier)
+                        .set,
                   ),
               ],
             ),

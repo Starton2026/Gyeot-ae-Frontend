@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../../report/data/report.dart';
+import '../../features/report/data/report.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 
 /// 지도에 찍는 제보 핀(F-5.2.2).
 ///

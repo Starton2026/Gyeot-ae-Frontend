@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../theme/app_colors.dart';
 
 /// 지도 핀의 긴급도 단계(F-5.1.4).
 ///
