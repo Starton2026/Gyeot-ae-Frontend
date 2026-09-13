@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gyeotae/app.dart';
+import 'package:gyeotae/core/widgets/map_preview_card.dart';
+import 'package:gyeotae/core/widgets/static_kakao_map.dart';
 import 'package:gyeotae/features/home/presentation/home_providers.dart';
 import 'package:gyeotae/features/home/presentation/widgets/quiet_state_card.dart';
 import 'package:gyeotae/features/home/presentation/widgets/urgent_case_banner.dart';
 import 'package:gyeotae/features/missing/data/missing_case.dart';
+import 'package:gyeotae/features/map/presentation/map_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/onboarding_overrides.dart';
@@ -61,12 +64,7 @@ void main() {
 
     await _pumpHome(
       tester,
-      HomeFeed(
-        urgentCase: urgent,
-        nearbyCases: [urgent],
-        nearbyCount: 1,
-        activeCount: 5,
-      ),
+      HomeFeed(urgentCase: urgent, nearbyCases: [urgent], nearbyCount: 1),
     );
 
     expect(find.byType(UrgentCaseBanner), findsOneWidget);
@@ -83,7 +81,6 @@ void main() {
         urgentCase: null,
         nearbyCases: [_summary(elapsedMinutes: 560)],
         nearbyCount: 2,
-        activeCount: 4,
       ),
     );
 
@@ -104,16 +101,51 @@ void main() {
 
     await _pumpHome(
       tester,
-      HomeFeed(
-        urgentCase: urgent,
-        nearbyCases: [urgent],
-        nearbyCount: 1,
-        activeCount: 1,
-      ),
+      HomeFeed(urgentCase: urgent, nearbyCases: [urgent], nearbyCount: 1),
     );
 
     expect(find.text('이순자 · 81세 여성'), findsOneWidget);
     expect(find.text('이분을 봤어요'), findsOneWidget);
+  });
+
+  testWidgets('주변 목록 아래에 전체 보기 버튼을 두지 않는다', (tester) async {
+    await _pumpHome(
+      tester,
+      HomeFeed(
+        urgentCase: null,
+        nearbyCases: [_summary(elapsedMinutes: 560)],
+        nearbyCount: 1,
+      ),
+    );
+
+    // 하단 실종자 탭과 같은 곳으로 가는 길이 두 개였고, "내 주변" 아래에서
+    // 전체 건수를 말해 주변 건수로 읽혔다.
+    expect(find.textContaining('모두 보기'), findsNothing);
+    expect(find.textContaining('전체'), findsNothing);
+  });
+
+  testWidgets('주변 지도에 반경 안 사건을 전부 찍고, 누르면 지도 탭으로 간다', (tester) async {
+    await _pumpHome(
+      tester,
+      HomeFeed(
+        urgentCase: null,
+        nearbyCases: [_summary(id: 'm_1', elapsedMinutes: 560)],
+        nearbyCount: 2,
+        mapCases: [
+          _summary(id: 'm_1', elapsedMinutes: 560),
+          _summary(id: 'm_2', elapsedMinutes: 90),
+        ],
+      ),
+    );
+
+    final map = tester.widget<StaticKakaoMap>(find.byType(StaticKakaoMap));
+    // "내 주변 실종 2건"과 핀 수가 같다. 목록 3건 제한과 상관없다.
+    expect(map.plan.marks, hasLength(2));
+
+    await tester.tap(find.byType(MapPreviewCard));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MapScreen), findsOneWidget);
   });
 
   testWidgets('360x740 화면에서도 배너가 넘치지 않는다', (tester) async {
@@ -125,12 +157,7 @@ void main() {
 
     await _pumpHome(
       tester,
-      HomeFeed(
-        urgentCase: urgent,
-        nearbyCases: [urgent],
-        nearbyCount: 3,
-        activeCount: 14,
-      ),
+      HomeFeed(urgentCase: urgent, nearbyCases: [urgent], nearbyCount: 3),
     );
 
     // 넘치면 pumpAndSettle 단계에서 이미 예외로 실패한다. 여기서는 실제로
@@ -149,13 +176,11 @@ void main() {
           _summary(id: 'm_2', name: '박서연', age: 9, gender: Gender.female),
         ],
         nearbyCount: 2,
-        activeCount: 11,
       ),
     );
 
     expect(find.text('내 주변 실종 2건'), findsOneWidget);
     expect(find.text('인천 남동구 기준 · 긴급도순'), findsOneWidget);
-    expect(find.text('진행 중인 사건 11건 모두 보기'), findsOneWidget);
     expect(find.text('1.2km'), findsNWidgets(2));
     expect(find.text('박서연'), findsOneWidget);
   });
