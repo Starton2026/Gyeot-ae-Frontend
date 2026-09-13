@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 import 'app.dart';
+import 'core/config/env.dart';
 import 'core/map/kakao_map_init.dart';
 
 Future<void> main() async {
@@ -19,6 +21,12 @@ Future<void> main() async {
         : '카카오맵 키가 비어 있어 지도 초기화를 건너뜁니다. '
               '--dart-define-from-file=env/dev.json 으로 실행했는지 확인하세요.',
   );
+
+  // 카카오 로그인 — 지도와 같은 네이티브 앱 키다. 키가 없으면 초기화하지
+  // 않는다. 로그인 시트의 버튼만 동작하지 않고 앱은 그대로 돈다.
+  if (Env.kakaoNativeAppKey.isNotEmpty) {
+    await KakaoSdk.init(nativeAppKey: Env.kakaoNativeAppKey);
+  }
 
   // TODO(firebase): `dart pub global activate flutterfire_cli` 후
   // `flutterfire configure`를 실행하면 lib/firebase_options.dart가 생성됩니다.

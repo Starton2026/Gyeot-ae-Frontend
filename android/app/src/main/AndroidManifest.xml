@@ -35,6 +35,26 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- 카카오 로그인이 끝나고 앱으로 돌아오는 문(S6).
+
+             카카오톡이나 카카오계정 로그인 화면이 `kakao{네이티브 앱 키}://oauth`
+             로 돌려보내는데, 그 스킴을 받을 액티비티를 앱이 열어줘야 한다.
+             SDK가 액티비티는 들고 있지만 intent-filter는 앱 몫이다.
+
+             스킴의 키 부분은 build.gradle.kts가 env/dev.json에서 읽어 끼운다. -->
+        <activity
+            android:name="com.kakao.sdk.flutter.auth.AuthCodeHandlerActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="${kakaoAuthScheme}"
+                    android:host="oauth"/>
+            </intent-filter>
+        </activity>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
