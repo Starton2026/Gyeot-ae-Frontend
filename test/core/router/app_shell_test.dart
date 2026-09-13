@@ -10,14 +10,14 @@ import 'package:gyeotae/core/router/app_router.dart';
 import 'package:gyeotae/core/widgets/app_bottom_nav.dart';
 import 'package:gyeotae/features/home/presentation/home_screen.dart';
 import 'package:gyeotae/features/map/presentation/map_screen.dart';
-import 'package:gyeotae/features/missing/data/missing_repository.dart';
-import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
 import 'package:gyeotae/features/missing/presentation/missing_detail_screen.dart';
 import 'package:gyeotae/features/missing/presentation/missing_list_screen.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/missing_search_field.dart';
+import 'package:gyeotae/features/my/presentation/my_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/fake_location_source.dart';
+import '../../support/offline_repositories.dart';
 import '../../support/onboarding_overrides.dart';
 
 Future<ProviderContainer> _launch(WidgetTester tester) async {
@@ -36,9 +36,7 @@ Future<ProviderContainer> _launch(WidgetTester tester) async {
       locationSourceProvider.overrideWithValue(
         FakeLocationSource(known: (lat: 37.47, lng: 126.75)),
       ),
-      missingRepositoryProvider.overrideWithValue(
-        MockMissingRepository(MockBackend.seeded(), latency: Duration.zero),
-      ),
+      ...offlineRepositories(),
     ],
   );
 
@@ -133,6 +131,9 @@ void main() {
     // 어긋나면 지도를 눌렀을 때 엉뚱한 탭이 열린다.
     await _goTab(tester, '실종자');
     expect(find.byType(MissingListScreen), findsOneWidget);
+
+    await _goTab(tester, 'MY');
+    expect(find.byType(MyScreen), findsOneWidget);
 
     await _goTab(tester, '홈');
     expect(find.byType(HomeScreen), findsOneWidget);

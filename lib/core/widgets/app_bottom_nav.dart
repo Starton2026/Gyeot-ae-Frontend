@@ -13,7 +13,7 @@ enum AppTab {
   home('홈', Icons.home_outlined, AppRoute.home),
   missing('실종자', Icons.people_outline, AppRoute.missingList),
   map('지도', Icons.place_outlined, AppRoute.map),
-  my('MY', Icons.person_outline, null);
+  my('MY', Icons.person_outline, AppRoute.my);
 
   const AppTab(this.label, this.icon, this.path);
 
@@ -22,8 +22,8 @@ enum AppTab {
 
   /// 갈 곳. **아직 화면이 없는 탭은 null이다.**
   ///
-  /// TODO(S8): MY 화면이 생기면 경로를 채운다. 그러면 [AppBottomNav]가
-  /// 알아서 눌리는 탭으로 그린다.
+  /// 네 탭이 모두 차 있으면 null이 남지 않지만, 화면이 늦게 붙는 탭이 또
+  /// 생길 수 있어 자리를 남겨둔다. 눌리지 않는 탭은 회색으로 그린다.
   final String? path;
 
   bool get isReady => path != null;
