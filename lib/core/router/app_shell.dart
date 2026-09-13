@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../push/push_providers.dart';
 import '../widgets/app_bottom_nav.dart';
 
 /// 네 탭을 담는 껍데기. 하단 네비게이션이 여기 한 곳에만 있다.
@@ -14,13 +16,20 @@ import '../widgets/app_bottom_nav.dart';
 /// 상세(S3)·제보(S4)는 이 껍데기 **위**에 얹힌다. 네비바를 가리고 전체를
 /// 덮으면서(기능정의서 5.5), 아래에서는 탭이 그대로 살아 있다. 닫고 나오면
 /// 왔던 탭으로 돌아간다.
-class AppShell extends StatelessWidget {
+///
+/// 푸시 토큰 등록도 여기서 시작한다. **스플래시나 온보딩에서 하지 않는다** —
+/// 알림 권한 팝업이 앱을 켜자마자 뜨면, 아직 이게 무슨 앱인지도 모르는
+/// 사람이 거부부터 누른다. 온보딩을 지나 본 화면에 닿은 다음에 묻는다.
+class AppShell extends ConsumerWidget {
   const AppShell({required this.shell, super.key});
 
   final StatefulNavigationShell shell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 결과를 화면에 쓰지 않는다. 등록이 실패해도 앱은 그대로 돈다.
+    ref.watch(pushRegistrationProvider);
+
     return Scaffold(
       // 키보드는 안쪽 화면이 각자 처리한다. 여기서 줄이면 지도 탭의 플랫폼
       // 뷰까지 다시 레이아웃되면서 GL 표면이 검게 날아간다.
