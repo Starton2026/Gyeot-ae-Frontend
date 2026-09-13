@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/mock/mock_backend.dart';
+import '../../../core/network/dio_provider.dart';
+import 'http_missing_repository.dart';
 import 'missing_case.dart';
-import 'mock_missing_repository.dart';
 
 /// 실종자(사건) 데이터 출처.
 ///
@@ -37,9 +37,9 @@ abstract interface class MissingRepository {
   Future<MissingCaseRegistration> register(MissingCaseDraft draft);
 }
 
-/// 지금은 mock을 돌려준다. 백엔드가 붙으면 이 줄만 바꾼다.
+/// 백엔드를 부른다. 테스트는 `MockMissingRepository`로 override한다.
 final missingRepositoryProvider = Provider<MissingRepository>((ref) {
-  return MockMissingRepository(ref.watch(mockBackendProvider));
+  return HttpMissingRepository(ref.watch(dioProvider));
 });
 
 /// 사건 하나.

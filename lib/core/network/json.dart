@@ -48,6 +48,22 @@ DateTime jsonDate(Object? value) {
   return jsonDateOrNull(value) ?? DateTime.fromMillisecondsSinceEpoch(0);
 }
 
+/// 서버로 보낼 시각 문자열. **오프셋을 반드시 붙인다.**
+///
+/// `DateTime.toIso8601String()`은 로컬 시각에 오프셋을 안 붙이고(`...T20:10:00`),
+/// UTC면 `Z`를 붙인다. 둘 다 문제가 있다 — 오프셋이 없으면 서버가 KST라고
+/// 넘겨짚고, `Z`는 파이썬 3.11 미만의 `fromisoformat`이 못 읽는다.
+/// 목격 시각은 경로 정렬 기준이라(설계 결정 5번) 한 시간 밀리면 순서가 바뀐다.
+String isoWithOffset(DateTime time) {
+  final local = time.toLocal();
+  final offset = local.timeZoneOffset;
+  final sign = offset.isNegative ? '-' : '+';
+  final hours = offset.inHours.abs().toString().padLeft(2, '0');
+  final minutes = (offset.inMinutes.abs() % 60).toString().padLeft(2, '0');
+
+  return '${local.toIso8601String()}$sign$hours:$minutes';
+}
+
 DateTime? jsonDateOrNull(Object? value) {
   if (value is DateTime) return value;
   if (value is! String || value.isEmpty) return null;
