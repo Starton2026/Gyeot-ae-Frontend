@@ -133,6 +133,20 @@ class AppTextStyles {
     letterSpacing: 0,
   );
 
+  /// Bold 40. 유사도 반원 게이지의 큰 숫자 (S4-1).
+  ///
+  /// 시안은 34지만 반원 안에서 더 커도 된다. 이 시트에서 목격자가 가장 먼저
+  /// 알고 싶은 것이 이 숫자다.
+  ///
+  /// 숫자 폭을 고정해서(`tabularFigures`) 63%와 100%가 같은 리듬으로 읽힌다.
+  static const TextStyle gauge = TextStyle(
+    fontFamily: fontFamily,
+    fontWeight: FontWeight.w700,
+    fontSize: 40,
+    letterSpacing: -0.6,
+    fontFeatures: [FontFeature.tabularFigures()],
+  );
+
   /// Bold 20. 경과 시간 타이머 (S1 긴급 배너).
   ///
   /// 숫자 폭을 고정해서(`tabularFigures`) 초가 바뀔 때 글자가 흔들리지 않는다.

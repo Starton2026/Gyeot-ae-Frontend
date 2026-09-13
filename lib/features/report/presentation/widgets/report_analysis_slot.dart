@@ -151,7 +151,9 @@ class _Done extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(14, 13, 14, 6),
+        // 아래가 8인 것은 버튼이 제 여백을 6 갖고 있어서다. 합쳐서 14,
+        // 좌우와 같아진다.
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -159,7 +161,7 @@ class _Done extends StatelessWidget {
               similarity: result.similarity,
               grade: result.grade,
             ),
-            const SizedBox(height: 9),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
@@ -173,6 +175,16 @@ class _Done extends StatelessWidget {
                 TextButton(
                   key: ReportAnalysisSlot.analyzeButtonKey,
                   onPressed: onRetry,
+                  // 기본 버튼은 글자가 17인데도 터치 영역 48을 잡는다. 그
+                  // 차이가 카드 아래에 빈 공간으로 남는다.
+                  style: TextButton.styleFrom(
+                    minimumSize: Size.zero,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                   child: const Text('다시 분석'),
                 ),
               ],

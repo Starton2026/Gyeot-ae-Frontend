@@ -13,6 +13,7 @@ import 'package:gyeotae/features/missing/presentation/widgets/detail_report_cta.
 import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:gyeotae/features/report/presentation/report_screen.dart';
+import 'package:gyeotae/features/report/presentation/widgets/report_analysis_sheet.dart';
 import 'package:gyeotae/features/report/presentation/widgets/report_analysis_slot.dart';
 import 'package:gyeotae/features/report/presentation/widgets/report_exit_dialog.dart';
 import 'package:gyeotae/features/report/presentation/widgets/report_photo_field.dart';
@@ -68,8 +69,11 @@ Future<void> _attachPhoto(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// 분석하고 결과 시트를 닫는다. 시트 안은 S4-1 테스트가 따로 본다.
 Future<void> _analyze(WidgetTester tester) async {
   await tester.tap(find.byKey(ReportAnalysisSlot.analyzeButtonKey));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(analysisConfirmKey));
   await tester.pumpAndSettle();
 }
 

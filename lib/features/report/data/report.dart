@@ -303,6 +303,6 @@ extension SimilarityGradeLabel on SimilarityGrade {
     SimilarityGrade.high => '높음 · 같은 사람일 가능성이 큽니다',
     SimilarityGrade.medium => '보통 · 확인해볼 만합니다',
     SimilarityGrade.low => '낮음 · 그래도 제보해 주세요',
-    SimilarityGrade.noFace => '얼굴 미검출 · 위치와 시간만으로도 도움이 됩니다',
+    SimilarityGrade.noFace => '얼굴 미검출 · 위치와 시간은 남습니다',
   };
 }
