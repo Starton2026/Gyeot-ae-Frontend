@@ -2,13 +2,13 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../theme/app_colors.dart';
 
 /// 점선 테두리 상자.
 ///
 /// 아직 채워지지 않은 자리를 점선으로 그린다. 실선으로 두면 이미 채워진
-/// 카드와 구분되지 않는다. 사진을 올리기 전(F-4.2)과 분석하기 전(F-4.5)의
-/// 두 자리가 같은 모양을 쓴다.
+/// 카드와 구분되지 않는다. 제보창의 사진·분석 자리(F-4.2·F-4.5)와 등록 폼의
+/// 사진 추가 칸(F-7.2)이 같은 모양을 쓴다.
 ///
 /// Flutter의 `Border`는 점선을 그리지 못해서 직접 그린다.
 class DashedBox extends StatelessWidget {

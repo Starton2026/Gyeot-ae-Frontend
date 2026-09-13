@@ -18,7 +18,7 @@ import 'widgets/map_report_pin_icon.dart';
 import 'widgets/map_report_sheet.dart';
 import 'widgets/map_route_panel.dart';
 import 'widgets/map_search_bar.dart';
-import 'widgets/map_unavailable_view.dart';
+import '../../../core/widgets/map_unavailable_view.dart';
 
 /// 지도(S5). 로그인 없이 볼 수 있다.
 ///

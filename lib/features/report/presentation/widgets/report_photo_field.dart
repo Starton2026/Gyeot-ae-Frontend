@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/media/photo_picker.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
-import 'dashed_box.dart';
-import 'report_field_label.dart';
+import '../../../../core/widgets/dashed_box.dart';
+import '../../../../core/widgets/form_field_label.dart';
 
 /// 목격 사진 첨부(F-4.2). 이 화면에서 시민이 직접 채우는 유일한 칸이다.
 ///
@@ -42,7 +42,7 @@ class ReportPhotoField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const ReportFieldLabel('목격한 사진', required: true),
+        const FormFieldLabel('목격한 사진', required: true),
         const SizedBox(height: 8),
         if (path == null)
           _EmptySlot(onTap: () => onPick(PhotoSource.camera))
