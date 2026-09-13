@@ -10,7 +10,6 @@ import '../../../core/widgets/app_top_bar.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../auth/presentation/auth_providers.dart';
-import '../../auth/presentation/widgets/login_sheet.dart';
 import '../../missing/data/missing_case.dart';
 import '../data/my_report.dart';
 import '../data/my_repository.dart';
@@ -47,7 +46,7 @@ class MyScreen extends ConsumerWidget {
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
         children: [
           if (user == null)
-            MyLoginCard(onLogin: () => unawaited(showLoginSheet(context)))
+            const _GuestLogin()
           else
             MyProfileHeader(
               name: user.name,
@@ -72,6 +71,53 @@ class MyScreen extends ConsumerWidget {
           MyMenu(signedIn: user != null),
         ],
       ),
+    );
+  }
+}
+
+/// 게스트의 로그인 카드. **시트를 거치지 않고 바로 카카오로 간다.**
+///
+/// 로그인 시트(S6)는 등록처럼 하던 일 위에 끼어들 때 쓰는 것이다. MY에서는
+/// 카드가 이미 로그인하면 무엇이 좋은지 말했으므로, 시트를 또 띄우면 같은
+/// 말을 두 번 보고 버튼을 두 번 누르게 된다.
+///
+/// 성공하면 로그인 상태가 바뀌어 화면이 알아서 프로필로 다시 그려진다.
+class _GuestLogin extends ConsumerStatefulWidget {
+  const _GuestLogin();
+
+  @override
+  ConsumerState<_GuestLogin> createState() => _GuestLoginState();
+}
+
+class _GuestLoginState extends ConsumerState<_GuestLogin> {
+  bool _busy = false;
+  String? _error;
+
+  Future<void> _signIn() async {
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+
+    try {
+      await ref.read(authProvider.notifier).signInWithKakao();
+      // 성공하면 이 카드는 곧 사라진다. 취소면 조용히 다시 누를 수 있게 둔다.
+      if (mounted) setState(() => _busy = false);
+    } on ApiException catch (error) {
+      if (!mounted) return;
+      setState(() {
+        _busy = false;
+        _error = error.message;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MyLoginCard(
+      busy: _busy,
+      errorText: _error,
+      onLogin: () => unawaited(_signIn()),
     );
   }
 }

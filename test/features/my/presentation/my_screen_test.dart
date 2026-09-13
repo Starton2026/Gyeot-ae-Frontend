@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gyeotae/core/network/api_exception.dart';
 import 'package:gyeotae/core/network/dio_provider.dart';
 import 'package:gyeotae/core/theme/app_theme.dart';
 import 'package:gyeotae/features/auth/data/auth_repository.dart';
@@ -20,6 +23,22 @@ import '../../../support/fake_auth.dart';
 import '../../../support/fake_my_repository.dart';
 import '../../../support/in_memory_token_storage.dart';
 
+/// 카카오 로그인 창이 아직 안 닫힌 상태. [complete]를 불러야 끝난다.
+class _PendingKakaoAuthSource implements KakaoAuthSource {
+  final _completer = Completer<String?>();
+
+  int calls = 0;
+
+  void complete(String? token) => _completer.complete(token);
+
+  @override
+  Future<String?> requestAccessToken() {
+    calls += 1;
+
+    return _completer.future;
+  }
+}
+
 const _signedInProfile = AuthProfile(
   user: AuthUser(id: 'u_1', name: '김보호'),
   caseCount: 1,
@@ -27,12 +46,15 @@ const _signedInProfile = AuthProfile(
 );
 
 late FakeMyRepository lastRepository;
+late KakaoAuthSource lastKakao;
 
 Future<void> _pumpMy(
   WidgetTester tester, {
   bool signedIn = false,
   MyReportList? reports,
   MissingCaseList? cases,
+  KakaoAuthSource? kakao,
+  FakeAuthRepository? authRepository,
 }) async {
   tester.view.physicalSize = const Size(1200, 2600);
   tester.view.devicePixelRatio = 3;
@@ -46,9 +68,12 @@ Future<void> _pumpMy(
           InMemoryTokenStorage(signedIn ? 'token' : null),
         ),
         authRepositoryProvider.overrideWithValue(
-          FakeAuthRepository(user: signedIn ? _signedInProfile : null),
+          authRepository ??
+              FakeAuthRepository(user: signedIn ? _signedInProfile : null),
         ),
-        kakaoAuthSourceProvider.overrideWithValue(FakeKakaoAuthSource()),
+        kakaoAuthSourceProvider.overrideWithValue(
+          lastKakao = kakao ?? FakeKakaoAuthSource(),
+        ),
         myRepositoryProvider.overrideWithValue(
           lastRepository = FakeMyRepository(reports: reports, cases: cases),
         ),
@@ -96,13 +121,63 @@ void main() {
       );
     });
 
-    testWidgets('카카오 버튼을 누르면 로그인 시트가 뜬다', (tester) async {
+    testWidgets('카카오 버튼을 누르면 시트 없이 바로 카카오 로그인으로 간다', (tester) async {
       await _pumpMy(tester);
 
       await tester.tap(find.byKey(MyLoginCard.loginButtonKey));
       await tester.pumpAndSettle();
 
-      expect(find.byType(LoginSheet), findsOneWidget);
+      // 카드가 이미 로그인하면 무엇이 좋은지 말했다. 같은 말을 하는 시트를
+      // 한 번 더 띄우면 버튼을 두 번 누르게 된다.
+      expect(find.byType(LoginSheet), findsNothing);
+      expect((lastKakao as FakeKakaoAuthSource).calls, 1);
+
+      // 로그인하면 그 자리에서 프로필로 바뀐다.
+      expect(find.byKey(MyLoginCard.loginButtonKey), findsNothing);
+      expect(find.text('김보호'), findsOneWidget);
+    });
+
+    testWidgets('카카오에서 취소하면 조용히 카드가 그대로 남는다', (tester) async {
+      await _pumpMy(tester, kakao: FakeKakaoAuthSource(token: null));
+
+      await tester.tap(find.byKey(MyLoginCard.loginButtonKey));
+      await tester.pumpAndSettle();
+
+      // 취소는 오류가 아니다. 다시 누를 수 있어야 한다.
+      expect(find.byKey(MyLoginCard.loginButtonKey), findsOneWidget);
+      expect(find.byKey(MyLoginCard.errorKey), findsNothing);
+    });
+
+    testWidgets('실패하면 왜 안 됐는지 카드 안에 적는다', (tester) async {
+      await _pumpMy(
+        tester,
+        authRepository: FakeAuthRepository(
+          error: const ApiException('카카오 토큰 검증에 실패했습니다.'),
+        ),
+      );
+
+      await tester.tap(find.byKey(MyLoginCard.loginButtonKey));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(MyLoginCard.loginButtonKey), findsOneWidget);
+      expect(find.text('카카오 토큰 검증에 실패했습니다.'), findsOneWidget);
+    });
+
+    testWidgets('카카오를 기다리는 동안 다시 눌러도 한 번만 부른다', (tester) async {
+      final kakao = _PendingKakaoAuthSource();
+      await _pumpMy(tester, kakao: kakao);
+
+      await tester.tap(find.byKey(MyLoginCard.loginButtonKey));
+      await tester.pump();
+      await tester.tap(find.byKey(MyLoginCard.loginButtonKey));
+      await tester.pump();
+
+      // 카카오톡이 뜨기까지 틈이 있다. 그 사이 한 번 더 누르면 로그인 창이
+      // 두 번 열린다.
+      expect(kakao.calls, 1);
+
+      kakao.complete(null);
+      await tester.pumpAndSettle();
     });
 
     testWidgets('제보한 적이 없으면 다그치지 않고 무엇을 하면 되는지 적는다', (tester) async {
