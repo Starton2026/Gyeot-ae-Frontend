@@ -99,7 +99,9 @@ class _FactRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+      // 오른쪽이 6인 것은 버튼이 제 여백을 8 갖고 있어서다. 합쳐서 14,
+      // 왼쪽과 같아진다.
+      padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
       child: Row(
         children: [
           Container(
@@ -137,6 +139,13 @@ class _FactRow extends StatelessWidget {
           TextButton(
             key: editKey,
             onPressed: onEdit,
+            // 기본 버튼은 글자가 17인데도 터치 영역 48을 잡는다. 아이콘과
+            // 두 줄 글자가 38이라, 그 차이만큼 줄이 혼자 부푼다.
+            style: TextButton.styleFrom(
+              minimumSize: Size.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
             child: const Text('수정'),
           ),
         ],
