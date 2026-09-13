@@ -8,6 +8,8 @@ import 'package:gyeotae/features/home/presentation/widgets/urgent_case_banner.da
 import 'package:gyeotae/features/missing/data/missing_case.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/onboarding_overrides.dart';
+
 MissingCaseSummary _summary({
   String id = 'm_1',
   String name = '김하준',
@@ -39,7 +41,10 @@ MissingCaseSummary _summary({
 Future<void> _pumpHome(WidgetTester tester, HomeFeed feed) async {
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [homeFeedProvider.overrideWith((ref) => feed)],
+      overrides: [
+        ...startAfterOnboarding(),
+        homeFeedProvider.overrideWith((ref) => feed),
+      ],
       child: const GyeotaeApp(),
     ),
   );

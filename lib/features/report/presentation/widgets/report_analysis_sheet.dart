@@ -6,11 +6,11 @@ import '../../../../core/location/current_location.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/similarity_arc_gauge.dart';
 import '../../../missing/data/missing_repository.dart';
 import '../../data/analysis.dart';
 import '../report_draft_providers.dart';
 import 'analysis_compare_row.dart';
-import 'similarity_arc_gauge.dart';
 
 /// "분석 확인". 누르면 제보창으로 돌아간다(F-4.1.7).
 const Key analysisConfirmKey = Key('analysis_confirm');
