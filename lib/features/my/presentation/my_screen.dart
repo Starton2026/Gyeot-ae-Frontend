@@ -10,12 +10,17 @@ import '../../../core/widgets/app_top_bar.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../home/presentation/home_providers.dart';
+import '../../map/presentation/map_providers.dart';
 import '../../missing/data/missing_case.dart';
+import '../../missing/data/missing_repository.dart';
+import '../../missing/presentation/missing_list_providers.dart';
 import '../data/my_report.dart';
 import '../data/my_repository.dart';
 import 'my_providers.dart';
 import 'widgets/my_case_card.dart';
 import 'widgets/my_device_note.dart';
+import 'widgets/my_folded_list.dart';
 import 'widgets/my_login_card.dart';
 import 'widgets/my_menu.dart';
 import 'widgets/my_profile_header.dart';
@@ -33,6 +38,18 @@ import 'widgets/my_section_header.dart';
 /// `GET /missing/{id}/duplicate`로 채워줄 값을 주기로 되어 있다.
 class MyScreen extends ConsumerWidget {
   const MyScreen({super.key});
+
+  /// 접기 전에 보여줄 지난 사건 수.
+  ///
+  /// 끝난 사건은 지우지 않지만(설계 결정 7번) 진행 중인 사건보다 위로
+  /// 올라오면 안 되고, 길어져서 아래 메뉴를 밀어내서도 안 된다.
+  static const int pastCasesPreview = 3;
+
+  /// 접기 전에 보여줄 제보 이력 수.
+  ///
+  /// MY에서 유일하게 수십 건까지 쌓이는 목록이다. 제보는 로그인 없이 할 수
+  /// 있어서(설계 결정 1번) 열심히 쓰는 사람일수록 빨리 늘어난다.
+  static const int reportsPreview = 5;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -124,7 +141,11 @@ class _GuestLoginState extends ConsumerState<_GuestLogin> {
 
 /// 내가 등록한 사건. 진행 중과 지난 사건을 나눠 적는다.
 ///
-/// 지난 사건을 아래로 내리되 지우지는 않는다(설계 결정 7번).
+/// 지난 사건을 아래로 내리되 지우지는 않는다(설계 결정 7번). 대신 몇 건만
+/// 펼쳐 두고 접는다.
+///
+/// **진행 중인 사건은 접지 않는다.** 안 보이면 발견 완료를 누를 수 없고,
+/// 한 사람이 동시에 등록하는 사건은 한두 건이다.
 class _MyCases extends ConsumerWidget {
   const _MyCases();
 
@@ -156,7 +177,10 @@ class _MyCases extends ConsumerWidget {
         ],
         if (resolved.isNotEmpty) ...[
           MySectionHeader(title: '지난 사건', trailing: '${resolved.length}건'),
-          for (final item in resolved) MyCaseCard(summary: item),
+          MyFoldedList(
+            collapsedCount: MyScreen.pastCasesPreview,
+            children: [for (final item in resolved) MyCaseCard(summary: item)],
+          ),
         ],
       ],
     );
@@ -181,7 +205,9 @@ class _MyCases extends ConsumerWidget {
             onPressed: () => Navigator.of(context).pop(false),
             child: const Text('아니요'),
           ),
-          FilledButton(
+          // FilledButton을 쓰지 않는다. 테마가 가로를 꽉 채우는 최소 크기를 줘서
+          // 대화상자 버튼 줄에 나란히 서지 못하고 아니요를 위로 밀어낸다.
+          TextButton(
             key: const Key('my_case_resolve_confirm'),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text('발견 완료'),
@@ -193,10 +219,15 @@ class _MyCases extends ConsumerWidget {
     if (confirmed != true) return;
 
     await ref.read(myRepositoryProvider).resolveCase(summary.id);
-    // 사건 목록과 건수가 함께 바뀐다.
+    // 사건 목록과 건수가 함께 바뀐다. 홈·실종자 목록·지도·상세도 다시 받는다 —
+    // 안 받으면 방금 찾은 사람이 홈에 진행 중으로 남는다.
     ref
       ..invalidate(myCasesProvider)
-      ..invalidate(myProfileProvider);
+      ..invalidate(myProfileProvider)
+      ..invalidate(homeFeedProvider)
+      ..invalidate(missingListProvider)
+      ..invalidate(mapCasesProvider)
+      ..invalidate(missingDetailProvider(summary.id));
   }
 }
 
@@ -216,7 +247,8 @@ class _MyReports extends ConsumerWidget {
       ),
       data: (data) => data.isEmpty
           ? const _Empty()
-          : Column(
+          : MyFoldedList(
+              collapsedCount: MyScreen.reportsPreview,
               children: [
                 for (final report in data.items) MyReportTile(report: report),
               ],

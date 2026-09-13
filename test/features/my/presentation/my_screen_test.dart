@@ -10,13 +10,16 @@ import 'package:gyeotae/features/auth/data/auth_repository.dart';
 import 'package:gyeotae/features/auth/data/auth_session.dart';
 import 'package:gyeotae/features/auth/data/kakao_auth_source.dart';
 import 'package:gyeotae/features/auth/presentation/widgets/login_sheet.dart';
+import 'package:gyeotae/features/home/presentation/home_providers.dart';
 import 'package:gyeotae/features/missing/data/missing_case.dart';
 import 'package:gyeotae/features/my/data/my_report.dart';
 import 'package:gyeotae/features/my/data/my_repository.dart';
 import 'package:gyeotae/features/my/presentation/my_screen.dart';
 import 'package:gyeotae/features/my/presentation/widgets/my_case_card.dart';
+import 'package:gyeotae/features/my/presentation/widgets/my_folded_list.dart';
 import 'package:gyeotae/features/my/presentation/widgets/my_login_card.dart';
 import 'package:gyeotae/features/my/presentation/widgets/my_menu.dart';
+import 'package:gyeotae/features/my/presentation/widgets/my_report_tile.dart';
 import 'package:gyeotae/features/report/data/report.dart';
 
 import '../../../support/fake_auth.dart';
@@ -46,6 +49,9 @@ const _signedInProfile = AuthProfile(
 );
 
 late FakeMyRepository lastRepository;
+
+/// 홈 피드를 몇 번 받아왔는지. 발견 완료 뒤 홈이 옛 목록을 들고 있지 않은지 본다.
+int homeFeedFetches = 0;
 late KakaoAuthSource lastKakao;
 
 Future<void> _pumpMy(
@@ -77,10 +83,27 @@ Future<void> _pumpMy(
         myRepositoryProvider.overrideWithValue(
           lastRepository = FakeMyRepository(reports: reports, cases: cases),
         ),
+        homeFeedProvider.overrideWith((ref) async {
+          homeFeedFetches += 1;
+          return const HomeFeed(
+            urgentCase: null,
+            nearbyCases: [],
+            nearbyCount: 0,
+          );
+        }),
       ],
       child: MaterialApp(theme: AppTheme.light, home: const MyScreen()),
     ),
   );
+  await tester.pumpAndSettle();
+}
+
+/// 접힌 목록을 펼친다. [WidgetTester.ensureVisible]만으로는 스크롤이
+/// 실제로 일어나지 않아, 펼치기 줄이 화면 밖에 있으면 탭이 빗나간다.
+Future<void> _tapExpand(WidgetTester tester) async {
+  await tester.ensureVisible(find.byKey(MyFoldedList.expandKey));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(MyFoldedList.expandKey));
   await tester.pumpAndSettle();
 }
 
@@ -246,7 +269,10 @@ void main() {
     });
 
     testWidgets('게스트에게는 이 구역 자체가 없다', (tester) async {
-      await _pumpMy(tester, cases: MissingCaseList(count: 1, items: [fakeMyCase()]));
+      await _pumpMy(
+        tester,
+        cases: MissingCaseList(count: 1, items: [fakeMyCase()]),
+      );
 
       // 등록에는 로그인이 필요하니 게스트에게는 내 사건이라는 개념이 없다.
       expect(find.text('내가 등록한 실종자'), findsNothing);
@@ -270,6 +296,49 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(lastRepository.resolved, ['m_1']);
+    });
+
+    testWidgets('발견 완료하면 홈도 다시 받아온다', (tester) async {
+      await _pumpMy(
+        tester,
+        signedIn: true,
+        cases: MissingCaseList(count: 1, items: [fakeMyCase()]),
+      );
+      // 홈 탭은 껍데기 아래에 살아 있다. 그 상태를 흉내 내 홈 피드를 붙들어 둔다.
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(MyScreen)),
+      );
+      container.listen(homeFeedProvider, (_, _) {});
+      await tester.pumpAndSettle();
+      final before = homeFeedFetches;
+
+      await tester.tap(find.byKey(MyCaseCard.resolveButtonKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('my_case_resolve_confirm')));
+      await tester.pumpAndSettle();
+
+      // 다시 받지 않으면 찾은 사람이 홈에 진행 중으로 남는다(실기기 2026-09-14).
+      expect(homeFeedFetches, greaterThan(before));
+    });
+
+    testWidgets('확인 창의 두 버튼은 한 줄에 나란히 선다', (tester) async {
+      await _pumpMy(
+        tester,
+        signedIn: true,
+        cases: MissingCaseList(count: 1, items: [fakeMyCase()]),
+      );
+
+      await tester.tap(find.byKey(MyCaseCard.resolveButtonKey));
+      await tester.pumpAndSettle();
+
+      final no = tester.getRect(find.text('아니요'));
+      final yes = tester.getRect(
+        find.byKey(const Key('my_case_resolve_confirm')),
+      );
+
+      // 가로를 꽉 채우는 버튼이 끼면 아니요가 위로 밀리고 확인이 커진다(실기기).
+      expect(no.center.dy, moreOrLessEquals(yes.center.dy, epsilon: 1));
+      expect(yes.width, lessThan(200));
     });
 
     testWidgets('아니요를 누르면 아무 일도 없다', (tester) async {
@@ -336,6 +405,95 @@ void main() {
       );
 
       expect(find.textContaining('발견 완료'), findsOneWidget);
+    });
+  });
+
+  group('길어지는 목록', () {
+    testWidgets('제보 이력은 접어 두고 몇 건만 보여준다', (tester) async {
+      await _pumpMy(
+        tester,
+        reports: MyReportList(
+          count: 12,
+          items: [for (var i = 0; i < 12; i++) fakeMyReport(id: 'r_$i')],
+        ),
+      );
+
+      // 접혀 있어도 머리글 건수는 전체를 말한다. 서버에서 잘라 오면
+      // "12건"이라 적어 놓고 5건만 주는 셈이 된다.
+      expect(find.text('12건'), findsOneWidget);
+      expect(find.byType(MyReportTile), findsNWidgets(MyScreen.reportsPreview));
+      expect(find.text('7건 더 보기'), findsOneWidget);
+    });
+
+    testWidgets('더 보기를 누르면 나머지가 펼쳐지고 다시 접힌다', (tester) async {
+      await _pumpMy(
+        tester,
+        reports: MyReportList(
+          count: 12,
+          items: [for (var i = 0; i < 12; i++) fakeMyReport(id: 'r_$i')],
+        ),
+      );
+
+      await _tapExpand(tester);
+
+      expect(find.byType(MyReportTile), findsNWidgets(12));
+      expect(find.text('접기'), findsOneWidget);
+
+      await _tapExpand(tester);
+
+      expect(find.byType(MyReportTile), findsNWidgets(MyScreen.reportsPreview));
+    });
+
+    testWidgets('상한을 안 넘으면 더 보기 줄을 내밀지 않는다', (tester) async {
+      await _pumpMy(
+        tester,
+        reports: MyReportList(
+          count: MyScreen.reportsPreview,
+          items: [
+            for (var i = 0; i < MyScreen.reportsPreview; i++)
+              fakeMyReport(id: 'r_$i'),
+          ],
+        ),
+      );
+
+      expect(find.byType(MyReportTile), findsNWidgets(MyScreen.reportsPreview));
+      expect(find.byKey(MyFoldedList.expandKey), findsNothing);
+    });
+
+    testWidgets('지난 사건만 접고 진행 중인 사건은 전부 보여준다', (tester) async {
+      await _pumpMy(
+        tester,
+        signedIn: true,
+        reports: MyReportList(
+          count: 1,
+          items: [fakeMyReport(missingName: '박민재')],
+        ),
+        cases: MissingCaseList(
+          count: 7,
+          items: [
+            fakeMyCase(id: 'm_a', name: '김하준'),
+            fakeMyCase(id: 'm_b', name: '이서연'),
+            for (var i = 0; i < 5; i++)
+              fakeMyCase(
+                id: 'm_old_$i',
+                name: '한복순',
+                status: CaseStatus.resolved,
+              ),
+          ],
+        ),
+      );
+
+      // 진행 중 2건은 그대로 + 지난 사건 5건 중 3건.
+      expect(
+        find.byType(MyCaseCard),
+        findsNWidgets(2 + MyScreen.pastCasesPreview),
+      );
+      // 발견 완료를 누를 수 있어야 하므로 진행 중은 하나도 안 접는다.
+      expect(find.text('김하준'), findsOneWidget);
+      expect(find.text('이서연'), findsOneWidget);
+      expect(find.text('2건 더 보기'), findsOneWidget);
+      // 제보는 1건뿐이라 그쪽에는 더 보기가 없다.
+      expect(find.byKey(MyFoldedList.expandKey), findsOneWidget);
     });
   });
 }
