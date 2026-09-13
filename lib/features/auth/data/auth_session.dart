@@ -26,6 +26,37 @@ class AuthUser {
   }
 }
 
+/// 내 정보. API 명세서 3) `GET /auth/me`.
+///
+/// 사람과 함께 **건수**가 온다. MY 화면(S8)의 프로필 줄이 이 둘을 쓴다.
+class AuthProfile {
+  const AuthProfile({
+    required this.user,
+    this.caseCount = 0,
+    this.reportCount = 0,
+  });
+
+  final AuthUser user;
+
+  /// 내가 보호자로 등록한 사건 수.
+  final int caseCount;
+
+  /// 내가 보낸 제보 수.
+  final int reportCount;
+
+  factory AuthProfile.fromJson(Map<String, dynamic> json) {
+    final user = json['user'];
+
+    return AuthProfile(
+      user: AuthUser.fromJson(
+        user is Map<String, dynamic> ? user : const <String, dynamic>{},
+      ),
+      caseCount: jsonInt(json['cases']),
+      reportCount: jsonInt(json['reports']),
+    );
+  }
+}
+
 /// 로그인 결과. API 명세서 2) `POST /auth/kakao`.
 class AuthSession {
   const AuthSession({

@@ -17,7 +17,7 @@ class AuthNotifier extends AsyncNotifier<AuthUser?> {
     final token = await ref.read(tokenStorageProvider).read();
     if (token == null || token.isEmpty) return null;
 
-    return ref.read(authRepositoryProvider).me();
+    return (await ref.read(authRepositoryProvider).me())?.user;
   }
 
   /// 카카오 로그인. 성공하면 세션을, **사용자가 취소하면 null**을 돌려준다.

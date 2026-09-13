@@ -37,8 +37,8 @@ class FakeAuthRepository implements AuthRepository {
 
   final AuthSession session;
 
-  /// `me()`가 돌려줄 사람. null이면 로그아웃 상태다.
-  final AuthUser? user;
+  /// `me()`가 돌려줄 내 정보. null이면 로그아웃 상태다.
+  final AuthProfile? user;
 
   final Object? error;
 
@@ -55,5 +55,5 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthUser?> me() async => user;
+  Future<AuthProfile?> me() async => user;
 }

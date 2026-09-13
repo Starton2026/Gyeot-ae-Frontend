@@ -17,7 +17,7 @@ abstract interface class AuthRepository {
   ///
   /// 토큰이 없거나 만료됐으면 **null**이다. 오류로 던지지 않는다 — 로그인은
   /// 선택이라 로그아웃 상태가 정상이다.
-  Future<AuthUser?> me();
+  Future<AuthProfile?> me();
 }
 
 class HttpAuthRepository implements AuthRepository {
@@ -40,12 +40,12 @@ class HttpAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthUser?> me() async {
+  Future<AuthProfile?> me() async {
     try {
       final response = await _dio.get<Map<String, dynamic>>('/auth/me');
-      final user = response.data?['user'];
+      final data = response.data;
 
-      return user is Map<String, dynamic> ? AuthUser.fromJson(user) : null;
+      return data == null ? null : AuthProfile.fromJson(data);
     } on DioException catch (error) {
       // 401이면 토큰이 죽은 것이다. AuthInterceptor가 저장소에서 지운다.
       if (error.response?.statusCode == 401) return null;
