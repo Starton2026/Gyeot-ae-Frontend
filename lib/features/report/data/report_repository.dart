@@ -28,11 +28,15 @@ abstract interface class ReportRepository {
   ///
   /// [observedAt]은 **목격 시각**이다. 사진 EXIF를 우선 쓰고 사용자가 고칠 수 있다.
   /// 경로 정렬 기준이 이 값이다(설계 결정 5번).
+  ///
+  /// [lat]·[lng]는 **비어 있을 수 있다.** 위치 권한을 거부했거나 GPS를 못 잡은
+  /// 경우다. 지어내서 채우면 거짓 목격 지점이 되므로 비워서 보낸다. 좌표가
+  /// 없는 제보는 경로에 들어가지 않고 사진과 시간만 남는다.
   Future<Report> submit({
     required String analysisId,
-    required double lat,
-    required double lng,
     required DateTime observedAt,
+    double? lat,
+    double? lng,
     String? placeName,
   });
 

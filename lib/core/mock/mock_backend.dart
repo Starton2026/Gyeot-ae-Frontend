@@ -198,9 +198,9 @@ class MockBackend {
   /// 확정된 제보를 저장한다. 40% 미만도 저장한다(설계 결정 3번).
   Map<String, dynamic> addReport({
     required Map<String, dynamic> analysis,
-    required double lat,
-    required double lng,
     required DateTime observedAt,
+    double? lat,
+    double? lng,
     String? placeName,
   }) {
     final id = 'r_new${(_sequence++).toString().padLeft(2, '0')}';

@@ -167,10 +167,10 @@ class _MapScreenState extends ConsumerState<MapScreen> {
             position: LatLng(origin.lat, origin.lng),
             level: MapPinLevel.golden,
           ),
-        for (final report in view.reports)
+        for (final report in view.locatedReports)
           (
             id: report.id,
-            position: LatLng(report.lat, report.lng),
+            position: LatLng(report.lat!, report.lng!),
             styleKey:
                 'report:${report.grade.wire}:${report.routeIndex ?? 0}',
             style: () => _reportPinStyle(report),
@@ -181,7 +181,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       route: [
         if (origin != null) LatLng(origin.lat, origin.lng),
         for (final report in view.pathReports)
-          LatLng(report.lat, report.lng),
+          LatLng(report.lat!, report.lng!),
       ],
     );
   }
@@ -381,7 +381,8 @@ class _MapScreenState extends ConsumerState<MapScreen> {
   void _fitCase(ReportOrigin? origin, MapCaseView view) {
     final points = [
       if (origin != null) LatLng(origin.lat, origin.lng),
-      for (final report in view.reports) LatLng(report.lat, report.lng),
+      for (final report in view.locatedReports)
+        LatLng(report.lat!, report.lng!),
     ];
     if (points.isEmpty) return;
 
@@ -480,7 +481,7 @@ class _MapScreenState extends ConsumerState<MapScreen> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                     child: MapOverlayChrome(
-                      hint: _hint(casesAsync, location.label, cases.length),
+                      hint: _hint(casesAsync, location.areaName, cases.length),
                       onMyLocation: _moveToMyLocation,
                     ),
                   ),
@@ -552,14 +553,17 @@ class _SelectedTop extends ConsumerWidget {
 /// 지도 아래에 붙는 한 줄. 지금 무엇을 보고 있는지 알린다.
 String _hint(
   AsyncValue<List<MissingCaseSummary>> cases,
-  String locationLabel,
+  String? areaName,
   int count,
 ) {
   if (cases.isLoading && cases.value == null) return '사건을 불러오는 중';
   if (cases.hasError && cases.value == null) return '사건을 불러오지 못했어요';
   if (count == 0) return '조건에 맞는 사건이 없어요';
 
-  return '$locationLabel 기준 진행 중 $count건 · 긴급도순';
+  // 지명을 모르면 "현재 위치 기준"이라고 적어봐야 어디인지 알 수 없다.
+  if (areaName == null) return '진행 중 $count건 · 긴급도순';
+
+  return '$areaName 기준 진행 중 $count건 · 긴급도순';
 }
 
 /// 지도에 올릴 핀 하나의 계획.
