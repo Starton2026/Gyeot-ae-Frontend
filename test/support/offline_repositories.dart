@@ -2,8 +2,11 @@ import 'package:flutter_riverpod/misc.dart';
 import 'package:gyeotae/core/mock/mock_backend.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
+import 'package:gyeotae/features/my/data/my_repository.dart';
 import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
+
+import 'fake_my_repository.dart';
 
 /// 네트워크를 타지 않는 저장소. 사건과 제보가 같은 mock 백엔드를 본다.
 ///
@@ -23,5 +26,6 @@ List<Override> offlineRepositories({
     reportRepositoryProvider.overrideWithValue(
       MockReportRepository(shared, latency: latency),
     ),
+    myRepositoryProvider.overrideWithValue(FakeMyRepository()),
   ];
 }
