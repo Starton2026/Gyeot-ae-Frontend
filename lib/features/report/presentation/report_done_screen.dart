@@ -11,6 +11,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/mascot.dart';
 import '../../missing/data/missing_repository.dart';
+import '../../auth/presentation/auth_providers.dart';
 import '../../auth/presentation/widgets/login_sheet.dart';
 import '../data/report.dart';
 import 'widgets/report_done_notify.dart';
@@ -119,14 +120,18 @@ class ReportDoneScreen extends ConsumerWidget {
           ),
         ),
       ),
-      bottomNavigationBar: ReportDoneNotify(
-        name: detail?.name,
-        // 서버가 X-Device-Hash로 방금 제보를 찾아 계정에 붙인다(F-4.2.7).
-        // 몇 건이 옮겨갔는지는 세션의 claimedReports에 담겨 온다.
-        onLogin: () => unawaited(showLoginSheet(context)),
-        // 눌러도 제보는 그대로 유효하다(F-4.2.6).
-        onSkip: () => _leave(context),
-      ),
+      // 이미 로그인했으면 묻지 않는다. 그 사람의 제보는 벌써 계정에 붙었고,
+      // 여기서 로그인하면 이 칸도 알아서 걷힌다.
+      bottomNavigationBar: ref.watch(isSignedInProvider)
+          ? null
+          : ReportDoneNotify(
+              name: detail?.name,
+              // 서버가 X-Device-Hash로 방금 제보를 찾아 계정에 붙인다(F-4.2.7).
+              // 몇 건이 옮겨갔는지는 세션의 claimedReports에 담겨 온다.
+              onLogin: () => unawaited(showLoginSheet(context)),
+              // 눌러도 제보는 그대로 유효하다(F-4.2.6).
+              onSkip: () => _leave(context),
+            ),
     );
   }
 }
