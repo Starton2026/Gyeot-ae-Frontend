@@ -6,6 +6,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/map/presentation/map_screen.dart';
 import '../../features/missing/presentation/missing_detail_screen.dart';
 import '../../features/missing/presentation/missing_list_screen.dart';
+import '../../features/report/presentation/report_screen.dart';
 
 /// 경로 문자열은 여기서만 정의하고 화면에서는 상수로 참조한다.
 class AppRoute {
@@ -19,6 +20,12 @@ class AppRoute {
 
   /// `/missing/m_ab12cd34`.
   static String missingDetail(String caseId) => '/missing/$caseId';
+
+  /// 제보창(S4). 경로를 만들 때는 [report]를 쓴다.
+  static const String reportPath = '/missing/:id/report';
+
+  /// `/missing/m_ab12cd34/report`.
+  static String report(String caseId) => '/missing/$caseId/report';
 
   static const String map = '/map';
 
@@ -47,6 +54,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoute.missingDetailPath,
         builder: (context, state) =>
             MissingDetailScreen(caseId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AppRoute.reportPath,
+        builder: (context, state) =>
+            ReportScreen(caseId: state.pathParameters['id']!),
       ),
       GoRoute(
         path: AppRoute.map,
