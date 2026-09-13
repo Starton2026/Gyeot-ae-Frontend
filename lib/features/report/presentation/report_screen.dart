@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +15,7 @@ import '../../missing/data/missing_case.dart';
 import '../../missing/data/missing_repository.dart';
 import '../data/report_repository.dart';
 import 'report_draft_providers.dart';
+import 'widgets/report_analysis_sheet.dart';
 import 'widgets/report_analysis_slot.dart';
 import 'widgets/report_auto_facts.dart';
 import 'widgets/report_exit_dialog.dart';
@@ -86,6 +89,15 @@ class ReportScreen extends ConsumerWidget {
         : picked;
 
     ref.read(reportDraftProvider(caseId).notifier).setObservedAt(observedAt);
+  }
+
+  /// 사진 분석(F-4.5). 결과는 바텀시트로 보여준다(S4-1).
+  ///
+  /// 시트를 **먼저** 연다. 분석은 몇 초 걸리는데 그동안 화면이 멈춘 것처럼
+  /// 보이면 사용자가 버튼을 다시 누른다.
+  void _analyze(BuildContext context, WidgetRef ref) {
+    unawaited(ref.read(reportDraftProvider(caseId).notifier).analyze());
+    unawaited(showAnalysisSheet(context, caseId: caseId));
   }
 
   /// 장소 이름을 적는다(F-4.3). 좌표는 건드리지 않는다.
@@ -167,8 +179,7 @@ class ReportScreen extends ConsumerWidget {
                 .pickPhoto,
             onEditPlace: () => _editPlace(context, ref),
             onEditTime: () => _editTime(context, ref),
-            // TODO(S4-1): 결과 바텀시트를 띄운다. 지금은 분석 결과 칸에 담긴다.
-            onAnalyze: ref.read(reportDraftProvider(caseId).notifier).analyze,
+            onAnalyze: () => _analyze(context, ref),
           ),
         ),
         bottomNavigationBar: detail.hasValue
