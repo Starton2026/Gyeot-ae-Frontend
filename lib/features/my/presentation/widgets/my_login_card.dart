@@ -36,13 +36,13 @@ class MyLoginCard extends StatelessWidget {
             const Center(child: Mascot(MascotPose.basic, height: 96)),
             const SizedBox(height: 8),
             const Text(
-              '로그인하면 더 챙겨드려요',
+              '로그인하면 더 편리하게 제보할 수 있어요',
               textAlign: TextAlign.center,
               style: AppTextStyles.title0,
             ),
             const SizedBox(height: 7),
             Text(
-              '등록한 사건을 관리하고,\n제보한 사람이 발견 소식을 받을 수 있습니다',
+              '등록한 실종자를 관리하고,\n제보한 소식과 발견 소식을 빠르게 받아볼 수 있습니다.',
               textAlign: TextAlign.center,
               style: AppTextStyles.body0.copyWith(
                 color: AppColors.textSecondary,

@@ -67,7 +67,11 @@ void main() {
         reports: MyReportList(count: 2, items: [fakeMyReport()]),
       );
 
-      expect(find.text('로그인하면 더 챙겨드려요'), findsOneWidget);
+      expect(find.text('로그인하면 더 편리하게 제보할 수 있어요'), findsOneWidget);
+      expect(
+        find.text('등록한 실종자를 관리하고,\n제보한 소식과 발견 소식을 빠르게 받아볼 수 있습니다.'),
+        findsOneWidget,
+      );
 
       // 빈 화면 대신 기기에 남은 이력을 준다. 제보는 로그인 없이 하는 것이
       // 기본이라(설계 결정 1번) 게스트도 자기 기록은 봐야 한다.
@@ -121,7 +125,7 @@ void main() {
       expect(find.text('등록 사건 1 · 제보 6'), findsOneWidget);
 
       expect(find.text('내 제보 이력'), findsOneWidget);
-      expect(find.text('로그인하면 더 챙겨드려요'), findsNothing);
+      expect(find.byType(MyLoginCard), findsNothing);
     });
 
     testWidgets('알림 설정 자물쇠가 풀린다', (tester) async {
