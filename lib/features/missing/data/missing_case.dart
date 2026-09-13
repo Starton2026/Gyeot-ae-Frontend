@@ -362,7 +362,6 @@ class MissingCaseDraft {
     required this.description,
     required this.lastLat,
     required this.lastLng,
-    required this.guardianPhone,
     required this.photoPaths,
     this.lastAddress,
     this.missingAt,
@@ -387,9 +386,6 @@ class MissingCaseDraft {
 
   final int? heightCm;
   final int? weightKg;
-
-  /// 제보자에게는 공개하지 않는다.
-  final String guardianPhone;
 
   /// 올릴 사진 경로. 첫 장이 대표. 여러 장일수록 대조 정확도가 오른다.
   final List<String> photoPaths;
