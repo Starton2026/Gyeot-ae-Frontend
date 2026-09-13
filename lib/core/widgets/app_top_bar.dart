@@ -75,10 +75,15 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
 /// 마크 + 워드마크.
 ///
-/// 화면 낭독기가 `愛`를 중국어로 읽거나 건너뛰기 때문에, 앱 안에서는 한글
-/// `곁애`를 쓴다(설계 결정 10번). `곁愛`는 앱 아이콘·스플래시가 맡는다.
+/// 로고 자리라 `곁愛`를 쓴다(설계 결정 10번). 같은 규칙이 본문·푸시·15px
+/// 이하에는 `곁애`를 쓰라고 하는데, 이유가 화면 낭독기가 `愛`를 중국어로
+/// 읽거나 건너뛰기 때문이다. 그래서 낭독기에는 [Semantics]로 `곁애`를 준다.
 class _Wordmark extends StatelessWidget {
   const _Wordmark();
+
+  static final TextStyle _hanja = AppTextStyles.hanja.copyWith(
+    color: AppColors.accent,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -91,13 +96,18 @@ class _Wordmark extends StatelessWidget {
           excludeFromSemantics: true,
         ),
         const SizedBox(width: 7),
-        const Text.rich(
+        Text.rich(
           TextSpan(
             children: [
-              TextSpan(text: '곁', style: TextStyle(color: AppColors.primary)),
-              TextSpan(text: '애', style: TextStyle(color: AppColors.accent)),
+              const TextSpan(
+                text: '곁',
+                style: TextStyle(color: AppColors.primary),
+              ),
+              // Pretendard에 없는 글자라 전용 글꼴을 물린다.
+              TextSpan(text: '愛', style: _hanja),
             ],
           ),
+          semanticsLabel: '곁애',
           style: AppTextStyles.headline0,
         ),
       ],

@@ -94,9 +94,17 @@ flutter:
         - asset: assets/fonts/Pretendard-Bold.otf
           weight: 700
 
-  # 텍스트 스타일이 실제로 쓰는 4종만 등록한다. assets/fonts/에 있는 나머지 5종
-  # (Thin·ExtraLight·Light·ExtraBold·Black)은 파일은 남아 있지만 번들에는
-  # 들어가지 않는다. 쓸 일이 생기면 weight와 함께 위에 추가하면 된다.
+    # 워드마크의 `愛` 한 글자 전용. Pretendard에 그 글자가 없다.
+    #
+    # Noto Sans KR Bold에서 글자 하나만 잘라낸 서브셋이라 2KB다. 통째로
+    # 넣으면 4MB가 넘는다. 다른 한자가 필요해지면 같은 방식으로 다시 뽑는다.
+    #   pyftsubset NotoSansKR-Bold.otf --text=愛 --output-file=Hanja-Bold.ttf
+    - family: Hanja
+      fonts:
+        - asset: assets/fonts/Hanja-Bold.ttf
+          weight: 700
+
+  # 텍스트 스타일이 실제로 쓰는 4종만 등록한다.
 
   assets:
     - assets/icons/
