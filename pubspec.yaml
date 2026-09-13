@@ -46,6 +46,7 @@ dependencies:
 
   # SVG 아이콘 (assets/icons/) — Flutter는 SVG를 기본으로 못 그린다
   flutter_svg: ^2.3.0
+  exif: ^3.3.0
 
 dev_dependencies:
   flutter_test:

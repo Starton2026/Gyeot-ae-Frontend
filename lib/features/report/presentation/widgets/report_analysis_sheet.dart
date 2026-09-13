@@ -208,7 +208,9 @@ class _Result extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _FactCard(
-              address: location.label,
+              // 제보창에 적힌 것과 같은 말이어야 한다. 여기서 마지막으로
+              // 확인하는 값이 실제로 나갈 값이다(F-4.1.4).
+              address: draft.locationName(location.label),
               placeName: draft.placeName,
               observedAt: draft.observedAt,
             ),

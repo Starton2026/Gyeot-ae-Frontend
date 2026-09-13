@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gyeotae/app.dart';
+import 'package:gyeotae/core/location/location_source.dart';
 import 'package:gyeotae/core/media/photo_picker.dart';
 import 'package:gyeotae/core/mock/mock_backend.dart';
 import 'package:gyeotae/core/router/app_router.dart';
@@ -16,6 +17,7 @@ import 'package:gyeotae/features/report/presentation/widgets/report_photo_field.
 import 'package:gyeotae/features/report/presentation/widgets/report_submit_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/fake_location_source.dart';
 import '../../../support/fake_photo_picker.dart';
 
 /// 제보창을 열고 사진까지 올려둔다. 분석 버튼을 누를 수 있는 상태.
@@ -24,6 +26,7 @@ import '../../../support/fake_photo_picker.dart';
 Future<void> _pumpWithPhoto(
   WidgetTester tester, {
   Duration latency = Duration.zero,
+  LocationFix? deviceFix = (lat: 37.47, lng: 126.75),
 }) async {
   tester.platformDispatcher.accessibilityFeaturesTestValue =
       const FakeAccessibilityFeatures(disableAnimations: true);
@@ -37,6 +40,9 @@ Future<void> _pumpWithPhoto(
   final container = ProviderContainer.test(
     overrides: [
       photoPickerProvider.overrideWithValue(FakePhotoPicker('/tmp/shot.jpg')),
+      locationSourceProvider.overrideWithValue(
+        FakeLocationSource(known: deviceFix, now: deviceFix),
+      ),
       missingRepositoryProvider.overrideWithValue(
         MockMissingRepository(backend, latency: Duration.zero),
       ),
@@ -107,7 +113,7 @@ void main() {
     // 보내기 전 마지막으로 눈에 걸리는 자리(F-4.1.4).
     expect(_inSheet(find.text('위치')), findsOneWidget);
     expect(_inSheet(find.text('시간')), findsOneWidget);
-    expect(_inSheet(find.text('인천 남동구')), findsOneWidget);
+    expect(_inSheet(find.text('현재 위치')), findsOneWidget);
   });
 
   testWidgets('확신이 없어도 제보하라고 적는다', (tester) async {

@@ -6,6 +6,8 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/map/presentation/map_screen.dart';
 import '../../features/missing/presentation/missing_detail_screen.dart';
 import '../../features/missing/presentation/missing_list_screen.dart';
+import '../../features/report/data/report.dart';
+import '../../features/report/presentation/report_done_screen.dart';
 import '../../features/report/presentation/report_screen.dart';
 
 /// 경로 문자열은 여기서만 정의하고 화면에서는 상수로 참조한다.
@@ -26,6 +28,13 @@ class AppRoute {
 
   /// `/missing/m_ab12cd34/report`.
   static String report(String caseId) => '/missing/$caseId/report';
+
+  /// 제보 완료(S4-2). 확정된 제보를 `extra`로 넘긴다.
+  static const String reportDonePath = '/missing/:id/report/done';
+
+  /// `/missing/m_ab12cd34/report/done`.
+  static String reportDone(String caseId) =>
+      '/missing/$caseId/report/done';
 
   static const String map = '/map';
 
@@ -59,6 +68,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoute.reportPath,
         builder: (context, state) =>
             ReportScreen(caseId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AppRoute.reportDonePath,
+        builder: (context, state) {
+          // 링크로 바로 들어오면 제보가 없다. 요약만 빠지고 화면은 선다.
+          final extra = state.extra;
+
+          return ReportDoneScreen(
+            caseId: state.pathParameters['id']!,
+            report: extra is Report ? extra : null,
+          );
+        },
       ),
       GoRoute(
         path: AppRoute.map,
