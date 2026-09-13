@@ -65,6 +65,12 @@ class MockMissingRepository implements MissingRepository {
       count: total,
       items: page,
       nextCursor: nextOffset < total ? '$nextOffset' : null,
+      activeCount: items
+          .where((item) => item.status == CaseStatus.active)
+          .length,
+      resolvedCount: items
+          .where((item) => item.status == CaseStatus.resolved)
+          .length,
     );
   }
 
@@ -129,6 +135,18 @@ class MockMissingRepository implements MissingRepository {
           (a, b) => (b.urgencyScore ?? 0).compareTo(a.urgencyScore ?? 0),
         );
     }
+
+    // 어느 정렬이든 발견 완료는 맨 아래다(서버도 같다). 정렬마다 다르게
+    // 섞이면 목록이 "여기부터 발견된 사건" 경계를 그릴 수 없다.
+    // List.sort는 안정적이지 않아서 직접 이어 붙인다.
+    final resolved = items
+        .where((item) => item.status == CaseStatus.resolved)
+        .toList(growable: false);
+    if (resolved.isEmpty) return;
+
+    items
+      ..removeWhere((item) => item.status == CaseStatus.resolved)
+      ..addAll(resolved);
   }
 
   ApiException _notFound() {

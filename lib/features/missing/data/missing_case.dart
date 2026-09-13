@@ -108,12 +108,19 @@ enum CaseStatusFilter {
 /// 목록 한 페이지. API 명세서 6) 실종자 목록.
 class MissingCaseList {
   /// 아직 아무것도 없을 때. 부르지 않고 건너뛰는 자리에 쓴다.
-  const MissingCaseList.empty() : count = 0, items = const [], nextCursor = null;
+  const MissingCaseList.empty()
+    : count = 0,
+      items = const [],
+      nextCursor = null,
+      activeCount = 0,
+      resolvedCount = 0;
 
   const MissingCaseList({
     required this.count,
     required this.items,
     this.nextCursor,
+    this.activeCount,
+    this.resolvedCount,
   });
 
   /// 거른 뒤의 전체 건수. 이 페이지의 개수가 아니다.
@@ -124,12 +131,23 @@ class MissingCaseList {
   /// 다음 페이지 커서. 마지막 페이지면 null.
   final String? nextCursor;
 
+  /// [count] 중 진행 중인 건수. **서버가 안 세 주면 null이다.**
+  ///
+  /// 상태를 섞어 보여줄 때(`status=all`) 화면이 "진행 중 12건 · 발견 20건"으로
+  /// 나눠 적는다. 합계만 적으면 32명이 실종된 것으로 읽힌다.
+  final int? activeCount;
+
+  /// [count] 중 발견 완료된 건수. **서버가 안 세 주면 null이다.**
+  final int? resolvedCount;
+
   bool get hasMore => nextCursor != null;
 
   factory MissingCaseList.fromJson(Map<String, dynamic> json) {
     return MissingCaseList(
       count: jsonInt(json['count']),
       nextCursor: jsonStringOrNull(json['next_cursor']),
+      activeCount: jsonIntOrNull(json['active_count']),
+      resolvedCount: jsonIntOrNull(json['resolved_count']),
       items: jsonMapList(
         json['items'],
       ).map(MissingCaseSummary.fromJson).toList(growable: false),

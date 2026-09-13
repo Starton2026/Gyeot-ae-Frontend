@@ -8,6 +8,7 @@ import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
 import 'package:gyeotae/features/missing/presentation/missing_list_screen.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/missing_empty_view.dart';
+import 'package:gyeotae/features/missing/presentation/widgets/missing_resolved_divider.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/missing_search_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,7 +18,7 @@ Future<void> _pumpList(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-      ...startAfterOnboarding(),
+        ...startAfterOnboarding(),
         missingRepositoryProvider.overrideWithValue(
           MockMissingRepository(MockBackend.seeded(), latency: Duration.zero),
         ),
@@ -67,15 +68,24 @@ void main() {
     expect(find.textContaining('제보 '), findsWidgets);
   });
 
-  testWidgets('전체 필터는 발견 완료 사건까지 보여준다', (tester) async {
+  testWidgets('전체 필터는 건수를 상태별로 쪼개 적는다', (tester) async {
     await _pumpList(tester);
 
-    expect(find.text('전체 6건'), findsOneWidget);
+    // 합계만 적으면 6명이 실종된 것으로 읽힌다. 그중 1명은 이미 찾았다.
+    expect(find.text('진행 중 5건 · 발견 1건'), findsOneWidget);
+    expect(find.text('전체 6건'), findsNothing);
+  });
+
+  testWidgets('전체 필터는 발견 완료 사건을 맨 아래에 경계를 두고 보여준다', (tester) async {
+    await _pumpList(tester);
 
     await _scrollTo(tester, find.text('한복순'));
 
     expect(find.text('한복순'), findsOneWidget);
     expect(find.text('발견완료'), findsOneWidget);
+    // 카드가 갑자기 흐려지는 이유를 알려주는 줄.
+    expect(find.byKey(MissingResolvedDivider.dividerKey), findsOneWidget);
+    expect(find.text('여기부터 발견된 사건 1건'), findsOneWidget);
   });
 
   testWidgets('발견 칩은 끝난 사건만 남긴다', (tester) async {
@@ -85,6 +95,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('발견 1건'), findsOneWidget);
+    // 전부 발견 완료라 경계라고 할 것이 없다.
+    expect(find.byKey(MissingResolvedDivider.dividerKey), findsNothing);
     expect(find.text('한복순'), findsOneWidget);
     expect(find.text('발견완료'), findsOneWidget);
     expect(find.text('김하준'), findsNothing);
@@ -98,6 +110,7 @@ void main() {
 
     expect(find.text('진행 중 5건'), findsOneWidget);
     expect(find.text('한복순'), findsNothing);
+    expect(find.byKey(MissingResolvedDivider.dividerKey), findsNothing);
   });
 
   testWidgets('구분 칩은 상태를 가리지 않고 그 구분만 추린다', (tester) async {

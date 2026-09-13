@@ -15,6 +15,7 @@ import 'missing_list_providers.dart';
 import 'widgets/missing_empty_view.dart';
 import 'widgets/missing_filter_chips.dart';
 import 'widgets/missing_list_header.dart';
+import 'widgets/missing_resolved_divider.dart';
 import 'widgets/missing_search_field.dart';
 import 'widgets/missing_sort_sheet.dart';
 
@@ -101,6 +102,8 @@ class _MissingListScreenState extends ConsumerState<MissingListScreen> {
                         MissingListHeader(
                           filter: query.filter,
                           count: page?.count ?? 0,
+                          activeCount: page?.activeCount,
+                          resolvedCount: page?.resolvedCount,
                           sort: query.sort,
                           onTapSort: _pickSort,
                         ),
@@ -148,6 +151,12 @@ class _MissingListScreenState extends ConsumerState<MissingListScreen> {
       ];
     }
 
+    // 진행 중이 끝나고 발견 완료가 시작되는 자리. 그 사이의 구분선 하나를
+    // 안내 줄로 바꿔 끼운다.
+    final boundary = page.resolvedBoundary;
+    final resolvedCount =
+        page.resolvedCount ?? page.items.length - (boundary ?? 0);
+
     return [
       SliverPadding(
         // 마지막 항목도 자기 위아래 여백(14)을 그대로 갖는다. 여기에 더 얹으면
@@ -155,13 +164,14 @@ class _MissingListScreenState extends ConsumerState<MissingListScreen> {
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
         sliver: SliverList.separated(
           itemCount: page.items.length,
-          separatorBuilder: (context, index) => const Divider(height: 1),
+          separatorBuilder: (context, index) => index + 1 == boundary
+              ? MissingResolvedDivider(count: resolvedCount)
+              : const Divider(height: 1),
           itemBuilder: (context, index) => MissingCaseTile(
             summary: page.items[index],
             variant: MissingCaseTileVariant.detailed,
-            onTap: () => context.push(
-              AppRoute.missingDetail(page.items[index].id),
-            ),
+            onTap: () =>
+                context.push(AppRoute.missingDetail(page.items[index].id)),
           ),
         ),
       ),

@@ -116,6 +116,8 @@ class MissingListPage {
   const MissingListPage({
     required this.items,
     required this.count,
+    this.activeCount,
+    this.resolvedCount,
     this.nextCursor,
     this.isLoadingMore = false,
   });
@@ -125,10 +127,28 @@ class MissingListPage {
   /// 조건에 맞는 **전체** 건수. 지금 화면에 있는 개수가 아니다.
   final int count;
 
+  /// [count]의 상태별 내역. 서버가 안 세 주면 null이다.
+  final int? activeCount;
+  final int? resolvedCount;
+
   final String? nextCursor;
   final bool isLoadingMore;
 
   bool get hasMore => nextCursor != null;
+
+  /// 발견 완료가 처음 나오는 자리. 없거나 맨 앞이면 null이다.
+  ///
+  /// 목록은 어느 정렬이든 진행 중이 먼저 오고 발견 완료가 뒤에 붙는다. 그
+  /// 경계에 "여기부터 발견된 사건"을 끼워 넣어, 갑자기 카드가 흐려지는 이유를
+  /// 알려준다. **맨 앞이면 그리지 않는다** — 발견 필터에서는 전부 발견
+  /// 완료라 경계라고 할 것이 없다.
+  int? get resolvedBoundary {
+    final index = items.indexWhere(
+      (item) => item.status == CaseStatus.resolved,
+    );
+
+    return index > 0 ? index : null;
+  }
 }
 
 /// 검색·필터·정렬이 걸린 실종자 목록(S2).
@@ -155,6 +175,8 @@ class MissingListNotifier extends AsyncNotifier<MissingListPage> {
     return MissingListPage(
       items: page.items,
       count: page.count,
+      activeCount: page.activeCount,
+      resolvedCount: page.resolvedCount,
       nextCursor: page.nextCursor,
     );
   }
@@ -168,6 +190,8 @@ class MissingListNotifier extends AsyncNotifier<MissingListPage> {
       MissingListPage(
         items: current.items,
         count: current.count,
+        activeCount: current.activeCount,
+        resolvedCount: current.resolvedCount,
         nextCursor: cursor,
         isLoadingMore: true,
       ),
@@ -193,6 +217,8 @@ class MissingListNotifier extends AsyncNotifier<MissingListPage> {
         MissingListPage(
           items: [...current.items, ...next.items],
           count: next.count,
+          activeCount: next.activeCount,
+          resolvedCount: next.resolvedCount,
           nextCursor: next.nextCursor,
         ),
       );
@@ -205,6 +231,8 @@ class MissingListNotifier extends AsyncNotifier<MissingListPage> {
         MissingListPage(
           items: current.items,
           count: current.count,
+          activeCount: current.activeCount,
+          resolvedCount: current.resolvedCount,
           nextCursor: cursor,
         ),
       );
