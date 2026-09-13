@@ -13,6 +13,8 @@ import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/onboarding_overrides.dart';
+
 /// 상세 화면을 띄운다. 사건과 제보가 같은 mock 저장소를 보게 맞춘다.
 Future<ProviderContainer> _pumpDetail(
   WidgetTester tester, {
@@ -27,6 +29,7 @@ Future<ProviderContainer> _pumpDetail(
   final backend = MockBackend.seeded();
   final container = ProviderContainer.test(
     overrides: [
+      ...startAfterOnboarding(),
       missingRepositoryProvider.overrideWithValue(
         MockMissingRepository(backend, latency: Duration.zero),
       ),

@@ -22,6 +22,7 @@ import 'package:gyeotae/features/report/presentation/widgets/report_photo_field.
 import 'package:gyeotae/features/report/presentation/widgets/report_submit_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/onboarding_overrides.dart';
 import '../../../support/fake_location_source.dart';
 import '../../../support/fake_photo_picker.dart';
 
@@ -46,6 +47,7 @@ Future<FakePhotoPicker> _pumpReport(
   final picker = FakePhotoPicker('/tmp/shot.jpg');
   final container = ProviderContainer.test(
     overrides: [
+      ...startAfterOnboarding(),
       photoPickerProvider.overrideWithValue(picker),
       locationSourceProvider.overrideWithValue(
         FakeLocationSource(known: deviceFix, now: deviceFix),

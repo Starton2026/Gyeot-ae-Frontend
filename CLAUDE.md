@@ -116,8 +116,8 @@ Firestore는 관제 화면 실시간 갱신용으로 선택 사용. 자세한 AP
 ## 아키텍처
 
 - **feature-first**: `lib/features/<기능>/{data,presentation}`. 기능 하나가 폴더 하나.
-  home(S1 홈) · missing(S2 목록·S3 상세·S7 등록) · map(S5 지도) · report(S4 제보) ·
-  auth(S6 로그인).
+  onboarding(S0 스플래시·온보딩) · home(S1 홈) · missing(S2 목록·S3 상세·S7 등록) ·
+  map(S5 지도) · report(S4 제보) · auth(S6 로그인).
 - `lib/core/`: 여러 기능이 함께 쓰는 것만 (network, router, theme, storage, config, widgets).
 - 상태관리 Riverpod 3 / 라우팅 go_router / HTTP dio.
 - 사진 image_picker · 위치 geolocator · 권한 permission_handler (네이티브 권한 설정 완료).
@@ -157,6 +157,8 @@ Firestore는 관제 화면 실시간 갱신용으로 선택 사용. 자세한 AP
   `TextStyle(fontSize: ...)`을 직접 만들지 않는다. 색은
   `.copyWith(color: AppColors.textSecondary)`로 얹는다.
 - 폰트는 Pretendard 하나다. 위젯에서 `fontFamily`를 지정하지 않는다.
+  예외는 워드마크의 `愛` 한 글자뿐이고, 그것도 `AppTextStyles.hanja`로 쓴다
+  (Pretendard에 그 글자가 없다).
 - `features/` 코드에 `Color(0x...)` 리터럴이나 새 글자 크기를 만들지 않는다.
   없는 값이 필요하면 임의로 만들지 말고 물어본다.
 - 버튼·입력·카드 모양은 `AppTheme`이 이미 정한다. 위젯에서 `shape`·`borderRadius`를

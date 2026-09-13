@@ -21,8 +21,8 @@ class FakeLocationSource implements LocationSource {
   }
 
   @override
-  Future<LocationFix?> current() async {
-    calls.add('current');
+  Future<LocationFix?> current({bool requestPermission = false}) async {
+    calls.add(requestPermission ? 'current(ask)' : 'current');
     return now;
   }
 }

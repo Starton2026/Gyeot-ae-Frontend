@@ -14,6 +14,8 @@ import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/onboarding_overrides.dart';
+
 /// 지도 화면을 띄운다.
 ///
 /// 네이티브 지도(PlatformView)는 테스트에서 그려지지 않는다. 지도 위에 얹은
@@ -22,6 +24,7 @@ Future<ProviderContainer> _pumpMap(WidgetTester tester) async {
   final backend = MockBackend.seeded();
   final container = ProviderContainer.test(
     overrides: [
+      ...startAfterOnboarding(),
       missingRepositoryProvider.overrideWithValue(
         MockMissingRepository(backend, latency: Duration.zero),
       ),

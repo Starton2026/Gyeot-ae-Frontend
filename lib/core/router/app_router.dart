@@ -6,6 +6,8 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/map/presentation/map_screen.dart';
 import '../../features/missing/presentation/missing_detail_screen.dart';
 import '../../features/missing/presentation/missing_list_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/report/data/report.dart';
 import '../../features/report/presentation/report_done_screen.dart';
 import '../../features/report/presentation/report_screen.dart';
@@ -13,6 +15,12 @@ import '../../features/report/presentation/report_screen.dart';
 /// 경로 문자열은 여기서만 정의하고 화면에서는 상수로 참조한다.
 class AppRoute {
   const AppRoute._();
+
+  /// 스플래시(S0). 앱이 처음 서는 자리.
+  static const String splash = '/splash';
+
+  /// 온보딩(S0). 첫 실행에 한 번만 본다.
+  static const String onboarding = '/onboarding';
 
   static const String home = '/';
   static const String missingList = '/missing';
@@ -49,8 +57,18 @@ class AppRoute {
 /// `redirect`를 걸어서 그 화면에서만 로그인을 요구하도록 한다.
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
-    initialLocation: AppRoute.home,
+    // 첫 실행인지 아닌지는 스플래시가 판단한다. 여기서 리다이렉트로 가르면
+    // 저장소를 읽는 동안 홈이 한 번 깜빡였다가 온보딩으로 넘어간다.
+    initialLocation: AppRoute.splash,
     routes: [
+      GoRoute(
+        path: AppRoute.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: AppRoute.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
       GoRoute(
         path: AppRoute.home,
         builder: (context, state) => const HomeScreen(),

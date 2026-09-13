@@ -11,6 +11,19 @@ class AppTextStyles {
 
   static const String fontFamily = 'Pretendard';
 
+  /// 한자 전용 글꼴. `愛` 한 글자만 들어 있다.
+  static const String hanjaFontFamily = 'Hanja';
+
+  /// 워드마크의 `愛` 한 글자.
+  ///
+  /// Pretendard에는 이 글자가 없어서, 그대로 두면 기기 글꼴로 떨어지거나
+  /// 네모로 뜬다. 옆의 한글과 같은 굵기(Bold 700)여야 `곁愛`가 한 단어로
+  /// 읽힌다. 크기와 색은 감싸는 스타일에서 물려받는다.
+  static const TextStyle hanja = TextStyle(
+    fontFamily: hanjaFontFamily,
+    fontWeight: FontWeight.w700,
+  );
+
   // ── 디자인 전달분 ───────────────────────────────────────────
   // Figma 스타일 이름과 1:1로 맞춘다. 이름을 코드에서 바꾸지 않는다.
 
@@ -131,6 +144,29 @@ class AppTextStyles {
     fontWeight: FontWeight.w600,
     fontSize: 11,
     letterSpacing: 0,
+  );
+
+  /// Bold 60. 스플래시의 워드마크 (S0).
+  ///
+  /// 상단바 워드마크([headline0])와 같은 글자지만, 상단바도 네비바도 없는
+  /// 화면이라 브랜드가 화면 전체를 쓴다. 앱을 처음 켰을 때 이름 하나는
+  /// 남아야 한다.
+  static const TextStyle wordmark = TextStyle(
+    fontFamily: fontFamily,
+    fontWeight: FontWeight.w700,
+    fontSize: 60,
+    letterSpacing: -1.5,
+  );
+
+  /// Bold 22. 스플래시의 슬로건 첫 줄 (S0).
+  ///
+  /// 한 줄로 떨어져야 한다. 줄이 바뀌면 "사라진 오늘을"과 "다시 함께"가
+  /// 따로 읽힌다.
+  static const TextStyle tagline = TextStyle(
+    fontFamily: fontFamily,
+    fontWeight: FontWeight.w700,
+    fontSize: 22,
+    letterSpacing: -0.6,
   );
 
   /// Bold 40. 유사도 반원 게이지의 큰 숫자 (S4-1).

@@ -10,14 +10,20 @@ typedef LocationFix = ({double lat, double lng});
 /// 테스트에서 네이티브 위치 서비스를 열 수 없고, 위치를 쓰는 화면이 여럿이다.
 abstract interface class LocationSource {
   /// 마지막으로 알려진 좌표. 기기에 남아 있으면 바로 돌아온다.
+  ///
+  /// **권한을 묻지 않는다.** 이미 허용돼 있을 때만 값이 온다.
   Future<LocationFix?> lastKnown();
 
   /// 지금 좌표. 위성을 잡는 데 몇 초 걸릴 수 있다.
   ///
+  /// [requestPermission]이 false면 **시스템 권한 팝업을 띄우지 않는다.** 아직
+  /// 안 물어본 사람에게는 그냥 못 받은 것으로 둔다. 팝업은 사용자가 그러겠다고
+  /// 누른 자리에서만 떠야 한다(온보딩 3장 · 제보창의 "다시 시도").
+  ///
   /// **권한 거부는 정상 경로다**(CLAUDE.md 규칙). 예외를 던지지 않고 null을
   /// 돌려준다. 위치 서비스가 꺼져 있거나 시간이 초과돼도 마찬가지다. 부르는
   /// 쪽은 "못 받았다" 하나만 다루면 된다.
-  Future<LocationFix?> current();
+  Future<LocationFix?> current({bool requestPermission = false});
 }
 
 /// `geolocator`를 쓰는 실제 구현.
@@ -42,9 +48,9 @@ class GeolocatorLocationSource implements LocationSource {
   }
 
   @override
-  Future<LocationFix?> current() async {
+  Future<LocationFix?> current({bool requestPermission = false}) async {
     try {
-      if (!await _ensurePermission()) return null;
+      if (!await _ensurePermission(request: requestPermission)) return null;
 
       final position = await Geolocator.getCurrentPosition(
         // 최고 정확도는 실외에서도 오래 걸린다. 제보 위치는 몇십 미터
@@ -62,12 +68,15 @@ class GeolocatorLocationSource implements LocationSource {
     }
   }
 
-  /// 물어볼 수 있으면 한 번 물어본다. 이미 거부했으면 다시 묻지 않는다.
-  Future<bool> _ensurePermission() async {
+  /// 허용돼 있는지 본다. [request]일 때만 시스템 팝업을 띄운다.
+  ///
+  /// 한 번 거부하면 되돌리기 어려워서, 앱을 켜자마자 아무 설명 없이 묻는 것이
+  /// 가장 나쁘다. 이유를 먼저 말한 자리에서만 묻는다.
+  Future<bool> _ensurePermission({bool request = false}) async {
     if (!await Geolocator.isLocationServiceEnabled()) return false;
 
     var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
+    if (request && permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
     }
 

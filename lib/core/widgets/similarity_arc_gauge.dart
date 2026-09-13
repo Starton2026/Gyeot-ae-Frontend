@@ -2,11 +2,14 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
-import '../../data/report.dart';
+import '../../features/report/data/report.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
 
 /// 유사도 반원 게이지 + 등급 라벨(F-4.1.1·F-4.1.2).
+///
+/// S4-1 분석 결과 시트와 S0 온보딩이 같은 그림을 쓴다. 온보딩에서 본 것을
+/// 제보할 때 그대로 만나야 "아까 그거"로 읽힌다.
 ///
 /// 이 화면에서 가장 먼저 눈에 들어와야 하는 것이 숫자다. 목격자가 알고 싶은
 /// 것은 "내가 본 사람이 맞나"이고, 그 답이 몇 퍼센트인지 한 번에 읽혀야 한다.
