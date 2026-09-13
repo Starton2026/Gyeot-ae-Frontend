@@ -6,6 +6,7 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/map/presentation/map_screen.dart';
 import '../../features/missing/presentation/missing_detail_screen.dart';
 import '../../features/missing/presentation/missing_list_screen.dart';
+import '../../features/my/presentation/my_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/report/data/report.dart';
@@ -46,6 +47,9 @@ class AppRoute {
       '/missing/$caseId/report/done';
 
   static const String map = '/map';
+
+  /// MY(S8). 로그인 여부로 내용이 갈린다.
+  static const String my = '/my';
 
   /// 지도를 열면서 사건 하나를 바로 편다(S3 미니 지도 → S5 사건 선택 모드).
   static String mapForCase(String caseId) => '/map?case=$caseId';
@@ -147,6 +151,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: AppRoute.map,
                 builder: (context, state) =>
                     MapScreen(initialCaseId: state.uri.queryParameters['case']),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoute.my,
+                builder: (context, state) => const MyScreen(),
               ),
             ],
           ),

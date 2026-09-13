@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
-import '../../../../core/widgets/app_icon.dart';
+import '../../../../core/widgets/kakao_login_button.dart';
 import '../../../../core/widgets/mascot.dart';
 import '../../../../core/widgets/sheet_handle.dart';
 import '../../data/auth_session.dart';
@@ -115,7 +115,11 @@ class _LoginSheetState extends ConsumerState<LoginSheet> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 22),
-              _KakaoButton(busy: _busy, onPressed: _signIn),
+              KakaoLoginButton(
+                key: LoginSheet.kakaoButtonKey,
+                busy: _busy,
+                onPressed: _signIn,
+              ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
                 Text(
@@ -194,45 +198,6 @@ class _WhyCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// 카카오가 정한 모양 그대로. 색과 비율을 바꾸지 않는다.
-class _KakaoButton extends StatelessWidget {
-  const _KakaoButton({required this.busy, required this.onPressed});
-
-  final bool busy;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return FilledButton(
-      key: LoginSheet.kakaoButtonKey,
-      onPressed: busy ? null : onPressed,
-      style: FilledButton.styleFrom(
-        backgroundColor: AppColors.kakaoYellow,
-        foregroundColor: AppColors.kakaoLabel,
-        disabledBackgroundColor: AppColors.kakaoYellow,
-        disabledForegroundColor: AppColors.kakaoLabel,
-      ),
-      child: busy
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.4,
-                color: AppColors.kakaoLabel,
-              ),
-            )
-          : const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AppIcon(AppIcons.kakao, size: 19),
-                SizedBox(width: 8),
-                Text('카카오로 시작하기'),
-              ],
-            ),
     );
   }
 }

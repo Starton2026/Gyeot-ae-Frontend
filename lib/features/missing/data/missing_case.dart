@@ -107,6 +107,9 @@ enum CaseStatusFilter {
 
 /// 목록 한 페이지. API 명세서 6) 실종자 목록.
 class MissingCaseList {
+  /// 아직 아무것도 없을 때. 부르지 않고 건너뛰는 자리에 쓴다.
+  const MissingCaseList.empty() : count = 0, items = const [], nextCursor = null;
+
   const MissingCaseList({
     required this.count,
     required this.items,
@@ -152,6 +155,7 @@ class MissingCaseSummary {
     required this.urgencyLevel,
     this.thumbnail,
     this.lastAddress,
+    this.resolvedAt,
     this.distanceKm,
     this.urgencyScore,
   });
@@ -178,6 +182,10 @@ class MissingCaseSummary {
   final int elapsedMinutes;
 
   final CaseStatus status;
+
+  /// 발견된 시각. 진행 중이면 null이다.
+  final DateTime? resolvedAt;
+
   final int reportCount;
 
   /// 내 위치를 보냈을 때만 채워진다.
@@ -208,6 +216,7 @@ class MissingCaseSummary {
       missingAt: jsonDate(json['missing_at']),
       elapsedMinutes: jsonInt(json['elapsed_minutes']),
       status: CaseStatus.fromJson(json['status']),
+      resolvedAt: jsonDateOrNull(json['resolved_at']),
       reportCount: jsonInt(json['report_count']),
       distanceKm: jsonDoubleOrNull(json['distance_km']),
       urgencyScore: jsonDoubleOrNull(json['urgency_score']),

@@ -102,10 +102,13 @@ void main() {
         },
       );
 
-      final user = await HttpAuthRepository(env.dio).me();
+      final profile = await HttpAuthRepository(env.dio).me();
 
       expect(env.adapter.lastRequest!.path, '/auth/me');
-      expect(user?.name, '김보호');
+      expect(profile?.user.name, '김보호');
+      // MY 화면의 프로필 줄이 이 두 숫자를 쓴다(S8).
+      expect(profile?.caseCount, 1);
+      expect(profile?.reportCount, 3);
     });
 
     test('토큰이 죽었으면 오류가 아니라 null이다', () async {
