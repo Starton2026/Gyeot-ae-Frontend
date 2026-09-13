@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gyeotae/core/location/location_source.dart';
 import 'package:gyeotae/core/media/photo_picker.dart';
 import 'package:gyeotae/core/mock/mock_backend.dart';
 import 'package:gyeotae/features/report/data/mock_report_repository.dart';
@@ -7,17 +8,26 @@ import 'package:gyeotae/features/report/data/report.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:gyeotae/features/report/presentation/report_draft_providers.dart';
 
+import '../../../support/fake_location_source.dart';
 import '../../../support/fake_photo_picker.dart';
 
 const _caseId = MockBackend.demoCaseId;
 
 ({ProviderContainer container, MockBackend backend, FakePhotoPicker picker})
-_setUp({String? photoPath = '/tmp/shot.jpg'}) {
+_setUp({
+  String? photoPath = '/tmp/shot.jpg',
+  DateTime? photoTakenAt,
+  LocationFix? photoFix,
+  LocationFix? deviceFix = (lat: 37.47, lng: 126.75),
+}) {
   final backend = MockBackend.seeded();
-  final picker = FakePhotoPicker(photoPath);
+  final picker = FakePhotoPicker(photoPath, photoTakenAt, photoFix);
   final container = ProviderContainer.test(
     overrides: [
       photoPickerProvider.overrideWithValue(picker),
+      locationSourceProvider.overrideWithValue(
+        FakeLocationSource(known: deviceFix, now: deviceFix),
+      ),
       reportRepositoryProvider.overrideWithValue(
         MockReportRepository(backend, latency: Duration.zero),
       ),
@@ -25,6 +35,11 @@ _setUp({String? photoPath = '/tmp/shot.jpg'}) {
   );
 
   return (container: container, backend: backend, picker: picker);
+}
+
+/// 기기 위치가 도착하는 것을 기다린다. 화면을 연 뒤에 오는 값이다.
+Future<void> _settleLocation(ProviderContainer container) {
+  return container.read(reportDraftProvider(_caseId).notifier).retryLocation();
 }
 
 void main() {
@@ -184,15 +199,135 @@ void main() {
       );
 
       expect(
-        env.container.read(reportDraftProvider(_caseId)).observedAtEdited,
-        isFalse,
+        env.container.read(reportDraftProvider(_caseId)).timeSource,
+        ReportTimeSource.now,
       );
 
       notifier.setObservedAt(DateTime(2026, 9, 12, 17, 12));
 
       final draft = env.container.read(reportDraftProvider(_caseId));
       expect(draft.observedAt, DateTime(2026, 9, 12, 17, 12));
-      expect(draft.observedAtEdited, isTrue);
+      expect(draft.timeSource, ReportTimeSource.manual);
+    });
+
+    test('기기 위치가 늦게 와도 담긴다', () async {
+      final env = _setUp();
+
+      await _settleLocation(env.container);
+
+      final draft = env.container.read(reportDraftProvider(_caseId));
+      expect(draft.fixSource, ReportLocationSource.device);
+      expect(draft.fix?.lat, 37.47);
+    });
+
+    test('사진에 찍힌 위치와 시각을 기기 위치보다 먼저 쓴다', () async {
+      final taken = DateTime(2026, 9, 12, 17, 12);
+      final env = _setUp(
+        photoTakenAt: taken,
+        photoFix: (lat: 37.55, lng: 126.99),
+      );
+
+      await env.container
+          .read(reportDraftProvider(_caseId).notifier)
+          .pickPhoto(PhotoSource.gallery);
+
+      final draft = env.container.read(reportDraftProvider(_caseId));
+      expect(draft.fixSource, ReportLocationSource.photo);
+      expect(draft.fix?.lat, 37.55);
+      expect(draft.observedAt, taken);
+      expect(draft.timeSource, ReportTimeSource.photo);
+      expect(
+        draft.needsLocationCheck,
+        isFalse,
+        reason: '사진이 제 위치를 들고 왔으면 물어볼 것이 없다',
+      );
+    });
+
+    test('나중에 도착한 기기 위치가 사진 위치를 덮지 않는다', () async {
+      final env = _setUp(photoFix: (lat: 37.55, lng: 126.99));
+
+      await env.container
+          .read(reportDraftProvider(_caseId).notifier)
+          .pickPhoto(PhotoSource.gallery);
+      await _settleLocation(env.container);
+
+      final draft = env.container.read(reportDraftProvider(_caseId));
+      expect(draft.fix?.lat, 37.55);
+      expect(draft.fixSource, ReportLocationSource.photo);
+    });
+
+    test('앨범 사진에 위치가 없으면 확인을 받아야 한다', () async {
+      final env = _setUp();
+
+      await _settleLocation(env.container);
+      await env.container
+          .read(reportDraftProvider(_caseId).notifier)
+          .pickPhoto(PhotoSource.gallery);
+
+      final draft = env.container.read(reportDraftProvider(_caseId));
+      expect(draft.fixSource, ReportLocationSource.device);
+      expect(
+        draft.needsLocationCheck,
+        isTrue,
+        reason: '어제 다른 동네에서 찍은 사진일 수 있다',
+      );
+    });
+
+    test('카메라로 방금 찍었으면 물어보지 않는다', () async {
+      final env = _setUp();
+
+      await _settleLocation(env.container);
+      await env.container
+          .read(reportDraftProvider(_caseId).notifier)
+          .pickPhoto(PhotoSource.camera);
+
+      expect(
+        env.container.read(reportDraftProvider(_caseId)).needsLocationCheck,
+        isFalse,
+      );
+    });
+  });
+
+  group('위치를 못 받았을 때', () {
+    test('좌표 없이 제보한다', () async {
+      final env = _setUp(deviceFix: null);
+      final notifier = env.container.read(
+        reportDraftProvider(_caseId).notifier,
+      );
+
+      await notifier.pickPhoto(PhotoSource.camera);
+      await notifier.analyze();
+
+      expect(
+        env.container.read(reportDraftProvider(_caseId)).fixSource,
+        ReportLocationSource.none,
+      );
+
+      final report = await notifier.submit();
+
+      expect(report, isNotNull);
+      expect(report!.lat, isNull, reason: '지어낸 좌표보다 빈 좌표가 낫다');
+      expect(report.lng, isNull);
+    });
+
+    test('좌표 없는 제보는 경로에 들어가지 않는다', () async {
+      final env = _setUp(deviceFix: null);
+      final notifier = env.container.read(
+        reportDraftProvider(_caseId).notifier,
+      );
+
+      await notifier.pickPhoto(PhotoSource.camera);
+      await notifier.analyze();
+      final report = await notifier.submit();
+
+      expect(report!.routeIndex, isNull, reason: '찍을 자리가 없으면 선에 못 낀다');
+      expect(report.isOnPath, isFalse);
+
+      // 저장은 된다(설계 결정 3번).
+      final stored = await env.container
+          .read(reportRepositoryProvider)
+          .fetchReports(_caseId);
+      expect(stored.reports.map((r) => r.id), contains(report.id));
     });
   });
 }

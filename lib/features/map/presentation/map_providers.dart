@@ -153,8 +153,15 @@ class MapCaseView {
     required this.hiddenCount,
   });
 
-  /// 핀으로 찍을 제보. 최신순이다.
+  /// 걸러지고 남은 제보. 최신순이다.
   final List<Report> reports;
+
+  /// 그중 지도에 찍을 수 있는 것. 좌표 없이 올라온 제보는 빠진다.
+  ///
+  /// 위치 권한 없이 보낸 제보다. 사진과 시간은 남아 있어서 타임라인에는
+  /// 보이지만, 찍을 자리가 없어 지도에는 못 올린다.
+  List<Report> get locatedReports =>
+      reports.where((report) => report.hasLocation).toList(growable: false);
 
   /// 폴리라인으로 이을 제보. 시간순이다. 실종 지점은 화면이 맨 앞에 붙인다.
   final List<Report> pathReports;

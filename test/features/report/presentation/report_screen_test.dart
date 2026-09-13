@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gyeotae/app.dart';
+import 'package:gyeotae/core/location/location_source.dart';
 import 'package:gyeotae/core/media/photo_picker.dart';
 import 'package:gyeotae/core/mock/mock_backend.dart';
 import 'package:gyeotae/core/router/app_router.dart';
@@ -12,6 +13,7 @@ import 'package:gyeotae/features/missing/presentation/missing_detail_screen.dart
 import 'package:gyeotae/features/missing/presentation/widgets/detail_report_cta.dart';
 import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
+import 'package:gyeotae/features/report/presentation/report_done_screen.dart';
 import 'package:gyeotae/features/report/presentation/report_screen.dart';
 import 'package:gyeotae/features/report/presentation/widgets/report_analysis_sheet.dart';
 import 'package:gyeotae/features/report/presentation/widgets/report_analysis_slot.dart';
@@ -20,11 +22,15 @@ import 'package:gyeotae/features/report/presentation/widgets/report_photo_field.
 import 'package:gyeotae/features/report/presentation/widgets/report_submit_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/fake_location_source.dart';
 import '../../../support/fake_photo_picker.dart';
 
 /// 상세(S3)를 거쳐 제보창을 연다. 실제 사용자가 들어오는 길과 같게 두면
 /// 닫았을 때 돌아갈 곳이 있는지도 함께 확인된다.
-Future<FakePhotoPicker> _pumpReport(WidgetTester tester) async {
+Future<FakePhotoPicker> _pumpReport(
+  WidgetTester tester, {
+  LocationFix? deviceFix = (lat: 37.47, lng: 126.75),
+}) async {
   // 깜빡이는 '찾는 중' 점이 멈춰야 pumpAndSettle이 끝난다.
   tester.platformDispatcher.accessibilityFeaturesTestValue =
       const FakeAccessibilityFeatures(disableAnimations: true);
@@ -41,6 +47,9 @@ Future<FakePhotoPicker> _pumpReport(WidgetTester tester) async {
   final container = ProviderContainer.test(
     overrides: [
       photoPickerProvider.overrideWithValue(picker),
+      locationSourceProvider.overrideWithValue(
+        FakeLocationSource(known: deviceFix, now: deviceFix),
+      ),
       missingRepositoryProvider.overrideWithValue(
         MockMissingRepository(backend, latency: Duration.zero),
       ),
@@ -103,7 +112,16 @@ void main() {
     expect(find.text('목격한 사진 *'), findsOneWidget);
     // 위치와 시간은 묻지 않고 담아둔다(F-4.3·F-4.4).
     expect(find.text('자동으로 담긴 정보'), findsOneWidget);
-    expect(find.text('인천 남동구'), findsOneWidget);
+    expect(find.text('현재 위치'), findsOneWidget);
+  });
+
+  testWidgets('위치를 못 받으면 지어내지 않고 비워둔다', (tester) async {
+    await _pumpReport(tester, deviceFix: null);
+
+    // 시연용 좌표를 붙여 보내면 아무도 보지 않은 자리에 점이 찍힌다.
+    expect(find.text('위치를 못 받았어요'), findsOneWidget);
+    expect(find.text('위치 없이도 제보할 수 있어요'), findsOneWidget);
+    expect(find.text('다시 시도'), findsOneWidget);
   });
 
   testWidgets('분석 전에는 제보 버튼이 회색으로 남는다', (tester) async {
@@ -133,7 +151,7 @@ void main() {
     expect(find.textContaining('로그인 없이 제보'), findsOneWidget);
   });
 
-  testWidgets('제보하면 상세로 돌아가고 타임라인에 바로 뜬다', (tester) async {
+  testWidgets('제보하면 완료 화면으로 넘어간다', (tester) async {
     await _pumpReport(tester);
 
     await _attachPhoto(tester);
@@ -141,8 +159,9 @@ void main() {
     await tester.tap(find.byKey(ReportSubmitBar.submitButtonKey));
     await tester.pumpAndSettle();
 
-    expect(find.byType(MissingDetailScreen), findsOneWidget);
-    expect(find.text('제보가 전달되었습니다'), findsOneWidget);
+    // 완료 화면 안쪽은 S4-2 테스트가 본다.
+    expect(find.byType(ReportDoneScreen), findsOneWidget);
+    expect(find.byType(ReportScreen), findsNothing);
   });
 
   group('이탈 방지(F-4.7)', () {

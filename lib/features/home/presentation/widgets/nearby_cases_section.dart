@@ -12,7 +12,7 @@ import '../../../missing/data/missing_case.dart';
 class NearbyCasesSection extends StatelessWidget {
   const NearbyCasesSection({
     required this.cases,
-    required this.locationLabel,
+    required this.areaName,
     required this.totalCount,
     this.onTapCase,
     this.onTapMore,
@@ -21,8 +21,11 @@ class NearbyCasesSection extends StatelessWidget {
 
   final List<MissingCaseSummary> cases;
 
-  /// "인천 남동구 기준 · 긴급도순"의 앞부분.
-  final String locationLabel;
+  /// "인천 남동구 기준 · 긴급도순"의 앞부분. **지명을 모르면 null이다.**
+  ///
+  /// 왼쪽에 이미 "내 주변"이 있어서, 지명을 모를 때 "현재 위치 기준"을 덧붙이면
+  /// 같은 말을 두 번 하는 셈이 된다.
+  final String? areaName;
 
   /// 진행 중인 사건 전체 수. 전체 보기 버튼 문구에 쓴다.
   final int totalCount;
@@ -43,7 +46,7 @@ class NearbyCasesSection extends StatelessWidget {
             const Text('내 주변', style: AppTextStyles.title0),
             const Spacer(),
             Text(
-              '$locationLabel 기준 · 긴급도순',
+              areaName == null ? '긴급도순' : '$areaName 기준 · 긴급도순',
               style: AppTextStyles.body0.copyWith(
                 color: AppColors.textSecondary,
               ),

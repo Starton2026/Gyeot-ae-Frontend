@@ -95,10 +95,18 @@ class Report {
   final String id;
 
   /// 경로 위의 순번. 지도 핀 번호와 같다. 40% 미만이면 null.
+  ///
+  /// 좌표가 없는 제보도 번호를 못 받는다. 찍을 자리가 없으면 선에 못 낀다.
   final int? routeIndex;
 
-  final double lat;
-  final double lng;
+  /// 목격 좌표. **없을 수 있다.**
+  ///
+  /// 위치 권한을 거부했거나 GPS를 못 잡은 채로 보낸 제보다. 추측해서 채우면
+  /// 아무도 보지 않은 자리에 점이 찍힌다. 비워두고 사진과 시간만 남긴다
+  /// (CLAUDE.md — 위치 권한 거부는 정상 경로).
+  final double? lat;
+  final double? lng;
+
   final String? placeName;
 
   /// **목격 시각.** 경로 정렬 기준이다. 전송 시각이 아니다(설계 결정 5번).
@@ -124,15 +132,18 @@ class Report {
 
   final double? distanceFromPrevKm;
 
+  /// 지도에 찍을 자리가 있다.
+  bool get hasLocation => lat != null && lng != null;
+
   /// 경로 선에 포함된다.
-  bool get isOnPath => routeIndex != null;
+  bool get isOnPath => routeIndex != null && hasLocation;
 
   factory Report.fromJson(Map<String, dynamic> json) {
     return Report(
       id: jsonString(json['id']),
       routeIndex: jsonIntOrNull(json['route_index']),
-      lat: jsonDouble(json['lat']),
-      lng: jsonDouble(json['lng']),
+      lat: jsonDoubleOrNull(json['lat']),
+      lng: jsonDoubleOrNull(json['lng']),
       placeName: jsonStringOrNull(json['place_name']),
       observedAt: jsonDate(json['observed_at']),
       similarity: jsonDoubleOrNull(json['similarity']),

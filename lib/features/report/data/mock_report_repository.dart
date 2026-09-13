@@ -36,9 +36,9 @@ class MockReportRepository implements ReportRepository {
   @override
   Future<Report> submit({
     required String analysisId,
-    required double lat,
-    required double lng,
     required DateTime observedAt,
+    double? lat,
+    double? lng,
     String? placeName,
   }) async {
     await _delay(latency);
@@ -169,13 +169,15 @@ class MockReportRepository implements ReportRepository {
 
     return byTime.map((report) {
       final grade = SimilarityGrade.fromJson(report['grade']);
-      if (!grade.countsTowardPath) {
+      final lat = report['lat'] as double?;
+      final lng = report['lng'] as double?;
+
+      // 좌표가 없으면 선에 낄 자리가 없다. 저장은 그대로 된다(설계 결정 3번).
+      if (!grade.countsTowardPath || lat == null || lng == null) {
         return {...report, 'route_index': null};
       }
 
       routeIndex += 1;
-      final lat = report['lat'] as double;
-      final lng = report['lng'] as double;
       final observedAt = DateTime.parse(report['observed_at'] as String);
       final distance = MockBackend.haversineKm(
         previousLat,

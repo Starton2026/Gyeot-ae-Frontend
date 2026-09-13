@@ -137,9 +137,9 @@ class ReportScreen extends ConsumerWidget {
     ref.invalidate(caseReportsProvider(caseId));
     ref.invalidate(missingDetailProvider(caseId));
 
-    // TODO(S4-2): 제보 완료 화면으로 보낸다.
-    _leave(context);
-    messenger.showSnackBar(const SnackBar(content: Text('제보가 전달되었습니다')));
+    // 완료 화면으로 갈아탄다. 뒤로 눌러 쓰다 만 제보창으로 돌아가면
+    // 이미 보낸 것을 또 보내게 된다.
+    context.pushReplacement(AppRoute.reportDone(caseId), extra: report);
   }
 
   @override
@@ -173,11 +173,14 @@ class ReportScreen extends ConsumerWidget {
           data: (detail) => _ReportForm(
             detail: detail,
             draft: draft,
-            address: ref.watch(currentLocationProvider).label,
+            deviceLabel: ref.watch(currentLocationProvider).label,
             onPickPhoto: ref
                 .read(reportDraftProvider(caseId).notifier)
                 .pickPhoto,
             onEditPlace: () => _editPlace(context, ref),
+            onRetryLocation: ref
+                .read(reportDraftProvider(caseId).notifier)
+                .retryLocation,
             onEditTime: () => _editTime(context, ref),
             onAnalyze: () => _analyze(context, ref),
           ),
@@ -203,18 +206,23 @@ class _ReportForm extends StatelessWidget {
   const _ReportForm({
     required this.detail,
     required this.draft,
-    required this.address,
+    required this.deviceLabel,
     required this.onPickPhoto,
     required this.onEditPlace,
+    required this.onRetryLocation,
     required this.onEditTime,
     required this.onAnalyze,
   });
 
   final MissingCaseDetail detail;
   final ReportDraft draft;
-  final String address;
+
+  /// 기기 위치에 붙일 이름. "현재 위치".
+  final String deviceLabel;
+
   final void Function(PhotoSource source) onPickPhoto;
   final VoidCallback onEditPlace;
+  final VoidCallback onRetryLocation;
   final VoidCallback onEditTime;
   final VoidCallback onAnalyze;
 
@@ -233,11 +241,10 @@ class _ReportForm extends StatelessWidget {
         ReportPhotoField(photoPath: draft.photoPath, onPick: onPickPhoto),
         const SizedBox(height: 13),
         ReportAutoFacts(
-          address: address,
-          placeName: draft.placeName,
-          observedAt: draft.observedAt,
-          observedAtEdited: draft.observedAtEdited,
+          draft: draft,
+          deviceLabel: deviceLabel,
           onEditPlace: onEditPlace,
+          onRetryLocation: onRetryLocation,
           onEditTime: onEditTime,
         ),
         const SizedBox(height: 13),
