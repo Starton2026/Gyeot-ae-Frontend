@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kakao_map_sdk/kakao_map_sdk.dart' hide Route;
 import 'package:kakao_map_sdk/kakao_map_sdk.dart' as kakao show Route;
 
 import '../../../core/location/current_location.dart';
 import '../../../core/map/kakao_map_init.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/app_bottom_nav.dart';
 import '../../missing/data/missing_case.dart';
 import '../../report/data/report.dart';
 import '../../report/data/report_repository.dart';
@@ -441,10 +439,6 @@ class _MapScreenState extends ConsumerState<MapScreen> {
       // 키보드가 올라올 때 화면을 줄이지 않는다. 줄이면 지도(플랫폼 뷰)가 다시
       // 레이아웃되면서 GL 표면이 검게 날아가고 프레임이 크게 밀린다.
       resizeToAvoidBottomInset: false,
-      bottomNavigationBar: AppBottomNav(
-        current: AppTab.map,
-        onSelect: (tab) => context.go(tab.path!),
-      ),
       body: Stack(
         children: [
           if (!ready)

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/location/current_location.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
-import '../../../core/widgets/app_bottom_nav.dart';
 import '../../../core/widgets/app_top_bar.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/guardian_shortcut_banner.dart';
@@ -30,10 +29,6 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: const AppTopBar.brand(),
-      bottomNavigationBar: AppBottomNav(
-        current: AppTab.home,
-        onSelect: (tab) => context.go(tab.path!),
-      ),
       body: Column(
         children: [
           GuardianShortcutBanner(onTap: () => _goRegister(context)),
