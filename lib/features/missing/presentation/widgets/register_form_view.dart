@@ -179,7 +179,7 @@ class RegisterFormView extends StatelessWidget {
               onPickTime: onPickTime,
             ),
           ),
-          const SizedBox(height: 14),
+          gap,
           RegisterBodyFields(
             height: form.height,
             weight: form.weight,

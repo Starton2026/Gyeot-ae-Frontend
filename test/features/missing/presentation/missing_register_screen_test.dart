@@ -454,6 +454,16 @@ void main() {
     });
   });
 
+  testWidgets('키·몸무게는 누르지 않아도 처음부터 보인다', (tester) async {
+    await _launch(tester);
+    await _openFromHomeBanner(tester);
+
+    // 옆에 "선택"이 적혀 있어 접어 둘 이유가 없다. 접으면 있는 줄도 모른다.
+    await _scrollTo(tester, find.byKey(RegisterFormView.heightFieldKey));
+    expect(find.byKey(RegisterFormView.heightFieldKey), findsOneWidget);
+    expect(find.byKey(RegisterFormView.weightFieldKey), findsOneWidget);
+  });
+
   testWidgets('보호자 연락처는 묻지 않는다', (tester) async {
     await _launch(tester);
     await _openFromHomeBanner(tester);
