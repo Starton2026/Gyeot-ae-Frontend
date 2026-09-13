@@ -42,6 +42,14 @@ class Env {
   /// 값을 읽어 간다(android/app/build.gradle.kts).
   static const String kakaoNativeAppKey = kakaoMapKey;
 
+  /// 카카오 **REST API 키**. 좌표를 주소로 바꾸는 로컬 API가 쓴다.
+  ///
+  /// 네이티브 앱 키와 다른 값이다. 콘솔의 같은 앱 → 앱 키에서 복사한다.
+  /// 비어 있으면 주소를 조회하지 않고, 등록 폼이 주소를 직접 적게 한다.
+  static const String kakaoRestApiKey = String.fromEnvironment(
+    'KAKAO_REST_API_KEY',
+  );
+
   /// true면 dio 요청/응답 로그를 콘솔에 찍는다.
   static const bool enableApiLog = bool.fromEnvironment(
     'ENABLE_API_LOG',
