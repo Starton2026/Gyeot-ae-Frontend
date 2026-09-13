@@ -282,3 +282,27 @@ class ReportBundle {
     );
   }
 }
+
+/// 분석 결과에 적는 등급 한 줄(F-4.1.2).
+///
+/// 이름만 적으면 "낮음"이 제보를 멈추게 한다. 이 화면의 목적은 거르기가 아니라
+/// **확신 없는 목격자에게 면죄부를 주는 것**이라, 등급마다 다음 행동을 붙여
+/// 적는다. "보통 · 확인해볼 만합니다"만 명세에 있고 나머지 셋은 같은 규칙으로
+/// 맞춘 문구다.
+extension SimilarityGradeLabel on SimilarityGrade {
+  /// `높음` · `보통` · `낮음` · `얼굴 미검출`.
+  String get displayLabel => switch (this) {
+    SimilarityGrade.high => '높음',
+    SimilarityGrade.medium => '보통',
+    SimilarityGrade.low => '낮음',
+    SimilarityGrade.noFace => '얼굴 미검출',
+  };
+
+  /// `보통 · 확인해볼 만합니다`.
+  String get analysisHeadline => switch (this) {
+    SimilarityGrade.high => '높음 · 같은 사람일 가능성이 큽니다',
+    SimilarityGrade.medium => '보통 · 확인해볼 만합니다',
+    SimilarityGrade.low => '낮음 · 그래도 제보해 주세요',
+    SimilarityGrade.noFace => '얼굴 미검출 · 위치와 시간만으로도 도움이 됩니다',
+  };
+}
