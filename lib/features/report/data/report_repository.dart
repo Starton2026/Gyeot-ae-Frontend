@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/mock/mock_backend.dart';
+import '../../../core/network/dio_provider.dart';
 import 'analysis.dart';
-import 'mock_report_repository.dart';
+import 'http_report_repository.dart';
 import 'report.dart';
 
 /// 제보 데이터 출처.
@@ -52,9 +52,9 @@ abstract interface class ReportRepository {
   });
 }
 
-/// 지금은 mock을 돌려준다. 백엔드가 붙으면 이 줄만 바꾼다.
+/// 백엔드를 부른다. 테스트는 `MockReportRepository`로 override한다.
 final reportRepositoryProvider = Provider<ReportRepository>((ref) {
-  return MockReportRepository(ref.watch(mockBackendProvider));
+  return HttpReportRepository(ref.watch(dioProvider));
 });
 
 /// 한 사건의 제보 묶음.
