@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/format/elapsed_time.dart';
+import '../../../core/map/kakao_map_init.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/widgets/map_preview_card.dart';
+import '../../../core/widgets/static_kakao_map.dart';
 import '../../report/data/report_repository.dart';
 import '../data/missing_case.dart';
 import '../data/missing_repository.dart';
@@ -255,14 +257,14 @@ class _ReportsSection extends ConsumerWidget {
       error: (error, stackTrace) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 24),
         child: ErrorView(
-          message: error is ApiException
-              ? error.message
-              : '제보를 불러오지 못했어요.',
+          message: error is ApiException ? error.message : '제보를 불러오지 못했어요.',
           onRetry: () => ref.invalidate(caseReportsProvider(caseId)),
         ),
       ),
       data: (bundle) {
         final view = TimelineView.of(bundle, highOnly: highOnly);
+        // 타임라인과 같은 view로 찍는다. 번호가 어긋나 보이면 안 된다.
+        final plan = caseMapPlan(bundle, view);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -273,6 +275,12 @@ class _ReportsSection extends ConsumerWidget {
                   ? '마지막 목격 위치'
                   : '제보 ${bundle.count}건으로 복원한 이동 경로',
               onTap: () => context.go(AppRoute.mapForCase(caseId)),
+              map: plan == null
+                  ? null
+                  : StaticKakaoMap(
+                      plan: plan,
+                      ready: ref.watch(kakaoMapReadyProvider),
+                    ),
             ),
             const SizedBox(height: 26),
             ReportTimeline(

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gyeotae/app.dart';
 import 'package:gyeotae/core/mock/mock_backend.dart';
+import 'package:gyeotae/core/map/map_plan.dart';
 import 'package:gyeotae/core/router/app_router.dart';
+import 'package:gyeotae/core/widgets/static_kakao_map.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
 import 'package:gyeotae/features/missing/presentation/missing_detail_screen.dart';
@@ -97,6 +99,33 @@ void main() {
     expect(find.text('얼굴 미검출'), findsOneWidget);
   });
 
+  testWidgets('이동 경로 미니 지도가 회색 판이 아니라 지도를 받는다', (tester) async {
+    await _pumpDetail(tester);
+
+    final map = tester.widget<StaticKakaoMap>(find.byType(StaticKakaoMap));
+
+    // 실종 지점 하나 + 타임라인과 같은 60% 이상 제보 3건.
+    expect(map.plan.marks.whereType<MissingMark>(), hasLength(1));
+    expect(map.plan.marks.whereType<ReportMark>(), hasLength(3));
+    expect(map.plan.fitMarks, isTrue);
+  });
+
+  testWidgets('타임라인 토글을 끄면 미니 지도에도 저신뢰 제보가 찍힌다', (tester) async {
+    await _pumpDetail(tester);
+
+    await tester.ensureVisible(find.byKey(ReportTimeline.filterSwitchKey));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, 150));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ReportTimeline.filterSwitchKey));
+    await tester.pumpAndSettle();
+
+    final map = tester.widget<StaticKakaoMap>(find.byType(StaticKakaoMap));
+
+    // 지도와 타임라인이 다른 제보를 보여주면 번호가 어긋나 보인다.
+    expect(map.plan.marks.whereType<ReportMark>(), hasLength(6));
+  });
+
   testWidgets('최초 실종이 타임라인 맨 아래에 남는다', (tester) async {
     await _pumpDetail(tester);
     await _scrollBy(tester, 1200);
@@ -113,9 +142,8 @@ void main() {
   testWidgets('스크롤하면 상단바가 이름을 이어받는다', (tester) async {
     await _pumpDetail(tester);
 
-    DetailTopBar bar() => tester.widget<DetailTopBar>(
-      find.byType(DetailTopBar),
-    );
+    DetailTopBar bar() =>
+        tester.widget<DetailTopBar>(find.byType(DetailTopBar));
 
     expect(bar().backgroundProgress, 0, reason: '사진 위에서는 투명하다');
     expect(bar().titleProgress, 0, reason: '본문에 이름이 보이는 동안은 제목이 없다');
