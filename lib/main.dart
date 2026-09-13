@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
@@ -5,6 +6,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'app.dart';
 import 'core/config/env.dart';
 import 'core/map/kakao_map_init.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,16 +30,19 @@ Future<void> main() async {
     await KakaoSdk.init(nativeAppKey: Env.kakaoNativeAppKey);
   }
 
-  // TODO(firebase): `dart pub global activate flutterfire_cli` 후
-  // `flutterfire configure`를 실행하면 lib/firebase_options.dart가 생성됩니다.
-  // 그다음 아래 import와 초기화 주석을 풀어주세요. (README의 Firebase 섹션 참고)
+  // Firebase — 푸시 알림(FCM)에 쓴다. 설정은 `flutterfire configure`가 만든
+  // lib/firebase_options.dart에 있고, 그 파일은 .gitignore에 걸려 있어서
+  // 새 PC에서는 한 번 다시 돌려야 한다(README의 Firebase 섹션).
   //
-  // import 'package:firebase_core/firebase_core.dart';
-  // import 'firebase_options.dart';
-  //
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
+  // **초기화에 실패해도 앱은 뜬다.** 알림을 못 받는 것과 앱이 안 켜지는 것은
+  // 무게가 다르다. 이때는 SilentPushMessaging이 대신 물린다.
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } on Object catch (error) {
+    debugPrint('Firebase 초기화 실패 — 푸시 알림 없이 계속합니다: $error');
+  }
 
   runApp(const ProviderScope(child: GyeotaeApp()));
 }

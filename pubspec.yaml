@@ -30,8 +30,11 @@ dependencies:
   # 날짜/숫자 포맷 (flutter_localizations가 0.20.2로 고정)
   intl: ^0.20.2
 
-  # Firebase — 초기화는 `flutterfire configure` 실행 후 활성화 (README 참고)
+  # Firebase — 설정은 `flutterfire configure`가 만든 lib/firebase_options.dart.
+  # 푸시 알림(FCM)에 쓴다. 로그인은 카카오, 사진은 자체 서버라 auth·storage·
+  # firestore는 앱에서 쓰는 데가 없다(백엔드만 Firestore로 관제 화면에 쏜다).
   firebase_core: ^4.14.0
+  firebase_messaging: ^16.6.0
   firebase_auth: ^6.6.1
   cloud_firestore: ^6.9.0
   firebase_storage: ^13.5.0
