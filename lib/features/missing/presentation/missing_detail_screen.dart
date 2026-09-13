@@ -169,8 +169,10 @@ class _MissingDetailScreenState extends ConsumerState<MissingDetailScreen> {
       ),
       bottomNavigationBar: data == null
           ? null
-          // TODO(S4): 제보창이 생기면 onTap을 연결한다.
-          : DetailReportCta(label: data.category.witnessCtaLabel),
+          : DetailReportCta(
+              label: data.category.witnessCtaLabel,
+              onTap: () => context.push(AppRoute.report(widget.caseId)),
+            ),
     );
   }
 }
