@@ -34,6 +34,14 @@ class Env {
   /// Kakao Developers에서 앱 등록 후 발급받아 env/dev.json에 넣는다.
   static const String kakaoMapKey = String.fromEnvironment('KAKAO_MAP_KEY');
 
+  /// 카카오 **네이티브 앱 키**. 지도와 로그인이 같은 값을 쓴다.
+  ///
+  /// 카카오 개발자 콘솔의 앱 하나에 지도와 로그인이 함께 붙어 있어서 키도
+  /// 하나다. 설정 이름이 `KAKAO_MAP_KEY`인 것은 지도를 먼저 붙였기 때문이고,
+  /// 값은 같다. 안드로이드 매니페스트의 로그인 리디렉트 스킴도 빌드할 때 이
+  /// 값을 읽어 간다(android/app/build.gradle.kts).
+  static const String kakaoNativeAppKey = kakaoMapKey;
+
   /// true면 dio 요청/응답 로그를 콘솔에 찍는다.
   static const bool enableApiLog = bool.fromEnvironment(
     'ENABLE_API_LOG',

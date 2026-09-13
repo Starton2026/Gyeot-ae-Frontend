@@ -8,6 +8,7 @@ import '../../../../core/location/current_location.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/sheet_handle.dart';
 import '../../../../core/widgets/similarity_arc_gauge.dart';
 import '../../../missing/data/missing_repository.dart';
 import '../../data/analysis.dart';
@@ -71,7 +72,7 @@ class _AnalysisSheet extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const _Handle(),
+              const SheetHandle(),
               // 분석이 도는 동안에는 제목을 빼둔다. 아직 결과가 아닌데
               // "분석 결과"라고 적혀 있으면 말이 어긋난다. 진행 화면이
               // 제 제목을 들고 있다.
@@ -112,25 +113,6 @@ class _AnalysisSheet extends ConsumerWidget {
               ],
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Handle extends StatelessWidget {
-  const _Handle();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 38,
-        height: 4,
-        margin: const EdgeInsets.only(bottom: 14),
-        decoration: BoxDecoration(
-          color: AppColors.border,
-          borderRadius: BorderRadius.circular(3),
         ),
       ),
     );

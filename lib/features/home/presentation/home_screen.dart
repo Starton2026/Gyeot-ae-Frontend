@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +12,7 @@ import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/guardian_shortcut_banner.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/widgets/map_preview_card.dart';
+import '../../auth/presentation/widgets/login_sheet.dart';
 import 'home_providers.dart';
 import 'widgets/guardian_register_block.dart';
 import 'widgets/nearby_cases_section.dart';
@@ -55,8 +58,10 @@ class HomeScreen extends ConsumerWidget {
 
 /// 실종자 등록(S7)은 로그인이 필요하다. 등록을 누른 사람에게만 로그인을 묻는다.
 ///
-/// TODO(S7): 등록 화면이 생기면 로그인 성공 후 등록으로 이어지게 한다.
-void _goRegister(BuildContext context) => context.push(AppRoute.login);
+/// TODO(S7): 등록 화면이 생기면 **그 화면을 먼저 열고 위에 시트를 덮는다.**
+/// 시안대로 폼이 뒤에 흐리게 보여야, 무엇을 요구하는지 본 상태에서 로그인한다.
+/// 성공하면 시트만 걷히고 폼이 그대로 이어진다(F-6.4).
+void _goRegister(BuildContext context) => unawaited(showLoginSheet(context));
 
 /// 사건을 다 불러온 뒤의 홈 본문.
 class _HomeFeedView extends StatelessWidget {
