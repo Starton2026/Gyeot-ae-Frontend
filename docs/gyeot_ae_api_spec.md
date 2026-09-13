@@ -137,10 +137,10 @@ Content-Type: multipart/form-data # 업로드 시
 항목에 넣지 않는다. 동의 화면이 길어질수록 로그인에서 이탈하고, 이 서비스는 그
 이탈을 감당할 수 없다.
 
-**보호자 연락처는 등록 폼에서 따로 받는다**(F-7.10). 계정 전화번호를 그대로 쓰지
-않는 이유는 두 가지다. 사건마다 연락 받을 번호가 다를 수 있고(본인 번호가 아니라
-집전화·다른 보호자), 계정 정보를 사건에 자동으로 붙이면 제보자에게 공개될 경로가
-생긴다.
+**보호자 연락처는 받지 않는다**(2026-09-14 삭제). 제보자에게 공개하지 않고
+운영팀이 사건마다 확인할 수도 없어, 쓰는 곳 없이 모으기만 하는 개인정보였다.
+보호자는 로그인한 계정으로 제보 소식을 받고, 제보자와 보호자는 연락처를 주고받지
+않는다(사칭·금전 요구 사기 방지). 제보자가 실종자와 함께 있다면 112에 신고한다.
 
 `claimed_reports`가 필요한 이유 — **S4-2에서 "로그인하고 알림 받기"를 눌렀을 때
 방금 한 제보가 이력에 남아야 한다.** 게스트 제보를 허용한 대가로 생기는 공백을
@@ -193,7 +193,6 @@ Content-Type: multipart/form-data # 업로드 시
 | `last_address` | string | X | 미전송 시 서버 역지오코딩 |
 | `missing_at` | datetime | O | 실종 일시 |
 | `height_cm` / `weight_kg` | int | X | |
-| `guardian_phone` | string | O | 제보자 비공개 |
 | `photos[]` | file[] | O | **다중**. 첫 장이 대표 |
 
 ```json
@@ -296,7 +295,7 @@ Content-Type: multipart/form-data # 업로드 시
 ### 8) 정보 수정
 
 `PATCH /missing/{id}` · **보호자만**
-수정 가능: `description`, `last_*`, `height_cm`, `weight_kg`, `guardian_phone`
+수정 가능: `description`, `last_*`, `height_cm`, `weight_kg`
 수정 불가: `missing_at`, `name`, `category` (경과 시간·긴급도 조작 방지)
 
 ### 9) 사진 추가
@@ -342,7 +341,7 @@ Content-Type: multipart/form-data # 업로드 시
 ```json
 { "prefill": { "name": "이순자", "age": 81, "gender": "female",
   "category": "elderly", "description": "...", "height_cm": 152,
-  "guardian_phone": "...", "photo_ids": ["p_1","p_2"] } }
+  "photo_ids": ["p_1","p_2"] } }
 ```
 
 사진 재업로드 없이 기존 사진을 재사용한다. 사용자는 **시간과 위치만 새로 입력**하면 된다.

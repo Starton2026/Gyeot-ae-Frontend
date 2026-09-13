@@ -172,7 +172,6 @@ void main() {
           description: '노란 후드티',
           lastLat: 37.47,
           lastLng: 126.75,
-          guardianPhone: '010-0000-0000',
           missingAt: DateTime.parse('2026-09-13T17:00:00+09:00'),
           photoPaths: [_photoFile('a.jpg').path, _photoFile('b.jpg').path],
         ),
@@ -190,6 +189,8 @@ void main() {
       expect(fields['last_lat'], '37.47');
       // 오프셋이 붙어야 서버가 시각을 넘겨짚지 않는다.
       expect(fields['missing_at'], matches(r'[+-]\d{2}:\d{2}$'));
+      // 보호자 연락처는 받지 않는다. 쓰는 곳 없이 모으기만 하는 개인정보다.
+      expect(fields.containsKey('guardian_phone'), isFalse);
 
       // 여러 장일수록 대조 정확도가 오른다. 한 장으로 줄여 보내면 안 된다.
       expect(form.files.where((entry) => entry.key == 'photos'), hasLength(2));
@@ -221,7 +222,6 @@ void main() {
             description: '',
             lastLat: 37.47,
             lastLng: 126.75,
-            guardianPhone: '010-0000-0000',
             photoPaths: [_photoFile('a.jpg').path],
           ),
         ),

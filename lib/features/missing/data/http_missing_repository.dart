@@ -79,7 +79,6 @@ class HttpMissingRepository implements MissingRepository {
         if (draft.missingAt != null) 'missing_at': isoWithOffset(draft.missingAt!),
         if (draft.heightCm != null) 'height_cm': '${draft.heightCm}',
         if (draft.weightKg != null) 'weight_kg': '${draft.weightKg}',
-        'guardian_phone': draft.guardianPhone,
         // 여러 장일수록 대조 정확도가 오른다. 서버가 장마다 얼굴 벡터를 뽑는다.
         'photos': [
           for (final path in draft.photoPaths)

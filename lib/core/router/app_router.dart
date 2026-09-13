@@ -6,12 +6,15 @@ import '../../features/home/presentation/home_screen.dart';
 import '../../features/map/presentation/map_screen.dart';
 import '../../features/missing/presentation/missing_detail_screen.dart';
 import '../../features/missing/presentation/missing_list_screen.dart';
+import '../../features/missing/presentation/missing_register_screen.dart';
+import '../../features/missing/presentation/register_location_screen.dart';
 import '../../features/my/presentation/my_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/report/data/report.dart';
 import '../../features/report/presentation/report_done_screen.dart';
 import '../../features/report/presentation/report_screen.dart';
+import '../location/location_source.dart';
 import 'app_shell.dart';
 
 /// 경로 문자열은 여기서만 정의하고 화면에서는 상수로 참조한다.
@@ -54,6 +57,14 @@ class AppRoute {
   /// 지도를 열면서 사건 하나를 바로 편다(S3 미니 지도 → S5 사건 선택 모드).
   static String mapForCase(String caseId) => '/map?case=$caseId';
 
+  /// 실종자 등록(S7). 로그인이 필요하지만 리다이렉트로 막지 않는다 — 화면이
+  /// 열린 뒤 그 위에 로그인 시트를 덮는다.
+  static const String register = '/register';
+
+  /// 등록 폼의 위치 고르기. 처음 비출 좌표를 `extra`로 넘기고, 고른 좌표를
+  /// `pop`으로 돌려받는다.
+  static const String registerLocation = '/register/location';
+
   // 로그인(S6)은 경로가 없다. 독립 화면이 아니라 등록을 시도할 때 끼어드는
   // 바텀시트라서, `showLoginSheet`로 띄운다(기능정의서 3).
 }
@@ -87,6 +98,22 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoute.onboarding,
         builder: (context, state) => const OnboardingScreen(),
+      ),
+      // 탭 밖, 껍데기 위에 얹는다. 네비바를 가리고 전체를 덮는다.
+      GoRoute(
+        path: AppRoute.register,
+        builder: (context, state) => const MissingRegisterScreen(),
+        routes: [
+          GoRoute(
+            // AppRoute.registerLocation
+            path: 'location',
+            builder: (context, state) {
+              final extra = state.extra;
+
+              return RegisterLocationScreen(initial: extra is LocationFix ? extra : null);
+            },
+          ),
+        ],
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(shell: shell),

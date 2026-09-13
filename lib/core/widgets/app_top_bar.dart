@@ -13,18 +13,25 @@ import 'app_icon.dart';
 /// 두고 알림을 빼낸다([AppTopBar.modal]).
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// 홈 전용. 가운데에 워드마크를 둔다.
-  const AppTopBar.brand({super.key}) : title = null, onClose = null;
+  const AppTopBar.brand({super.key})
+    : title = null,
+      onClose = null,
+      action = null;
 
   /// 실종자·지도·MY. 가운데에 화면 제목을 둔다.
-  const AppTopBar.title(String this.title, {super.key}) : onClose = null;
+  const AppTopBar.title(String this.title, {super.key})
+    : onClose = null,
+      action = null;
 
   /// 제보창(S4)·등록 폼(S7). 닫기(X) + 제목.
   ///
   /// 알림 버튼을 두지 않는다. 쓰던 것을 두고 다른 화면으로 새는 길을
-  /// 상단바가 열어주면 안 된다.
+  /// 상단바가 열어주면 안 된다. 오른쪽에는 그 화면 안에서 끝나는 일만 둔다
+  /// (등록 폼의 임시저장).
   const AppTopBar.modal(
     String this.title, {
     required VoidCallback this.onClose,
+    this.action,
     super.key,
   });
 
@@ -32,6 +39,9 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   /// 닫기를 눌렀을 때. null이면 탭 상단바다.
   final VoidCallback? onClose;
+
+  /// 모달 상단바 오른쪽에 두는 것. 없으면 비운다.
+  final Widget? action;
 
   static const Key closeButtonKey = Key('app_top_bar_close');
 
@@ -42,6 +52,7 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final label = title;
     final close = onClose;
+    final trailing = action;
 
     return AppBar(
       title: label == null ? const _Wordmark() : Text(label),
@@ -55,7 +66,10 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
               tooltip: '닫기',
             ),
       actions: close != null
-          ? const []
+          ? [
+              ?trailing,
+              if (trailing != null) const SizedBox(width: 6),
+            ]
           : [
               const IconButton(
                 // TODO(알림): 알림 화면이 생기면 연결한다.

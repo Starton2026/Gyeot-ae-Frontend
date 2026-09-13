@@ -8,8 +8,8 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/similarity_gauge.dart';
 import '../../data/analysis.dart';
 import '../../data/report.dart';
-import 'dashed_box.dart';
-import 'report_field_label.dart';
+import '../../../../core/widgets/dashed_box.dart';
+import '../../../../core/widgets/form_field_label.dart';
 
 /// 사진 분석 자리(F-4.5).
 ///
@@ -41,7 +41,7 @@ class ReportAnalysisSlot extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const ReportFieldLabel('AI 분석 결과', required: true),
+        const FormFieldLabel('AI 분석 결과', required: true),
         const SizedBox(height: 8),
         if (result != null)
           _Done(result: result, onRetry: onAnalyze)

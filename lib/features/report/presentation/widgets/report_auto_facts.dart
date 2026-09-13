@@ -4,7 +4,7 @@ import '../../../../core/format/time_label.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../report_draft_providers.dart';
-import 'report_field_label.dart';
+import '../../../../core/widgets/form_field_label.dart';
 
 /// 자동으로 담긴 위치(F-4.3)와 시간(F-4.4).
 ///
@@ -71,7 +71,7 @@ class ReportAutoFacts extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const ReportFieldLabel('자동으로 담긴 정보'),
+        const FormFieldLabel('자동으로 담긴 정보'),
         const SizedBox(height: 8),
         DecoratedBox(
           decoration: BoxDecoration(

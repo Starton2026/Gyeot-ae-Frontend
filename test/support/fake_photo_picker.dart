@@ -23,6 +23,14 @@ class FakePhotoPicker implements PhotoPicker {
   /// 어디서 고르려 했는지 순서대로.
   final List<PhotoSource> calls = [];
 
+  /// 다음 [pickManyFromGallery]가 돌려줄 경로들. 비어 있으면 고르지 않은 경우다.
+  ///
+  /// 진짜 선택기처럼 limit에서 자른다.
+  List<String> galleryPaths = const [];
+
+  /// [pickManyFromGallery]에 넘어온 limit을 순서대로.
+  final List<int> manyLimits = [];
+
   @override
   Future<PickedPhoto?> pick(PhotoSource source) async {
     calls.add(source);
@@ -35,5 +43,12 @@ class FakePhotoPicker implements PhotoPicker {
       takenAt: takenAt,
       fix: fix,
     );
+  }
+
+  @override
+  Future<List<String>> pickManyFromGallery({required int limit}) async {
+    manyLimits.add(limit);
+
+    return galleryPaths.take(limit).toList(growable: false);
   }
 }

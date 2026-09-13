@@ -218,7 +218,6 @@ void main() {
       description: '분홍 원피스, 흰 운동화',
       lastLat: 37.45,
       lastLng: 126.73,
-      guardianPhone: '010-0000-0000',
       photoPaths: ['a.jpg', 'b.jpg'],
     );
 
@@ -256,7 +255,6 @@ void main() {
             description: '분홍 원피스',
             lastLat: 37.45,
             lastLng: 126.73,
-            guardianPhone: '010-0000-0000',
             photoPaths: [],
           ),
         ),

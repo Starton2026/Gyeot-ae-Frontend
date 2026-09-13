@@ -7,8 +7,11 @@ import 'package:gyeotae/app.dart';
 import 'package:gyeotae/core/location/location_source.dart';
 import 'package:gyeotae/core/media/photo_picker.dart';
 import 'package:gyeotae/core/mock/mock_backend.dart';
+import 'package:gyeotae/core/network/dio_provider.dart';
 import 'package:gyeotae/core/router/app_router.dart';
 import 'package:gyeotae/core/widgets/mascot.dart';
+import 'package:gyeotae/features/auth/data/auth_repository.dart';
+import 'package:gyeotae/features/auth/data/auth_session.dart';
 import 'package:gyeotae/features/map/presentation/map_screen.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
@@ -24,6 +27,8 @@ import 'package:gyeotae/features/report/presentation/widgets/report_photo_field.
 import 'package:gyeotae/features/report/presentation/widgets/report_submit_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/fake_auth.dart';
+import '../../../support/in_memory_token_storage.dart';
 import '../../../support/onboarding_overrides.dart';
 import '../../../support/fake_location_source.dart';
 import '../../../support/fake_photo_picker.dart';
@@ -37,6 +42,7 @@ const _caseId = MockBackend.demoCaseId;
 Future<ProviderContainer> _submitReport(
   WidgetTester tester, {
   LocationFix? deviceFix = (lat: 37.47, lng: 126.75),
+  bool signedIn = false,
 }) async {
   tester.platformDispatcher.accessibilityFeaturesTestValue =
       const FakeAccessibilityFeatures(disableAnimations: true);
@@ -59,6 +65,16 @@ Future<ProviderContainer> _submitReport(
       ),
       reportRepositoryProvider.overrideWithValue(
         MockReportRepository(backend, latency: Duration.zero),
+      ),
+      tokenStorageProvider.overrideWithValue(
+        InMemoryTokenStorage(signedIn ? 'token' : null),
+      ),
+      authRepositoryProvider.overrideWithValue(
+        FakeAuthRepository(
+          user: signedIn
+              ? const AuthProfile(user: AuthUser(id: 'u_1', name: '김보호'))
+              : null,
+        ),
       ),
     ],
   );
@@ -125,6 +141,15 @@ void main() {
     // "김하준이" — 받침이 있으면 이, 없으면 가(F-4.2.5).
     expect(find.text('김하준이 발견되면 알려드릴까요?'), findsOneWidget);
     expect(find.byKey(ReportDoneNotify.loginButtonKey), findsOneWidget);
+  });
+
+  testWidgets('이미 로그인했으면 알림 받기를 묻지 않는다', (tester) async {
+    await _submitReport(tester, signedIn: true);
+
+    // 로그인한 사람의 제보는 이미 계정에 붙는다. 로그인하라고 또 물으면
+    // 버튼을 눌러도 같은 시트만 다시 뜬다.
+    expect(find.byType(ReportDoneNotify), findsNothing);
+    expect(find.text('제보가 전달되었습니다'), findsOneWidget);
   });
 
   testWidgets('괜찮습니다를 눌러도 제보는 남는다', (tester) async {
