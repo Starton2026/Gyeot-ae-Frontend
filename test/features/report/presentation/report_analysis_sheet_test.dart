@@ -81,6 +81,39 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
+  testWidgets('분석 중과 결과의 시트 높이가 같다', (tester) async {
+    await _pumpWithPhoto(tester, latency: const Duration(milliseconds: 400));
+
+    await tester.tap(find.byKey(ReportAnalysisSlot.analyzeButtonKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final whileLoading = tester.getSize(find.byType(BottomSheet)).height;
+
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getSize(find.byType(BottomSheet)).height,
+      whileLoading,
+      reason: '결과가 왔을 때 시트가 늘어나면 보던 자리가 통째로 움직인다',
+    );
+  });
+
+  testWidgets('분석 확인 버튼은 시트 바닥에 붙는다', (tester) async {
+    await _pumpWithPhoto(tester);
+    await _tapAnalyze(tester);
+
+    final sheet = tester.getRect(find.byType(BottomSheet));
+    final button = tester.getRect(find.byKey(analysisConfirmKey));
+
+    expect(
+      sheet.bottom - button.bottom,
+      moreOrLessEquals(22, epsilon: 1),
+      reason: '위 내용이 길든 짧든 누를 자리는 같은 곳에 있어야 한다',
+    );
+  });
+
   testWidgets('분석하기를 누르면 시트가 먼저 열리고 기다리는 것이 보인다', (tester) async {
     await _pumpWithPhoto(tester, latency: const Duration(milliseconds: 400));
 

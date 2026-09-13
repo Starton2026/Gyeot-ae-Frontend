@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,10 +28,7 @@ const Key analysisRetryKey = Key('analysis_retry');
 /// **이 화면의 목적은 필터링이 아니라 심리적 면죄부다.** 목격자가 망설이는
 /// 가장 큰 이유는 "틀렸을까 봐"이고, 그 부담을 AI가 대신 진다. 낮은 점수일
 /// 때의 안내 문구가 이 화면의 핵심이다(F-4.1.5).
-Future<void> showAnalysisSheet(
-  BuildContext context, {
-  required String caseId,
-}) {
+Future<void> showAnalysisSheet(BuildContext context, {required String caseId}) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -48,18 +47,27 @@ class _AnalysisSheet extends ConsumerWidget {
 
   final String caseId;
 
+  /// 시트 높이. **분석 중과 결과가 같아야 한다.**
+  ///
+  /// 결과가 왔을 때 시트가 늘어나면 화면이 한 번 튀고, 그 순간 사용자가 보던
+  /// 자리가 통째로 움직인다. 결과 화면의 자연 높이를 재서 잡은 값이다.
+  ///
+  /// 글자 크기 설정이 크거나 얼굴 미검출 안내가 길어져 넘치면 안에서
+  /// 스크롤된다. 화면이 짧은 기기에서는 화면 높이에 맞춰 줄어든다.
+  static const double _height = 594;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final draft = ref.watch(reportDraftProvider(caseId));
     final analysis = draft.analysis;
     final result = analysis.value;
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
-        child: SingleChildScrollView(
+    return SizedBox(
+      height: math.min(_height, MediaQuery.sizeOf(context).height * 0.85),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 22),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const _Handle(),
@@ -68,17 +76,34 @@ class _AnalysisSheet extends ConsumerWidget {
                 textAlign: TextAlign.center,
                 style: AppTextStyles.title0,
               ),
-              if (result != null)
-                _Result(caseId: caseId, draft: draft, result: result)
-              else if (analysis.isLoading)
-                const _Analyzing()
-              else
-                _Failed(
-                  error: analysis.error,
-                  onRetry: () => ref
-                      .read(reportDraftProvider(caseId).notifier)
-                      .analyze(),
+              Expanded(
+                child: analysis.isLoading
+                    ? const _Analyzing()
+                    : SingleChildScrollView(
+                        child: result != null
+                            ? _Result(
+                                caseId: caseId,
+                                draft: draft,
+                                result: result,
+                              )
+                            : _Failed(
+                                error: analysis.error,
+                                onRetry: () => ref
+                                    .read(reportDraftProvider(caseId).notifier)
+                                    .analyze(),
+                              ),
+                      ),
+              ),
+              // 확인 버튼만 바닥에 붙인다. 위 내용이 길든 짧든 누를 자리가
+              // 같은 곳에 있어야 한다.
+              if (!analysis.isLoading && result != null) ...[
+                const SizedBox(height: 14),
+                FilledButton(
+                  key: analysisConfirmKey,
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('분석 확인'),
                 ),
+              ],
             ],
           ),
         ),
@@ -169,7 +194,7 @@ class _Failed extends StatelessWidget {
   }
 }
 
-/// 유사도 → 대조 사진 → 위치·시간 → 안내 문구 → 확인.
+/// 유사도 → 대조 사진 → 위치·시간 → 안내 문구. 확인 버튼은 시트가 든다.
 class _Result extends StatelessWidget {
   const _Result({
     required this.caseId,
@@ -216,12 +241,6 @@ class _Result extends StatelessWidget {
             ),
             const SizedBox(height: 13),
             _Reassurance(faceFound: result.faceFound),
-            const SizedBox(height: 14),
-            FilledButton(
-              key: analysisConfirmKey,
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('분석 확인'),
-            ),
           ],
         );
       },
