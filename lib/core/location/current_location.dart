@@ -83,7 +83,11 @@ class CurrentLocationNotifier extends Notifier<AppLocation> {
   }
 
   /// 기기에 위치를 물어본다. 받으면 [state]를 갈아낀다.
-  Future<void> locate() async {
+  ///
+  /// [requestPermission]은 **사용자가 그러겠다고 누른 자리에서만** 켠다.
+  /// 앱을 켜자마자 아무 설명 없이 시스템 팝업을 띄우면, 거부한 사람은 앱 안
+  /// 어디서도 되돌릴 수 없다(온보딩 3장이 이유를 먼저 말하는 이유다).
+  Future<void> locate({bool requestPermission = false}) async {
     final source = ref.read(locationSourceProvider);
 
     // 마지막으로 알려진 좌표를 먼저 쓴다. 정확한 좌표는 몇 초 걸리는데,
@@ -91,7 +95,7 @@ class CurrentLocationNotifier extends Notifier<AppLocation> {
     final known = await source.lastKnown();
     if (known != null && ref.mounted) state = _at(known);
 
-    final now = await source.current();
+    final now = await source.current(requestPermission: requestPermission);
     if (now != null && ref.mounted) state = _at(now);
   }
 

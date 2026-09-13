@@ -213,8 +213,13 @@ class ReportDraftNotifier extends Notifier<ReportDraft> {
   }
 
   /// 위치를 다시 물어본다. 받으면 [_useDevice]가 갈아낀다.
+  ///
+  /// 사용자가 "다시 시도"를 누른 자리라, 여기서는 시스템 권한 팝업을 띄워도
+  /// 된다. 온보딩에서 미뤄둔 사람이 되돌릴 수 있는 유일한 길이기도 하다.
   Future<void> retryLocation() {
-    return ref.read(currentLocationProvider.notifier).locate();
+    return ref
+        .read(currentLocationProvider.notifier)
+        .locate(requestPermission: true);
   }
 
   /// 목격 시각을 고친다(F-4.4). 사진첩에서 나중에 올릴 때 쓴다.
