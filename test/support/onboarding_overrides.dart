@@ -25,4 +25,6 @@ List<Override> startAfterOnboarding({bool seen = true}) => [
     FakeOnboardingStorage(hasSeen: seen),
   ),
   splashHoldProvider.overrideWithValue(Duration.zero),
+  // 그림 디코딩은 진짜 비동기라 가짜 시계 안에서는 끝나지 않는다.
+  splashWarmupProvider.overrideWithValue((_) async {}),
 ];

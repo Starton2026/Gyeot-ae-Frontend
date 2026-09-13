@@ -27,6 +27,7 @@ Future<({FakeOnboardingStorage storage, FakeLocationSource location})> _launch(
       overrides: [
         onboardingStorageProvider.overrideWithValue(storage),
         splashHoldProvider.overrideWithValue(Duration.zero),
+        splashWarmupProvider.overrideWithValue((_) async {}),
         locationSourceProvider.overrideWithValue(location),
         ...offlineRepositories(),
       ],
