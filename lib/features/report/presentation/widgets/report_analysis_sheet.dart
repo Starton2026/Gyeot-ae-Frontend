@@ -13,6 +13,7 @@ import '../../../missing/data/missing_repository.dart';
 import '../../data/analysis.dart';
 import '../report_draft_providers.dart';
 import 'analysis_compare_row.dart';
+import 'analysis_progress.dart';
 
 /// "분석 확인". 누르면 제보창으로 돌아간다(F-4.1.7).
 const Key analysisConfirmKey = Key('analysis_confirm');
@@ -71,14 +72,19 @@ class _AnalysisSheet extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const _Handle(),
-              const Text(
-                '분석 결과',
-                textAlign: TextAlign.center,
-                style: AppTextStyles.title0,
-              ),
+              // 분석이 도는 동안에는 제목을 빼둔다. 아직 결과가 아닌데
+              // "분석 결과"라고 적혀 있으면 말이 어긋난다. 진행 화면이
+              // 제 제목을 들고 있다.
+              if (!analysis.isLoading)
+                const Text(
+                  '분석 결과',
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.title0,
+                ),
               Expanded(
                 child: analysis.isLoading
-                    ? const _Analyzing()
+                    // 남는 높이를 어떻게 쓸지는 진행 화면이 안다.
+                    ? const AnalysisProgress()
                     : SingleChildScrollView(
                         child: result != null
                             ? _Result(
@@ -126,34 +132,6 @@ class _Handle extends StatelessWidget {
           color: AppColors.border,
           borderRadius: BorderRadius.circular(3),
         ),
-      ),
-    );
-  }
-}
-
-/// 분석이 도는 동안. 시트를 먼저 열어두면 기다리는 몇 초가 화면에 보인다.
-class _Analyzing extends StatelessWidget {
-  const _Analyzing();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 52),
-      child: Column(
-        children: [
-          const SizedBox(
-            width: 28,
-            height: 28,
-            child: CircularProgressIndicator(strokeWidth: 2.6),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            '등록된 사진과 얼굴을 맞춰보는 중이에요',
-            style: AppTextStyles.subtitle1.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
       ),
     );
   }

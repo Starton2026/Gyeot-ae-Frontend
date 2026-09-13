@@ -11,6 +11,7 @@ import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
 import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:gyeotae/features/report/presentation/report_screen.dart';
+import 'package:gyeotae/features/report/presentation/widgets/analysis_progress.dart';
 import 'package:gyeotae/features/report/presentation/widgets/report_analysis_sheet.dart';
 import 'package:gyeotae/features/report/presentation/widgets/report_analysis_slot.dart';
 import 'package:gyeotae/features/report/presentation/widgets/report_photo_field.dart';
@@ -100,6 +101,33 @@ void main() {
     );
   });
 
+  testWidgets('분석 중 화면은 위에서부터 쌓고 남는 자리는 아래에 둔다', (tester) async {
+    await _pumpWithPhoto(tester, latency: const Duration(milliseconds: 400));
+
+    await tester.tap(find.byKey(ReportAnalysisSlot.analyzeButtonKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final sheet = tester.getRect(find.byType(BottomSheet));
+    final steps = tester.getRect(find.byKey(AnalysisProgress.stepsKey));
+    final wait = tester.getRect(_inSheet(find.text('잠시만 기다려주세요.')));
+
+    expect(
+      steps.top - wait.bottom,
+      moreOrLessEquals(24, epsilon: 1),
+      reason: '블록 사이는 같은 간격이다',
+    );
+    expect(
+      sheet.bottom - steps.bottom,
+      greaterThan(40),
+      reason: '남는 높이를 채우려고 내용을 벌리지 않는다',
+    );
+
+    // 분석을 끝까지 돌려 타이머를 비운다.
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+  });
+
   testWidgets('분석 확인 버튼은 시트 바닥에 붙는다', (tester) async {
     await _pumpWithPhoto(tester);
     await _tapAnalyze(tester);
@@ -114,7 +142,8 @@ void main() {
     );
   });
 
-  testWidgets('분석하기를 누르면 시트가 먼저 열리고 기다리는 것이 보인다', (tester) async {
+  testWidgets('분석하는 동안 무엇을 하고 있는지 단계로 적는다', (tester) async {
+    // 분석은 800ms 걸린다(mock은 latency의 두 배를 쓴다).
     await _pumpWithPhoto(tester, latency: const Duration(milliseconds: 400));
 
     await tester.tap(find.byKey(ReportAnalysisSlot.analyzeButtonKey));
@@ -122,13 +151,23 @@ void main() {
     // 시트가 올라오는 동안. 분석은 아직 돌고 있다.
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('분석 결과'), findsOneWidget);
-    expect(_inSheet(find.textContaining('맞춰보는 중')), findsOneWidget);
+    // 아직 결과가 아니라 제목을 달지 않는다. 진행 화면이 제 제목을 든다.
+    expect(find.text('분석 결과'), findsNothing);
+    expect(_inSheet(find.text('AI가 사진을 분석하고 있어요')), findsOneWidget);
+    expect(_inSheet(find.text('사진 업로드 중...')), findsOneWidget);
+    // 아직 오지 않은 단계는 이름만 적힌다.
+    expect(_inSheet(find.text('유사도 계산')), findsOneWidget);
 
-    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(_inSheet(find.text('사진 업로드 완료')), findsOneWidget);
+    expect(_inSheet(find.text('얼굴 특징 분석 중...')), findsOneWidget);
+
+    // 결과가 오면 단계가 남아 있어도 그대로 넘어간다.
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pumpAndSettle();
 
-    expect(_inSheet(find.textContaining('맞춰보는 중')), findsNothing);
+    expect(_inSheet(find.byKey(AnalysisProgress.stepsKey)), findsNothing);
+    expect(find.text('분석 결과'), findsOneWidget);
     expect(find.byKey(analysisConfirmKey), findsOneWidget);
   });
 
