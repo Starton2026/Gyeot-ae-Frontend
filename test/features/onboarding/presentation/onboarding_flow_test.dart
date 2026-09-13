@@ -11,6 +11,7 @@ import 'package:gyeotae/features/onboarding/presentation/widgets/onboarding_foot
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/fake_location_source.dart';
+import '../../../support/offline_repositories.dart';
 import '../../../support/onboarding_overrides.dart';
 
 /// 앱을 처음부터 띄운다. 스플래시가 어디로 보내는지까지 본다.
@@ -27,6 +28,7 @@ Future<({FakeOnboardingStorage storage, FakeLocationSource location})> _launch(
         onboardingStorageProvider.overrideWithValue(storage),
         splashHoldProvider.overrideWithValue(Duration.zero),
         locationSourceProvider.overrideWithValue(location),
+        ...offlineRepositories(),
       ],
       child: const GyeotaeApp(),
     ),
