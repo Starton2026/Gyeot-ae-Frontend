@@ -48,7 +48,7 @@ class HomeScreen extends ConsumerWidget {
               ),
               data: (data) => _HomeFeedView(
                 feed: data,
-                locationLabel: ref.watch(currentLocationProvider).label,
+                areaName: ref.watch(currentLocationProvider).areaName,
               ),
             ),
           ),
@@ -65,10 +65,10 @@ void _goRegister(BuildContext context) => context.push(AppRoute.login);
 
 /// 사건을 다 불러온 뒤의 홈 본문.
 class _HomeFeedView extends StatelessWidget {
-  const _HomeFeedView({required this.feed, required this.locationLabel});
+  const _HomeFeedView({required this.feed, required this.areaName});
 
   final HomeFeed feed;
-  final String locationLabel;
+  final String? areaName;
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +94,7 @@ class _HomeFeedView extends StatelessWidget {
           // TODO(S2): 목록 화면이 생기면 onTapMore를 연결한다.
           NearbyCasesSection(
             cases: feed.nearbyCases,
-            locationLabel: locationLabel,
+            areaName: areaName,
             totalCount: feed.activeCount,
             onTapCase: (summary) =>
                 context.push(AppRoute.missingDetail(summary.id)),
