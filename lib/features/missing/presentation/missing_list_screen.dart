@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +11,7 @@ import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/guardian_shortcut_banner.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/widgets/missing_case_tile.dart';
+import '../../auth/presentation/widgets/login_sheet.dart';
 import 'missing_list_providers.dart';
 import 'widgets/missing_empty_view.dart';
 import 'widgets/missing_filter_chips.dart';
@@ -70,7 +73,7 @@ class _MissingListScreenState extends ConsumerState<MissingListScreen> {
       body: Column(
         children: [
           GuardianShortcutBanner(
-            onTap: () => context.push(AppRoute.login),
+            onTap: () => unawaited(showLoginSheet(context)),
           ),
           Expanded(
             child: CustomScrollView(

@@ -126,4 +126,16 @@ class AppColors {
 
   /// 얼굴 미검출. [gradeLow]와 같은 색, 문구만 "얼굴 미검출".
   static const Color gradeNoFace = gradeLow;
+
+  // ── 카카오 로그인 버튼 (S6) ──────────────────────────────────
+
+  /// 카카오 버튼 바탕. **우리 팔레트가 아니라 카카오가 정한 색이다.**
+  ///
+  /// 브랜드 5색 밖이지만 임의로 고른 값이 아니다. 카카오 로그인 버튼은 색과
+  /// 비율을 바꾸지 못하게 되어 있고, 디자인 시안도 이 값을 쓴다. 다른 곳에
+  /// 가져다 쓰지 않는다.
+  static const Color kakaoYellow = Color(0xFFFEE500);
+
+  /// 카카오 버튼 글자·아이콘. 카카오 규정의 검정 85%.
+  static const Color kakaoLabel = Color(0xD9000000);
 }

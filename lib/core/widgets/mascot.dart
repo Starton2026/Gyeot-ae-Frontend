@@ -15,7 +15,7 @@ enum MascotPose {
   /// 함께해요. 제보 완료.
   together('ieumi_together.png'),
 
-  /// 달려가요. 제보 전송 중.
+  /// 달려가요. 제보 전송 중, 로그인 시트.
   run('ieumi_run.png'),
 
   /// 연결해요. 온보딩, 지도 안내.

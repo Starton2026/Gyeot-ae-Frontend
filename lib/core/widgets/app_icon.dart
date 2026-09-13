@@ -72,6 +72,9 @@ class AppIcons {
   /// 돋보기. 검색.
   static const String glass = '$_dir/ic_glass.svg';
 
+  /// 카카오 말풍선. 로그인 버튼에만 쓴다.
+  static const String kakao = '$_dir/ic_kakao.svg';
+
   /// 왼쪽 화살표. 뒤로 가기.
   static const String leftArrow = '$_dir/ic_left_arrow.svg';
 
@@ -88,6 +91,7 @@ class AppIcons {
   static const List<String> all = [
     bell,
     glass,
+    kakao,
     leftArrow,
     locationMarker,
     rightAngleBracket,

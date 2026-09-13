@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +11,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_icon.dart';
 import '../../../core/widgets/mascot.dart';
 import '../../missing/data/missing_repository.dart';
+import '../../auth/presentation/widgets/login_sheet.dart';
 import '../data/report.dart';
 import 'widgets/report_done_notify.dart';
 import 'widgets/report_done_summary.dart';
@@ -118,9 +121,9 @@ class ReportDoneScreen extends ConsumerWidget {
       ),
       bottomNavigationBar: ReportDoneNotify(
         name: detail?.name,
-        // TODO(S6): 카카오 로그인이 붙으면 방금 제보를 계정에 귀속시킨다
-        // (F-4.2.7, `POST /auth/kakao`의 claimed_reports).
-        onLogin: () => context.push(AppRoute.login),
+        // 서버가 X-Device-Hash로 방금 제보를 찾아 계정에 붙인다(F-4.2.7).
+        // 몇 건이 옮겨갔는지는 세션의 claimedReports에 담겨 온다.
+        onLogin: () => unawaited(showLoginSheet(context)),
         // 눌러도 제보는 그대로 유효하다(F-4.2.6).
         onSkip: () => _leave(context),
       ),
