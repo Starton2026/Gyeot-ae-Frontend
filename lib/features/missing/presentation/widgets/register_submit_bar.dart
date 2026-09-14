@@ -51,7 +51,9 @@ class RegisterSubmitBar extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '등록 즉시 반경 5km 이내 사용자에게 알림이 갑니다',
+                // 반경을 적지 않는다. 받는 사람마다 알림 설정(F-8.6)에서 반경을
+                // 따로 고른다.
+                '등록 즉시 주변 사용자에게 알림이 갑니다',
                 textAlign: TextAlign.center,
                 style: AppTextStyles.small.copyWith(
                   color: AppColors.textDisabled,
