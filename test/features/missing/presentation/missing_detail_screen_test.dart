@@ -10,6 +10,8 @@ import 'package:gyeotae/core/widgets/static_kakao_map.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
 import 'package:gyeotae/features/missing/presentation/missing_detail_screen.dart';
+import 'package:gyeotae/features/missing/presentation/widgets/detail_report_cta.dart';
+import 'package:gyeotae/features/missing/presentation/widgets/detail_resolved_note.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/detail_top_bar.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/report_timeline.dart';
 import 'package:gyeotae/features/notifications/data/notification_repository.dart';
@@ -162,6 +164,15 @@ void main() {
     expect(bar().backgroundProgress, 1);
     expect(bar().titleProgress, 1);
     expect(find.text('김하준 · 7세'), findsOneWidget);
+  });
+
+  testWidgets('찾은 사건에는 제보 버튼 대신 찾았다고 적는다', (tester) async {
+    await _pumpDetail(tester, caseId: 'm_kl12mn34');
+
+    // 버튼을 남기면 찾은 사람의 "목격" 알림이 보호자에게 간다. 서버도 거절한다.
+    expect(find.byKey(DetailReportCta.buttonKey), findsNothing);
+    expect(find.byKey(DetailResolvedNote.noteKey), findsOneWidget);
+    expect(find.text('찾았어요'), findsOneWidget);
   });
 
   testWidgets('제보 버튼은 아동이 아니면 문구가 바뀐다', (tester) async {

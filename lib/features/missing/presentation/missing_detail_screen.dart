@@ -19,6 +19,7 @@ import 'case_share_card.dart';
 import 'widgets/detail_body.dart';
 import 'widgets/detail_guardian_bar.dart';
 import 'widgets/detail_report_cta.dart';
+import 'widgets/detail_resolved_note.dart';
 import 'widgets/detail_top_bar.dart';
 
 /// 실종자 상세(S3). 로그인 없이 볼 수 있다.
@@ -182,9 +183,9 @@ class _MissingDetailScreenState extends ConsumerState<MissingDetailScreen> {
       ),
       bottomNavigationBar: switch (data) {
         null => null,
-        // 끝난 사건에서는 보호자가 이 화면에서 할 일이 없다.
-        MissingCaseDetail(isGuardian: true, status: CaseStatus.resolved) =>
-          null,
+        // 찾은 사건에는 보호자도 시민도 할 일이 없다. 제보도 받지 않는다.
+        MissingCaseDetail(status: CaseStatus.resolved) =>
+          const DetailResolvedNote(),
         MissingCaseDetail(isGuardian: true) => DetailGuardianBar(
           busy: _busy,
           onEdit: () => unawaited(_edit()),
