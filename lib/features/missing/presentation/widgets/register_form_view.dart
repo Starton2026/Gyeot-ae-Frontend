@@ -138,6 +138,7 @@ class RegisterFormView extends StatelessWidget {
             RegisterField.category,
             RegisterCategoryChips(
               selected: form.category,
+              autoPicked: draft.categoryAuto,
               onSelect: onCategoryChanged,
               errorText: errors[RegisterField.category],
             ),

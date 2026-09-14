@@ -36,6 +36,24 @@ enum MissingCategory {
   /// 아동·어르신은 취약도 ×1.5.
   bool get isVulnerable => this != MissingCategory.other;
 
+  /// 이 나이까지 아동이다. 실종아동법의 아동이 실종 당시 18세 미만이다.
+  static const int childMaxAge = 17;
+
+  /// 이 나이부터 어르신이다.
+  static const int elderlyMinAge = 65;
+
+  /// 나이대로 정한 구분(F-7.5). 그 사이는 성인이고, 서버 값은 `other`다.
+  ///
+  /// **나이만 본다.** 구분을 진단명으로 나누지 않는다는 명세를 따른다. 18~64세
+  /// 발달장애인이나 젊은 치매 환자도 여기서는 성인이 되는데, 보호자가 칩을
+  /// 바꿔 고를 수 있다.
+  static MissingCategory forAge(int age) {
+    if (age <= childMaxAge) return MissingCategory.child;
+    if (age >= elderlyMinAge) return MissingCategory.elderly;
+
+    return MissingCategory.other;
+  }
+
   static MissingCategory fromJson(Object? value) {
     return switch (value) {
       'child' => MissingCategory.child,

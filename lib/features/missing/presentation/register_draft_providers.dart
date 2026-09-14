@@ -37,6 +37,7 @@ class RegisterDraft {
     this.serverError,
     this.addressStatus = AddressStatus.idle,
     this.submission = const AsyncData(null),
+    this.categoryPicked = false,
   });
 
   /// 한 사건에 올릴 수 있는 사진 수.
@@ -55,6 +56,12 @@ class RegisterDraft {
 
   /// 등록 결과. 값이 null이면 아직 보내기 전이다.
   final AsyncValue<MissingCaseRegistration?> submission;
+
+  /// 보호자가 구분 칩을 직접 골랐다. 그 뒤로는 나이를 고쳐도 덮지 않는다.
+  final bool categoryPicked;
+
+  /// 지금 구분이 나이로 골라 둔 것인가. 화면이 "바꿀 수 있다"고 알릴 때 쓴다.
+  bool get categoryAuto => form.category != null && !categoryPicked;
 
   bool get isSubmitting => submission.isLoading;
 
@@ -84,6 +91,7 @@ class RegisterDraft {
     RegisterServerError? Function()? serverError,
     AddressStatus? addressStatus,
     AsyncValue<MissingCaseRegistration?>? submission,
+    bool? categoryPicked,
   }) {
     return RegisterDraft(
       form: form ?? this.form,
@@ -91,6 +99,7 @@ class RegisterDraft {
       serverError: serverError == null ? this.serverError : serverError(),
       addressStatus: addressStatus ?? this.addressStatus,
       submission: submission ?? this.submission,
+      categoryPicked: categoryPicked ?? this.categoryPicked,
     );
   }
 }
@@ -217,14 +226,38 @@ class RegisterDraftNotifier extends Notifier<RegisterDraft> {
   void setName(String value) =>
       _edit(RegisterField.name, state.form.copyWith(name: value));
 
-  void setAge(String value) =>
-      _edit(RegisterField.age, state.form.copyWith(age: value));
+  /// 나이를 적으면 구분도 골라 둔다(F-7.5). **직접 고른 적이 없을 때만.**
+  ///
+  /// 명세가 구분을 나이대로 나누라고 한다. 나이를 적은 사람에게 같은 것을 한 번
+  /// 더 고르게 할 이유가 없다. 다만 등록 뒤에는 구분을 고칠 수 없어서, 보호자가
+  /// 바꾼 것은 나이를 고쳐도 되돌리지 않는다.
+  void setAge(String value) {
+    var form = state.form.copyWith(age: value);
+
+    if (!state.categoryPicked) {
+      final age = int.tryParse(value.trim());
+      form = age == null || age < 0
+          ? form.withoutCategory()
+          : form.copyWith(category: MissingCategory.forAge(age));
+    }
+
+    state = state.copyWith(
+      form: form,
+      serverError:
+          _clearIf(RegisterField.age) ?? _clearIf(RegisterField.category),
+    );
+  }
 
   void setGender(Gender value) =>
       _edit(RegisterField.gender, state.form.copyWith(gender: value));
 
-  void setCategory(MissingCategory value) =>
-      _edit(RegisterField.category, state.form.copyWith(category: value));
+  void setCategory(MissingCategory value) {
+    state = state.copyWith(
+      form: state.form.copyWith(category: value),
+      categoryPicked: true,
+      serverError: _clearIf(RegisterField.category),
+    );
+  }
 
   void setDescription(String value) =>
       _edit(RegisterField.description, state.form.copyWith(description: value));
@@ -327,8 +360,16 @@ class RegisterDraftNotifier extends Notifier<RegisterDraft> {
             address: current.address,
           );
 
+    // 되살린 구분이 나이와 다르면 보호자가 직접 고른 것이다. 같으면 계속 나이를
+    // 따른다.
+    final savedAge = int.tryParse(form.age.trim());
+    final picked =
+        form.category != null &&
+        (savedAge == null || MissingCategory.forAge(savedAge) != form.category);
+
     state = state.copyWith(
       form: form,
+      categoryPicked: picked,
       addressStatus: !form.hasLocation
           ? AddressStatus.idle
           : form.address.trim().isEmpty

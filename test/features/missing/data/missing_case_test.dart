@@ -86,6 +86,15 @@ void main() {
       expect(item.urgencyScore, isNull);
     });
 
+    test('나이로 구분을 정한다 — 17세까지 아동, 65세부터 어르신, 그 사이 성인', () {
+      expect(MissingCategory.forAge(0), MissingCategory.child);
+      expect(MissingCategory.forAge(17), MissingCategory.child);
+      expect(MissingCategory.forAge(18), MissingCategory.other);
+      expect(MissingCategory.forAge(64), MissingCategory.other);
+      expect(MissingCategory.forAge(65), MissingCategory.elderly);
+      expect(MissingCategory.forAge(90), MissingCategory.elderly);
+    });
+
     test('모르는 enum 값은 other·normal로 떨어뜨린다', () {
       final item = MissingCaseSummary.fromJson({
         ...(_listJson['items']! as List).first as Map<String, dynamic>,

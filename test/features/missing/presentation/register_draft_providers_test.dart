@@ -251,6 +251,93 @@ void main() {
     });
   });
 
+  group('구분 자동 선택(F-7.5)', () {
+    test('나이를 적으면 나이대에 맞는 구분을 골라 둔다', () {
+      final env = _setUp();
+      final notifier = _notifier(env);
+
+      notifier.setAge('7');
+      expect(_draft(env).form.category, MissingCategory.child);
+      expect(_draft(env).categoryAuto, isTrue);
+
+      notifier.setAge('34');
+      expect(_draft(env).form.category, MissingCategory.other);
+
+      notifier.setAge('81');
+      expect(_draft(env).form.category, MissingCategory.elderly);
+    });
+
+    test('17세까지 아동, 65세부터 어르신이다', () {
+      final env = _setUp();
+      final notifier = _notifier(env);
+
+      notifier.setAge('17');
+      expect(_draft(env).form.category, MissingCategory.child);
+      notifier.setAge('18');
+      expect(_draft(env).form.category, MissingCategory.other);
+      notifier.setAge('64');
+      expect(_draft(env).form.category, MissingCategory.other);
+      notifier.setAge('65');
+      expect(_draft(env).form.category, MissingCategory.elderly);
+    });
+
+    test('직접 고른 뒤에는 나이를 고쳐도 덮지 않는다', () {
+      final env = _setUp();
+      final notifier = _notifier(env);
+
+      notifier
+        ..setAge('70')
+        ..setCategory(MissingCategory.other)
+        ..setAge('72');
+
+      // 보호자가 바꾼 데는 이유가 있다. 등록 뒤에는 구분을 고칠 수 없어서,
+      // 말없이 되돌리면 틀린 채로 굳는다.
+      expect(_draft(env).form.category, MissingCategory.other);
+      expect(_draft(env).categoryAuto, isFalse);
+    });
+
+    test('나이를 지우면 골라 둔 구분도 비운다', () {
+      final env = _setUp();
+      final notifier = _notifier(env);
+
+      notifier
+        ..setAge('7')
+        ..setAge('');
+
+      expect(_draft(env).form.category, isNull);
+    });
+
+    test('되살린 구분이 나이와 맞으면 계속 나이를 따른다', () async {
+      final env = _setUp(
+        saved: RegisterForm(
+          missingAt: DateTime(2026, 9, 14),
+          age: '7',
+          category: MissingCategory.child,
+        ),
+      );
+      await _notifier(env).restoreSaved();
+
+      _notifier(env).setAge('70');
+
+      expect(_draft(env).form.category, MissingCategory.elderly);
+    });
+
+    test('되살린 구분이 나이와 다르면 직접 고른 것으로 본다', () async {
+      final env = _setUp(
+        saved: RegisterForm(
+          missingAt: DateTime(2026, 9, 14),
+          age: '70',
+          category: MissingCategory.other,
+        ),
+      );
+      await _notifier(env).restoreSaved();
+
+      _notifier(env).setAge('71');
+
+      expect(_draft(env).form.category, MissingCategory.other);
+    });
+  });
+
   group('등록', () {
     test('빈 칸이 있으면 보내지 않고 빠진 칸을 알린다', () async {
       final env = _setUp(deviceFix: null);

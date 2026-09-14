@@ -147,6 +147,24 @@ class RegisterForm {
     );
   }
 
+  /// 구분을 비운 폼. [copyWith]로는 null을 넣을 수 없다.
+  RegisterForm withoutCategory() {
+    return RegisterForm(
+      photoPaths: photoPaths,
+      name: name,
+      age: age,
+      gender: gender,
+      description: description,
+      lat: lat,
+      lng: lng,
+      locationPicked: locationPicked,
+      address: address,
+      missingAt: missingAt,
+      height: height,
+      weight: weight,
+    );
+  }
+
   RegisterForm copyWith({
     List<String>? photoPaths,
     String? name,

@@ -24,6 +24,7 @@ import 'package:gyeotae/features/missing/presentation/missing_detail_screen.dart
 import 'package:gyeotae/features/missing/presentation/missing_list_screen.dart';
 import 'package:gyeotae/features/missing/presentation/missing_register_screen.dart';
 import 'package:gyeotae/features/missing/presentation/register_location_screen.dart';
+import 'package:gyeotae/features/missing/presentation/widgets/register_category_chips.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/register_exit_dialog.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/register_form_view.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/register_location_card.dart';
@@ -126,6 +127,14 @@ Future<void> _enter(WidgetTester tester, Key key, String text) async {
   await _scrollTo(tester, find.byKey(key));
   await tester.enterText(find.byKey(key), text);
   await tester.pump();
+}
+
+bool _chipSelected(WidgetTester tester, String label) {
+  return tester
+      .widget<ChoiceChip>(
+        find.ancestor(of: find.text(label), matching: find.byType(ChoiceChip)),
+      )
+      .selected;
 }
 
 /// 필수 칸을 화면에서 전부 채운다. 위치는 기기 위치가 저절로 들어간다.
@@ -471,6 +480,25 @@ void main() {
     // 제보자에게 공개하지 않고 운영팀이 확인할 수도 없어, 쓰는 곳 없이 모으기만
     // 하는 개인정보였다. 보호자는 로그인한 계정으로 제보 소식을 받는다.
     expect(find.text('보호자 연락처'), findsNothing);
+  });
+
+  testWidgets('나이를 적으면 구분 칩이 골라지고, 바꿀 수 있다고 알려준다', (tester) async {
+    await _launch(tester);
+    await _openFromHomeBanner(tester);
+
+    await _enter(tester, RegisterFormView.ageFieldKey, '34');
+    await _scrollTo(tester, find.text('성인'));
+
+    // 나이만으로 정하는 구분이라 '그 외'가 아니라 '성인'이다.
+    expect(_chipSelected(tester, '성인'), isTrue);
+    expect(find.byKey(RegisterCategoryChips.autoNoteKey), findsOneWidget);
+
+    await tester.tap(find.text('어르신'));
+    await tester.pump();
+
+    // 직접 고르면 안내를 거둔다. 더는 나이가 고른 게 아니다.
+    expect(_chipSelected(tester, '어르신'), isTrue);
+    expect(find.byKey(RegisterCategoryChips.autoNoteKey), findsNothing);
   });
 
   test('성별은 남·여 두 가지만 고른다', () {
