@@ -52,6 +52,12 @@ dependencies:
   exif: ^3.3.0
   kakao_flutter_sdk_user: ^2.0.1
 
+  # 실종자 상세 공유 — 카카오톡 피드 메시지. 로그인과 같은 네이티브 앱 키를 쓴다.
+  kakao_flutter_sdk_share: ^2.0.1
+
+  # 앱 링크(gyeotae://)와 카카오톡 공유 링크를 받아 상세를 연다
+  app_links: ^7.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

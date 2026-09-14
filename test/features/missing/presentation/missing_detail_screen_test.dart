@@ -5,6 +5,7 @@ import 'package:gyeotae/app.dart';
 import 'package:gyeotae/core/mock/mock_backend.dart';
 import 'package:gyeotae/core/map/map_plan.dart';
 import 'package:gyeotae/core/router/app_router.dart';
+import 'package:gyeotae/core/share/case_sharer.dart';
 import 'package:gyeotae/core/widgets/static_kakao_map.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
@@ -16,6 +17,7 @@ import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/fake_case_sharer.dart';
 import '../../../support/fake_notification_repository.dart';
 import '../../../support/onboarding_overrides.dart';
 
@@ -23,6 +25,7 @@ import '../../../support/onboarding_overrides.dart';
 Future<ProviderContainer> _pumpDetail(
   WidgetTester tester, {
   String caseId = MockBackend.demoCaseId,
+  CaseSharer? sharer,
 }) async {
   // '찾는 중' 점이 계속 깜빡이면 pumpAndSettle이 끝나지 않는다. 움직임 줄이기를
   // 켜면 그 점이 멈춘다. 실제 기기의 접근성 설정과 같은 경로다.
@@ -43,6 +46,7 @@ Future<ProviderContainer> _pumpDetail(
       reportRepositoryProvider.overrideWithValue(
         MockReportRepository(backend, latency: Duration.zero),
       ),
+      caseSharerProvider.overrideWithValue(sharer ?? FakeCaseSharer()),
     ],
   );
 
@@ -173,6 +177,36 @@ void main() {
 
     expect(find.text('제보 0건'), findsOneWidget);
     expect(find.text('아직 들어온 제보가 없어요'), findsOneWidget);
+  });
+
+  testWidgets('공유를 누르면 그 사건을 카카오톡 카드로 싣는다', (tester) async {
+    final sharer = FakeCaseSharer();
+    await _pumpDetail(tester, sharer: sharer);
+
+    await tester.tap(find.byKey(DetailTopBar.shareButtonKey));
+    await tester.pumpAndSettle();
+
+    final card = sharer.cards.single;
+    expect(card.caseId, MockBackend.demoCaseId);
+    expect(card.title, '김하준 님을 찾고 있어요');
+    expect(card.description, startsWith('7세 남아 · 인천 남동구 구월동'));
+    expect(card.description, endsWith('경과'));
+    // 본문 자리라 한자 워드마크가 아니라 곁애로 쓴다(설계 결정 10번).
+    expect(card.buttonTitle, '곁애에서 보기');
+    // 테스트의 서버 주소는 에뮬레이터 전용이라 카카오 서버가 사진을 못 가져간다.
+    expect(card.imageUrl, isNull);
+  });
+
+  testWidgets('카카오톡이 없으면 왜 공유가 안 되는지 알린다', (tester) async {
+    await _pumpDetail(
+      tester,
+      sharer: FakeCaseSharer(result: ShareResult.kakaoTalkMissing),
+    );
+
+    await tester.tap(find.byKey(DetailTopBar.shareButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('카카오톡이 설치되어 있어야 공유할 수 있어요'), findsOneWidget);
   });
 
   testWidgets('목록에서 사건을 누르면 상세로 간다', (tester) async {

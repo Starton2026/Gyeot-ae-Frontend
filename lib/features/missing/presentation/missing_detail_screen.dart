@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/format/elapsed_time.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/share/case_sharer.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/widgets/resolve_case_dialog.dart';
@@ -14,6 +15,7 @@ import '../../report/data/report.dart';
 import '../data/missing_case.dart';
 import '../data/missing_repository.dart';
 import 'case_guardian_actions.dart';
+import 'case_share_card.dart';
 import 'widgets/detail_body.dart';
 import 'widgets/detail_guardian_bar.dart';
 import 'widgets/detail_report_cta.dart';
@@ -24,9 +26,17 @@ import 'widgets/detail_top_bar.dart';
 /// 사진 → 상태·기본 정보 → 이동 경로 → 제보 타임라인 순으로 읽힌다. 제보
 /// 버튼은 하단에 고정되고, 하단 네비게이션은 숨긴다(F-3.7).
 class MissingDetailScreen extends ConsumerStatefulWidget {
-  const MissingDetailScreen({required this.caseId, super.key});
+  const MissingDetailScreen({
+    required this.caseId,
+    this.fromLink = false,
+    super.key,
+  });
 
   final String caseId;
+
+  /// 앱 밖 링크(앱 링크·카카오톡 공유)로 열었다. 뒤로 대신 작은 심볼을 두고
+  /// 누르면 홈으로 간다(5.5 외부 유입 상세).
+  final bool fromLink;
 
   @override
   ConsumerState<MissingDetailScreen> createState() =>
@@ -102,7 +112,8 @@ class _MissingDetailScreenState extends ConsumerState<MissingDetailScreen> {
   }
 
   void _goBack() {
-    if (context.canPop()) {
+    // 링크로 온 사람에게 뒤는 앱에 들어오기 전의 무언가다. 홈을 보여준다.
+    if (!widget.fromLink && context.canPop()) {
       context.pop();
       return;
     }
@@ -159,9 +170,9 @@ class _MissingDetailScreenState extends ConsumerState<MissingDetailScreen> {
                   elapsedLabel: data == null || data.status != CaseStatus.active
                       ? null
                       : ElapsedTime.fromMinutes(data.elapsedMinutes).label,
-                  isExternalEntry: !context.canPop(),
+                  isExternalEntry: widget.fromLink || !context.canPop(),
                   onLeading: _goBack,
-                  // TODO(공유): 공유 기능이 붙으면 연결한다.
+                  onShare: data == null ? null : () => unawaited(_share(data)),
                 ),
               ),
             ),
@@ -185,6 +196,15 @@ class _MissingDetailScreenState extends ConsumerState<MissingDetailScreen> {
         ),
       },
     );
+  }
+
+  /// 카카오톡으로 보낸다. 받은 사람이 누르면 이 상세가 열린다.
+  Future<void> _share(MissingCaseDetail detail) async {
+    final result = await ref
+        .read(caseSharerProvider)
+        .share(caseShareCardFor(detail));
+    final message = shareResultMessage(result);
+    if (message != null && mounted) _say(message);
   }
 
   // ── 보호자 동작(F-3.8) ─────────────────────────────────────

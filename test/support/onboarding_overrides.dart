@@ -20,11 +20,16 @@ class FakeOnboardingStorage implements OnboardingStorage {
 /// 앱은 스플래시에서 서지만 대부분의 테스트는 그다음 화면을 본다. 기다리는
 /// 시간을 0으로 두고 온보딩을 이미 본 것으로 해서, `pumpAndSettle` 한 번이면
 /// 홈에 닿는다.
-List<Override> startAfterOnboarding({bool seen = true}) => [
+///
+/// [hold]를 주면 스플래시에 그만큼 머문다. 스플래시 중에 들어온 일을 볼 때 쓴다.
+List<Override> startAfterOnboarding({
+  bool seen = true,
+  Duration hold = Duration.zero,
+}) => [
   onboardingStorageProvider.overrideWithValue(
     FakeOnboardingStorage(hasSeen: seen),
   ),
-  splashHoldProvider.overrideWithValue(Duration.zero),
+  splashHoldProvider.overrideWithValue(hold),
   // 그림 디코딩은 진짜 비동기라 가짜 시계 안에서는 끝나지 않는다.
   splashWarmupProvider.overrideWithValue((_) async {}),
 ];

@@ -39,6 +39,7 @@ class DetailTopBar extends StatelessWidget {
   /// 뒤로(또는 홈으로).
   final VoidCallback onLeading;
 
+  /// 카카오톡으로 보낸다. 사건을 아직 못 불러왔으면 null.
   final VoidCallback? onShare;
 
   /// 공유 링크로 들어와 돌아갈 스택이 없다. 이때만 브랜드를 노출한다(5.5).
@@ -47,6 +48,7 @@ class DetailTopBar extends StatelessWidget {
   static const double height = kToolbarHeight;
 
   static const Key leadingButtonKey = Key('detail_top_bar_leading');
+  static const Key shareButtonKey = Key('detail_top_bar_share');
 
   @override
   Widget build(BuildContext context) {
@@ -116,6 +118,7 @@ class DetailTopBar extends StatelessWidget {
                   ),
                 ),
                 _RoundButton(
+                  key: shareButtonKey,
                   circleOpacity: 1 - background,
                   onTap: onShare,
                   semanticsLabel: '공유',

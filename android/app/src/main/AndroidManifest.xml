@@ -34,6 +34,30 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- 앱 링크 `gyeotae://missing/{id}` → 실종자 상세.
+                 adb 시연: adb shell am start -a android.intent.action.VIEW -d "gyeotae://missing/m_xxx" -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="gyeotae"/>
+            </intent-filter>
+            <!-- 카카오톡 공유 메시지의 [곁애에서 보기] → `kakao{앱 키}://kakaolink?missing_id=…`.
+                 로그인 스킴과 키는 같고 host만 다르다. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data
+                    android:scheme="${kakaoAuthScheme}"
+                    android:host="kakaolink"/>
+            </intent-filter>
+            <!-- Flutter 기본 딥링크를 끈다. 켜 두면 라우터가 링크로 곧장 가면서
+                 스플래시를 건너뛰고, 앱이 받은 링크로 한 번 더 열어 상세가 두 겹
+                 쌓인다. 링크는 app_links로 받아 GyeotaeApp이 연다. -->
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="false"/>
         </activity>
         <!-- 카카오 로그인이 끝나고 앱으로 돌아오는 문(S6).
 

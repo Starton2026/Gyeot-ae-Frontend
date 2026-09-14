@@ -5,6 +5,7 @@ import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
 import 'app.dart';
 import 'core/config/env.dart';
+import 'core/link/link_source.dart';
 import 'core/map/kakao_map_init.dart';
 import 'firebase_options.dart';
 
@@ -44,5 +45,11 @@ Future<void> main() async {
     debugPrint('Firebase 초기화 실패 — 푸시 알림 없이 계속합니다: $error');
   }
 
-  runApp(const ProviderScope(child: GyeotaeApp()));
+  runApp(
+    ProviderScope(
+      // 앱 링크·카카오톡 공유로 상세를 연다. 테스트는 이 줄을 타지 않는다.
+      overrides: [linkSourceProvider.overrideWithValue(const AppLinkSource())],
+      child: const GyeotaeApp(),
+    ),
+  );
 }

@@ -39,6 +39,15 @@ class AppRoute {
   /// `/missing/m_ab12cd34`.
   static String missingDetail(String caseId) => '/missing/$caseId';
 
+  /// 앱 밖 링크(앱 링크·카카오톡 공유)로 여는 상세. 뒤로 대신 작은 심볼을
+  /// 두고 누르면 홈으로 간다(기능정의서 5.5 외부 유입 상세).
+  static String missingDetailFromLink(String caseId) =>
+      '/missing/$caseId?$entryParam=$entryLink';
+
+  /// 상세를 어디서 열었는지 싣는 쿼리 키와 값.
+  static const String entryParam = 'from';
+  static const String entryLink = 'link';
+
   /// 제보창(S4). 경로를 만들 때는 [report]를 쓴다.
   static const String reportPath = '/missing/:id/report';
 
@@ -166,8 +175,12 @@ final routerProvider = Provider<GoRouter>((ref) {
                     // AppRoute.missingDetailPath
                     path: ':id',
                     parentNavigatorKey: rootNavigatorKey,
-                    builder: (context, state) =>
-                        MissingDetailScreen(caseId: state.pathParameters['id']!),
+                    builder: (context, state) => MissingDetailScreen(
+                      caseId: state.pathParameters['id']!,
+                      fromLink:
+                          state.uri.queryParameters[AppRoute.entryParam] ==
+                          AppRoute.entryLink,
+                    ),
                     routes: [
                       GoRoute(
                         // AppRoute.caseEditPath

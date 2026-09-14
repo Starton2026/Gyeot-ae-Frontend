@@ -81,5 +81,23 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- 앱 링크 gyeotae://missing/{id}. 카카오톡 공유(kakao{앱 키}://kakaolink)는
+	     iOS에 카카오 스킴을 아직 등록하지 않아 안드로이드에서만 돌아온다. -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>gyeotae</string>
+			</array>
+		</dict>
+	</array>
+	<!-- 링크는 app_links로 받는다. Flutter 기본 딥링크가 켜져 있으면 두 번 열린다. -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kakaolink</string>
+	</array>
 </dict>
 </plist>
