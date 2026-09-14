@@ -197,6 +197,18 @@ void main() {
     expect(card.imageUrl, isNull);
   });
 
+  testWidgets('제보가 없는 사건은 타임라인의 공유 버튼으로도 보낸다', (tester) async {
+    final sharer = FakeCaseSharer();
+    await _pumpDetail(tester, caseId: 'm_cd34ef56', sharer: sharer);
+    await _scrollBy(tester, 900);
+
+    await tester.tap(find.byKey(ReportTimeline.emptyShareButtonKey));
+    await tester.pumpAndSettle();
+
+    // F-3.5.15. 제보 0건이면 더 많은 사람이 보게 하는 것이 할 수 있는 전부다.
+    expect(sharer.cards.single.caseId, 'm_cd34ef56');
+  });
+
   testWidgets('카카오톡이 없으면 왜 공유가 안 되는지 알린다', (tester) async {
     await _pumpDetail(
       tester,

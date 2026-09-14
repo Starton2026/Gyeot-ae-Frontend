@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_icon.dart';
 import '../../../../core/widgets/mascot.dart';
 import '../../../report/data/report.dart';
 import '../missing_detail_providers.dart';
@@ -21,8 +22,12 @@ class ReportTimeline extends StatelessWidget {
     this.origin,
     this.onToggleConfirmed,
     this.onToggleHidden,
+    this.onShare,
     super.key,
   });
+
+  /// 제보가 없을 때 공유 버튼이 부른다(F-3.5.15).
+  final VoidCallback? onShare;
 
   /// 보호자만 준다. 카드마다 확인함·숨기기가 붙는다(F-3.5.13).
   final ValueChanged<Report>? onToggleConfirmed;
@@ -40,6 +45,7 @@ class ReportTimeline extends StatelessWidget {
   final ReportOrigin? origin;
 
   static const Key filterSwitchKey = Key('timeline_filter_switch');
+  static const Key emptyShareButtonKey = Key('timeline_empty_share');
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +64,7 @@ class ReportTimeline extends StatelessWidget {
           ],
         ),
         if (totalCount == 0)
-          const _EmptyTimeline()
+          _EmptyTimeline(onShare: onShare)
         else ...[
           if (view.hiddenCount > 0)
             Padding(
@@ -183,7 +189,9 @@ class _FilterToggle extends StatelessWidget {
 ///
 /// 실패가 아니라 안내의 자리라서 이음이가 나와도 된다(설계 결정 8번).
 class _EmptyTimeline extends StatelessWidget {
-  const _EmptyTimeline();
+  const _EmptyTimeline({this.onShare});
+
+  final VoidCallback? onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -202,6 +210,19 @@ class _EmptyTimeline extends StatelessWidget {
               color: AppColors.textSecondary,
             ),
           ),
+          if (onShare != null) ...[
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              key: ReportTimeline.emptyShareButtonKey,
+              onPressed: onShare,
+              icon: const AppIcon(
+                AppIcons.share,
+                size: 15,
+                color: AppColors.primary,
+              ),
+              label: const Text('카카오톡으로 공유하기'),
+            ),
+          ],
         ],
       ),
     );

@@ -19,6 +19,7 @@ class DetailBody extends StatelessWidget {
     required this.nameKey,
     this.onToggleConfirmed,
     this.onToggleHidden,
+    this.onShare,
     super.key,
   });
 
@@ -32,6 +33,9 @@ class DetailBody extends StatelessWidget {
   /// 보호자만 준다. 제보 카드마다 확인함·숨기기가 붙는다.
   final ValueChanged<Report>? onToggleConfirmed;
   final ValueChanged<Report>? onToggleHidden;
+
+  /// 제보가 없는 사건의 공유 버튼(F-3.5.15). 상단바 공유와 같은 동작이다.
+  final VoidCallback? onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +71,7 @@ class DetailBody extends StatelessWidget {
                   caseId: detail.id,
                   onToggleConfirmed: onToggleConfirmed,
                   onToggleHidden: onToggleHidden,
+                  onShare: onShare,
                 ),
               ],
             ),

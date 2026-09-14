@@ -155,6 +155,7 @@ class _MissingDetailScreenState extends ConsumerState<MissingDetailScreen> {
                 nameKey: _nameKey,
                 onToggleConfirmed: detail.isGuardian ? _toggleConfirmed : null,
                 onToggleHidden: detail.isGuardian ? _toggleHidden : null,
+                onShare: () => unawaited(_share(detail)),
               ),
             ),
             Positioned(

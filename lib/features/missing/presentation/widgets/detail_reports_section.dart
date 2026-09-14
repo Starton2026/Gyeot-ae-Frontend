@@ -26,10 +26,12 @@ class DetailReportsSection extends ConsumerWidget {
     required this.caseId,
     this.onToggleConfirmed,
     this.onToggleHidden,
+    this.onShare,
     super.key,
   });
 
   final String caseId;
+  final VoidCallback? onShare;
   final ValueChanged<Report>? onToggleConfirmed;
   final ValueChanged<Report>? onToggleHidden;
 
@@ -85,6 +87,7 @@ class DetailReportsSection extends ConsumerWidget {
                   .set,
               onToggleConfirmed: onToggleConfirmed,
               onToggleHidden: onToggleHidden,
+              onShare: onShare,
             ),
           ],
         );
