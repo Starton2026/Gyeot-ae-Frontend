@@ -40,6 +40,24 @@ void main() {
     });
   });
 
+  test('알림 대상과 방해 금지 시간을 함께 올린다', () async {
+    final env = _dio();
+
+    await HttpDeviceRegistrar(env.dio).register(
+      pushToken: 'fcm-abc',
+      radiusKm: 10,
+      categories: ['child'],
+      quietHours: (from: '23:00', to: '07:00'),
+    );
+
+    expect(env.adapter.lastRequest!.data, {
+      'push_token': 'fcm-abc',
+      'radius_km': 10,
+      'categories': ['child'],
+      'quiet_hours': {'from': '23:00', 'to': '07:00'},
+    });
+  });
+
   test('위치를 모르면 좌표를 아예 빼고 올린다', () async {
     final env = _dio();
 

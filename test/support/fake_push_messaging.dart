@@ -67,7 +67,16 @@ class FakeDeviceRegistrar implements DeviceRegistrar {
   /// 던질 예외. null이면 성공한다.
   Object? error;
 
-  final List<({String token, double? lat, double? lng, double radiusKm})>
+  final List<
+    ({
+      String token,
+      double? lat,
+      double? lng,
+      double radiusKm,
+      List<String>? categories,
+      ({String from, String to})? quietHours,
+    })
+  >
   calls = [];
 
   @override
@@ -76,8 +85,17 @@ class FakeDeviceRegistrar implements DeviceRegistrar {
     double? lat,
     double? lng,
     double radiusKm = 5,
+    List<String>? categories,
+    ({String from, String to})? quietHours,
   }) async {
-    calls.add((token: pushToken, lat: lat, lng: lng, radiusKm: radiusKm));
+    calls.add((
+      token: pushToken,
+      lat: lat,
+      lng: lng,
+      radiusKm: radiusKm,
+      categories: categories,
+      quietHours: quietHours,
+    ));
 
     final failure = error;
     if (failure != null) throw failure;

@@ -4,6 +4,7 @@ import 'package:gyeotae/core/location/current_location.dart';
 import 'package:gyeotae/core/location/location_source.dart';
 import 'package:gyeotae/core/network/api_exception.dart';
 import 'package:gyeotae/core/network/dio_provider.dart';
+import 'package:gyeotae/core/push/notification_settings.dart';
 import 'package:gyeotae/core/push/push_providers.dart';
 import 'package:gyeotae/features/auth/data/auth_repository.dart';
 import 'package:gyeotae/features/auth/data/auth_session.dart';
@@ -13,6 +14,7 @@ import 'package:gyeotae/features/auth/presentation/auth_providers.dart';
 import '../../support/fake_auth.dart';
 import '../../support/fake_location_source.dart';
 import '../../support/fake_push_messaging.dart';
+import '../../support/in_memory_notification_settings_storage.dart';
 import '../../support/in_memory_token_storage.dart';
 
 const _profile = AuthProfile(
@@ -37,6 +39,8 @@ class _TokenAwareRegistrar extends FakeDeviceRegistrar {
     double? lat,
     double? lng,
     double radiusKm = 5,
+    List<String>? categories,
+    ({String from, String to})? quietHours,
   }) async {
     signedInAs.add(await _tokens.read());
 
@@ -45,6 +49,8 @@ class _TokenAwareRegistrar extends FakeDeviceRegistrar {
       lat: lat,
       lng: lng,
       radiusKm: radiusKm,
+      categories: categories,
+      quietHours: quietHours,
     );
   }
 }
@@ -62,9 +68,13 @@ ProviderContainer _container({
   LocationFix? location,
   InMemoryTokenStorage? tokens,
   AuthRepository? auth,
+  InMemoryNotificationSettingsStorage? settings,
 }) {
   final container = ProviderContainer.test(
     overrides: [
+      notificationSettingsStorageProvider.overrideWithValue(
+        settings ?? InMemoryNotificationSettingsStorage(),
+      ),
       pushMessagingProvider.overrideWithValue(messaging),
       deviceRegistrarProvider.overrideWithValue(registrar),
       locationSourceProvider.overrideWithValue(
@@ -149,6 +159,63 @@ void main() {
     // 안 올리면 그 기기는 조용해진다.
     expect(await container.read(pushRegistrationProvider.future), isTrue);
     expect(registrar.calls.last.token, 'new');
+  });
+
+  group('알림 설정', () {
+    test('저장해 둔 반경·대상·야간 설정을 싣는다', () async {
+      final messaging = FakePushMessaging();
+      final registrar = FakeDeviceRegistrar();
+      final container = _container(
+        messaging: messaging,
+        registrar: registrar,
+        settings: InMemoryNotificationSettingsStorage(
+          const NotificationSettings(
+            radiusKm: 10,
+            child: false,
+            nightAlerts: false,
+          ),
+        ),
+      );
+
+      await container.read(pushRegistrationProvider.future);
+
+      final call = registrar.calls.single;
+      expect(call.radiusKm, 10);
+      expect(call.categories, ['elderly']);
+      expect(call.quietHours, (from: '23:00', to: '07:00'));
+    });
+
+    test('기본값이면 구분과 방해 금지 시간을 싣지 않는다', () async {
+      final messaging = FakePushMessaging();
+      final registrar = FakeDeviceRegistrar();
+      final container = _container(messaging: messaging, registrar: registrar);
+
+      await container.read(pushRegistrationProvider.future);
+
+      // 싣지 않아야 서버가 '그 외' 사건까지 전부, 밤에도 보낸다.
+      final call = registrar.calls.single;
+      expect(call.radiusKm, 5);
+      expect(call.categories, isNull);
+      expect(call.quietHours, isNull);
+    });
+
+    test('설정을 바꾸면 바로 다시 올린다', () async {
+      final messaging = FakePushMessaging();
+      final registrar = FakeDeviceRegistrar();
+      final container = _container(messaging: messaging, registrar: registrar);
+
+      await container.read(pushRegistrationProvider.future);
+      expect(registrar.calls.single.radiusKm, 5);
+
+      await container.read(notificationSettingsProvider.notifier).setRadius(1);
+      await container.pump();
+      await container.read(pushRegistrationProvider.future);
+
+      // 안 올리면 서버는 옛 반경으로 계속 보낸다. 줄였는데 알림이 그대로 오면
+      // 설정이 고장 난 줄 안다.
+      expect(registrar.calls, hasLength(2));
+      expect(registrar.calls.last.radiusKm, 1);
+    });
   });
 
   group('로그인 상태가 바뀌면', () {

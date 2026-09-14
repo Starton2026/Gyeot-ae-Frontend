@@ -14,11 +14,16 @@ abstract interface class DeviceRegistrar {
   /// 그게 맞다 — 기본 좌표를 올리면 가 본 적도 없는 동네 알림을 받는다.
   /// 그래도 등록은 해 둔다. 내가 제보한 사건의 결과 알림은 위치와 상관없이
   /// 받아야 한다.
+  ///
+  /// [categories]가 null이면 모든 구분을, [quietHours]가 null이면 밤에도
+  /// 받는다. **없는 값은 키째 뺀다** — 서버는 빠진 값을 "제한 없음"으로 읽는다.
   Future<void> register({
     required String pushToken,
     double? lat,
     double? lng,
     double radiusKm,
+    List<String>? categories,
+    ({String from, String to})? quietHours,
   });
 }
 
@@ -33,6 +38,8 @@ class HttpDeviceRegistrar implements DeviceRegistrar {
     double? lat,
     double? lng,
     double radiusKm = 5,
+    List<String>? categories,
+    ({String from, String to})? quietHours,
   }) async {
     try {
       await _dio.post<Map<String, dynamic>>(
@@ -42,6 +49,9 @@ class HttpDeviceRegistrar implements DeviceRegistrar {
           'radius_km': radiusKm,
           'lat': ?lat,
           'lng': ?lng,
+          'categories': ?categories,
+          if (quietHours != null)
+            'quiet_hours': {'from': quietHours.from, 'to': quietHours.to},
         },
       );
     } on DioException catch (error) {

@@ -8,6 +8,7 @@ import '../location/current_location.dart';
 import '../network/api_exception.dart';
 import '../network/dio_provider.dart';
 import 'device_registrar.dart';
+import 'notification_settings.dart';
 import 'push_messaging.dart';
 
 /// FCM 창구. 테스트는 override로 갈아끼운다.
@@ -24,11 +25,6 @@ final deviceRegistrarProvider = Provider<DeviceRegistrar>((ref) {
   return HttpDeviceRegistrar(ref.watch(dioProvider));
 });
 
-/// 알림 반경. 기능정의서 F-8.6은 1/3/5/10km를 주기로 되어 있다.
-///
-/// TODO(F-8.6): MY의 알림 설정이 생기면 저장된 값을 읽어 이 자리를 채운다.
-final pushRadiusKmProvider = Provider<double>((ref) => 5);
-
 /// 앱이 서면 푸시 토큰을 서버에 올린다.
 ///
 /// **위치가 잡히면 다시 올린다.** 처음에는 좌표를 모르는 채로 올라가고(그래도
@@ -40,6 +36,9 @@ final pushRadiusKmProvider = Provider<double>((ref) => 5);
 /// 찾는다. 앱을 켠 뒤에 로그인하면 그 사실이 서버에 닿지 않아, 방금 등록한
 /// 보호자가 제보 알림을 못 받는다. 로그아웃하고 안 올리면 반대로 그 폰에
 /// 남의 계정 알림이 계속 간다.
+///
+/// **알림 설정(F-8.6)을 바꾸면 다시 올린다.** 안 올리면 서버는 옛 반경으로
+/// 계속 보내고, 줄였는데 알림이 그대로 오면 설정이 고장 난 줄 안다.
 ///
 /// 실패해도 조용히 넘어간다. 알림을 못 받는 것보다 알림 등록 실패로 앱이
 /// 멈추는 쪽이 나쁘다.
@@ -70,9 +69,17 @@ final pushRegistrationProvider = FutureProvider<bool>((ref) async {
     (previous, next) => ref.invalidateSelf(),
   );
 
+  // 설정은 기기에서 읽어 오류가 나지 않는다(못 읽으면 기본값). 같은 이유로
+  // 읽은 뒤에 listen으로 걸어, 바뀔 때만 다시 돈다.
+  final settings = await ref.read(notificationSettingsProvider.future);
+  if (!ref.mounted) return false;
+  ref.listen(
+    notificationSettingsProvider.select((async) => async.value),
+    (previous, next) => ref.invalidateSelf(),
+  );
+
   final location = ref.watch(currentLocationProvider);
   final registrar = ref.watch(deviceRegistrarProvider);
-  final radiusKm = ref.watch(pushRadiusKmProvider);
 
   try {
     await registrar.register(
@@ -80,7 +87,9 @@ final pushRegistrationProvider = FutureProvider<bool>((ref) async {
       // 기본 좌표는 보내지 않는다. 진짜로 받은 좌표만 반경의 기준이 된다.
       lat: location.resolved ? location.lat : null,
       lng: location.resolved ? location.lng : null,
-      radiusKm: radiusKm,
+      radiusKm: settings.radiusKm.toDouble(),
+      categories: settings.categories,
+      quietHours: settings.quietHours,
     );
 
     return true;
