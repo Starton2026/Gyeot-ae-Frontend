@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gyeotae/core/network/api_exception.dart';
+import 'package:gyeotae/features/missing/data/case_edit.dart';
 import 'package:gyeotae/features/missing/data/http_missing_repository.dart';
 import 'package:gyeotae/features/missing/data/missing_case.dart';
 
@@ -230,6 +231,115 @@ void main() {
               .having((e) => e.code, 'code', ApiErrorCode.faceNotFound)
               .having((e) => e.field, '문제가 된 칸', 'photos'),
         ),
+      );
+    });
+  });
+
+  _guardianTests();
+}
+
+void _guardianTests() {
+  group('보호자', () {
+    test('정보 수정은 고칠 수 있는 칸만 PATCH로 보내고 바뀐 상세를 읽는다', () async {
+      final env = _dio(
+        body: {
+          ..._summary,
+          'description': '빨간 우비',
+          'photos': ['/uploads/m_1_a.jpg'],
+          'height_cm': 120,
+          'weight_kg': null,
+          'match_count': 1,
+          'is_guardian': true,
+        },
+      );
+
+      final detail = await HttpMissingRepository(env.dio).updateCase(
+        'm_1',
+        const CaseEdit(
+          description: '빨간 우비',
+          lastLat: 37.5,
+          lastLng: 126.8,
+          lastAddress: '구월동',
+          heightCm: 120,
+        ),
+      );
+
+      final request = env.adapter.lastRequest!;
+      expect(request.method, 'PATCH');
+      expect(request.path, '/missing/m_1');
+      // 이름·나이·구분·실종 일시는 싣지 않는다. 서버가 400으로 막는 칸이다.
+      // 몸무게를 비우면 null로 보내 지운다.
+      expect(request.data, {
+        'description': '빨간 우비',
+        'last_lat': 37.5,
+        'last_lng': 126.8,
+        'last_address': '구월동',
+        'height_cm': 120,
+        'weight_kg': null,
+      });
+      expect(detail.description, '빨간 우비');
+      expect(detail.isGuardian, isTrue);
+    });
+
+    test('빈 주소는 null로 보낸다', () {
+      const edit = CaseEdit(
+        description: '노란 후드티',
+        lastLat: 37.5,
+        lastLng: 126.8,
+        lastAddress: '  ',
+      );
+
+      expect(edit.toJson()['last_address'], isNull);
+    });
+
+    test('사진 추가는 여러 장을 multipart로 올리고 다시 분석한 제보 수를 읽는다', () async {
+      final env = _dio(
+        body: {
+          'photos': ['/uploads/a.jpg', '/uploads/b.jpg', '/uploads/c.jpg'],
+          'face_encoding_count': 3,
+          'reanalyzed_reports': 6,
+        },
+      );
+
+      final result = await HttpMissingRepository(
+        env.dio,
+      ).addPhotos('m_1', [_photoFile('b.jpg').path, _photoFile('c.jpg').path]);
+
+      final request = env.adapter.lastRequest!;
+      expect(request.method, 'POST');
+      expect(request.path, '/missing/m_1/photos');
+      final form = request.data as FormData;
+      expect(form.files.where((entry) => entry.key == 'photos'), hasLength(2));
+      expect(result.photoCount, 3);
+      expect(result.reanalyzedReports, 6);
+    });
+
+    test('발견 완료는 결과 알림이 갈 제보자 수를 읽는다', () async {
+      final env = _dio(
+        body: {
+          'status': 'resolved',
+          'resolved_at': '2026-09-14T18:00:00+09:00',
+          'notified_reporters': 4,
+        },
+      );
+
+      final notified = await HttpMissingRepository(env.dio).resolveCase('m_1');
+
+      expect(env.adapter.lastRequest!.path, '/missing/m_1/resolve');
+      expect(notified, 4);
+    });
+
+    test('보호자가 아니면 FORBIDDEN으로 던진다', () async {
+      final env = _dio(
+        statusCode: 403,
+        body: {
+          'error': {'code': 'FORBIDDEN', 'message': '등록한 보호자만 할 수 있습니다.'},
+        },
+      );
+
+      await expectLater(
+        HttpMissingRepository(env.dio).resolveCase('m_1'),
+        throwsA(isA<ApiException>().having((e) => e.statusCode, '상태', 403)),
       );
     });
   });

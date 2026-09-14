@@ -5,6 +5,7 @@ import 'package:gyeotae/core/location/location_source.dart';
 import 'package:gyeotae/core/map/map_plan.dart';
 import 'package:gyeotae/core/widgets/map_pin_icon.dart';
 import 'package:gyeotae/features/home/presentation/home_providers.dart';
+import 'package:gyeotae/features/missing/data/case_edit.dart';
 import 'package:gyeotae/features/missing/data/missing_case.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 
@@ -80,6 +81,17 @@ class _ListRepository implements MissingRepository {
   @override
   Future<MissingCaseRegistration> register(MissingCaseDraft draft) =>
       throw UnimplementedError();
+
+  @override
+  Future<MissingCaseDetail> updateCase(String id, CaseEdit edit) =>
+      throw UnimplementedError();
+
+  @override
+  Future<PhotoAddResult> addPhotos(String id, List<String> photoPaths) =>
+      throw UnimplementedError();
+
+  @override
+  Future<int> resolveCase(String id) => throw UnimplementedError();
 }
 
 void main() {

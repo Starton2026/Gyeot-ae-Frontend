@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gyeotae/features/missing/data/case_edit.dart';
 import 'package:gyeotae/features/missing/data/missing_case.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/presentation/missing_list_providers.dart';
@@ -55,6 +56,17 @@ class _RecordingRepository implements MissingRepository {
   @override
   Future<MissingCaseRegistration> register(MissingCaseDraft draft) =>
       throw UnimplementedError();
+
+  @override
+  Future<MissingCaseDetail> updateCase(String id, CaseEdit edit) =>
+      throw UnimplementedError();
+
+  @override
+  Future<PhotoAddResult> addPhotos(String id, List<String> photoPaths) =>
+      throw UnimplementedError();
+
+  @override
+  Future<int> resolveCase(String id) => throw UnimplementedError();
 }
 
 MissingCaseSummary _summary(String id) {

@@ -238,4 +238,56 @@ void main() {
       expect(bundle.hiddenCount, 2);
     });
   });
+
+  group('제보 관리(보호자)', () {
+    const reportJson = {
+      'id': 'r_1',
+      'route_index': null,
+      'lat': 37.46,
+      'lng': 126.74,
+      'observed_at': '2026-09-14T11:00:00+09:00',
+      'created_at': '2026-09-14T11:01:00+09:00',
+      'similarity': 82.1,
+      'grade': 'high',
+      'face_found': true,
+      'photo_url': '/uploads/r_1.jpg',
+      'status': 'hidden',
+      'confirmed': false,
+    };
+
+    test('숨기기는 status만 PATCH로 보낸다', () async {
+      final env = _dio(body: reportJson);
+
+      final report = await HttpReportRepository(
+        env.dio,
+      ).updateReport('r_1', hidden: true);
+
+      final request = env.adapter.lastRequest!;
+      expect(request.method, 'PATCH');
+      expect(request.path, '/reports/r_1');
+      expect(request.data, {'status': 'hidden'});
+      expect(report.status, ReportStatus.hidden);
+    });
+
+    test('확인함은 confirmed만 보낸다', () async {
+      final env = _dio(
+        body: {...reportJson, 'status': 'visible', 'confirmed': true},
+      );
+
+      final report = await HttpReportRepository(
+        env.dio,
+      ).updateReport('r_1', confirmed: true);
+
+      expect(env.adapter.lastRequest!.data, {'confirmed': true});
+      expect(report.confirmed, isTrue);
+    });
+
+    test('다시 보이기는 visible을 보낸다', () async {
+      final env = _dio(body: {...reportJson, 'status': 'visible'});
+
+      await HttpReportRepository(env.dio).updateReport('r_1', hidden: false);
+
+      expect(env.adapter.lastRequest!.data, {'status': 'visible'});
+    });
+  });
 }

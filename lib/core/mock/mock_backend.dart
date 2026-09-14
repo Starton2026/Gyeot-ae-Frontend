@@ -43,6 +43,13 @@ class MockBackend {
     return null;
   }
 
+  Map<String, dynamic>? findReport(String id) {
+    for (final report in _reports) {
+      if (report['id'] == id) return report;
+    }
+    return null;
+  }
+
   List<Map<String, dynamic>> reportsFor(String caseId) {
     return _reports
         .where((report) => report['missing_id'] == caseId)

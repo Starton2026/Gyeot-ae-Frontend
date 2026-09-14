@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/dio_provider.dart';
+import '../../auth/presentation/auth_providers.dart';
 import 'analysis.dart';
 import 'http_report_repository.dart';
 import 'report.dart';
@@ -50,6 +51,13 @@ abstract interface class ReportRepository {
     bool includeLow,
     DateTime? until,
   });
+
+  /// 제보 관리. API 명세서 16) `PATCH /reports/{id}`. **사건 보호자만.**
+  ///
+  /// [hidden]이 true면 허위·중복으로 숨긴다(경로에서 빠지고 시민에게 안
+  /// 보인다). false면 되돌린다. [confirmed]는 보호자가 직접 확인했다는 표시다.
+  /// **지우지 않는다.** 둘 중 하나는 줘야 한다.
+  Future<Report> updateReport(String reportId, {bool? hidden, bool? confirmed});
 }
 
 /// 백엔드를 부른다. 테스트는 `MockReportRepository`로 override한다.
@@ -68,5 +76,8 @@ final caseReportsProvider = FutureProvider.family<ReportBundle, String>((
   ref,
   caseId,
 ) async {
+  // 보호자에게는 숨긴 제보도 온다. 로그인이 바뀌면 다시 받는다.
+  ref.watch(authProvider.select((auth) => auth.value?.id));
+
   return ref.watch(reportRepositoryProvider).fetchReports(caseId);
 });

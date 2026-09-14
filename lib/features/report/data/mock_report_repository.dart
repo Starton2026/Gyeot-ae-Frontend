@@ -84,8 +84,14 @@ class MockReportRepository implements ReportRepository {
     if (record == null) throw _notFound();
 
     final enriched = _enrich(_backend.reportsFor(missingId), missingId);
+    // 숨긴 제보는 보호자에게만 보인다(서버와 같다).
+    final guardian = record['is_guardian'] == true;
 
     final visible = enriched.where((report) {
+      if (report['status'] == ReportStatus.hidden.wire && !guardian) {
+        return false;
+      }
+
       final observedAt = DateTime.parse(report['observed_at'] as String);
       if (until != null && observedAt.isAfter(until)) return false;
 
@@ -173,7 +179,11 @@ class MockReportRepository implements ReportRepository {
       final lng = report['lng'] as double?;
 
       // 좌표가 없으면 선에 낄 자리가 없다. 저장은 그대로 된다(설계 결정 3번).
-      if (!grade.countsTowardPath || lat == null || lng == null) {
+      // 보호자가 숨긴 제보도 경로에서 빠진다.
+      if (!grade.countsTowardPath ||
+          lat == null ||
+          lng == null ||
+          report['status'] == ReportStatus.hidden.wire) {
         return {...report, 'route_index': null};
       }
 
@@ -202,6 +212,39 @@ class MockReportRepository implements ReportRepository {
     }).toList();
   }
 
+  @override
+  Future<Report> updateReport(
+    String reportId, {
+    bool? hidden,
+    bool? confirmed,
+  }) async {
+    await _delay(latency);
+
+    final report = _backend.findReport(reportId);
+    if (report == null) throw _notFound();
+
+    final missingId = report['missing_id'] as String;
+    if (_backend.findCase(missingId)?['is_guardian'] != true) {
+      throw const ApiException(
+        '사건을 등록한 보호자만 할 수 있습니다.',
+        statusCode: 403,
+        code: ApiErrorCode.forbidden,
+      );
+    }
+
+    if (hidden != null) {
+      report['status'] = hidden
+          ? ReportStatus.hidden.wire
+          : ReportStatus.visible.wire;
+    }
+    if (confirmed != null) report['confirmed'] = confirmed;
+
+    final enriched = _enrich(_backend.reportsFor(missingId), missingId);
+    return Report.fromJson(
+      enriched.firstWhere((item) => item['id'] == reportId),
+    );
+  }
+
   /// 8방위 문자열. 배회가 잦은 부모를 찾는 보호자가 방향을 판단할 때 쓴다.
   String _bearing(double lat1, double lng1, double lat2, double lng2) {
     const names = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
@@ -211,9 +254,7 @@ class MockReportRepository implements ReportRepository {
     final y = math.sin(dLng) * math.cos(toRadians(lat2));
     final x =
         math.cos(toRadians(lat1)) * math.sin(toRadians(lat2)) -
-        math.sin(toRadians(lat1)) *
-            math.cos(toRadians(lat2)) *
-            math.cos(dLng);
+        math.sin(toRadians(lat1)) * math.cos(toRadians(lat2)) * math.cos(dLng);
 
     final degrees = (math.atan2(y, x) * 180 / math.pi + 360) % 360;
     return names[((degrees + 22.5) ~/ 45) % 8];

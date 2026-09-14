@@ -124,4 +124,28 @@ class HttpReportRepository implements ReportRepository {
       throw ApiException.from(error);
     }
   }
+
+  @override
+  Future<Report> updateReport(
+    String reportId, {
+    bool? hidden,
+    bool? confirmed,
+  }) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        '/reports/$reportId',
+        data: {
+          if (hidden != null)
+            'status': hidden
+                ? ReportStatus.hidden.wire
+                : ReportStatus.visible.wire,
+          'confirmed': ?confirmed,
+        },
+      );
+
+      return Report.fromJson(response.data ?? const <String, dynamic>{});
+    } on DioException catch (error) {
+      throw ApiException.from(error);
+    }
+  }
 }

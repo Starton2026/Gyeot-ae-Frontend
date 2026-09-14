@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/json.dart';
+import 'case_edit.dart';
 import 'missing_case.dart';
 import 'missing_repository.dart';
 
@@ -97,6 +98,59 @@ class HttpMissingRepository implements MissingRepository {
     } on DioException catch (error) {
       // 모든 사진에서 얼굴을 못 찾으면 FACE_NOT_FOUND로 거부된다. 등록은
       // 제보와 달리 얼굴이 있어야 한다(설계 결정 4번).
+      throw ApiException.from(error);
+    }
+  }
+
+  @override
+  Future<MissingCaseDetail> updateCase(String id, CaseEdit edit) async {
+    try {
+      final response = await _dio.patch<Map<String, dynamic>>(
+        '/missing/$id',
+        data: edit.toJson(),
+      );
+
+      return MissingCaseDetail.fromJson(
+        response.data ?? const <String, dynamic>{},
+      );
+    } on DioException catch (error) {
+      throw ApiException.from(error);
+    }
+  }
+
+  @override
+  Future<PhotoAddResult> addPhotos(String id, List<String> photoPaths) async {
+    try {
+      final form = FormData.fromMap({
+        'photos': [
+          for (final path in photoPaths) await MultipartFile.fromFile(path),
+        ],
+      });
+
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/missing/$id/photos',
+        data: form,
+      );
+      final data = response.data ?? const <String, dynamic>{};
+
+      return (
+        photoCount: (data['photos'] as List?)?.length ?? 0,
+        reanalyzedReports: jsonInt(data['reanalyzed_reports']),
+      );
+    } on DioException catch (error) {
+      throw ApiException.from(error);
+    }
+  }
+
+  @override
+  Future<int> resolveCase(String id) async {
+    try {
+      final response = await _dio.post<Map<String, dynamic>>(
+        '/missing/$id/resolve',
+      );
+
+      return jsonInt(response.data?['notified_reporters']);
+    } on DioException catch (error) {
       throw ApiException.from(error);
     }
   }

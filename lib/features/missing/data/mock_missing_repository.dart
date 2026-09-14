@@ -1,5 +1,6 @@
 import '../../../core/mock/mock_backend.dart';
 import '../../../core/network/api_exception.dart';
+import 'case_edit.dart';
 import 'missing_case.dart';
 import 'missing_repository.dart';
 
@@ -101,6 +102,59 @@ class MockMissingRepository implements MissingRepository {
 
     final record = _backend.addCase(draft);
     return MissingCaseRegistration.fromJson(_backend.registrationJson(record));
+  }
+
+  @override
+  Future<MissingCaseDetail> updateCase(String id, CaseEdit edit) async {
+    await _delay();
+
+    final record = _backend.findCase(id);
+    if (record == null) throw _notFound();
+    if (record['is_guardian'] != true) throw _forbidden();
+
+    record.addAll(edit.toJson());
+    return MissingCaseDetail.fromJson(_backend.detailJson(record));
+  }
+
+  @override
+  Future<PhotoAddResult> addPhotos(String id, List<String> photoPaths) async {
+    await _delay();
+
+    final record = _backend.findCase(id);
+    if (record == null) throw _notFound();
+    if (record['is_guardian'] != true) throw _forbidden();
+
+    final photos = [
+      ...(record['photos'] as List?)?.cast<String>() ?? const <String>[],
+      ...photoPaths,
+    ];
+    record['photos'] = photos;
+
+    // mock은 유사도를 다시 계산하지 않는다. 몇 건을 다시 봤는지만 흉내 낸다.
+    return (
+      photoCount: photos.length,
+      reanalyzedReports: _backend.reportsFor(id).length,
+    );
+  }
+
+  @override
+  Future<int> resolveCase(String id) async {
+    await _delay();
+
+    final record = _backend.findCase(id);
+    if (record == null) throw _notFound();
+    if (record['is_guardian'] != true) throw _forbidden();
+
+    record['status'] = CaseStatus.resolved.wire;
+    return _backend.reportsFor(id).length;
+  }
+
+  ApiException _forbidden() {
+    return const ApiException(
+      '등록한 보호자만 할 수 있습니다.',
+      statusCode: 403,
+      code: ApiErrorCode.forbidden,
+    );
   }
 
   bool _matchesStatus(MissingCaseSummary item, CaseStatusFilter filter) {
