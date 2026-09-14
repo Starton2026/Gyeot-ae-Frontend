@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gyeotae/core/network/api_exception.dart';
 import 'package:gyeotae/core/network/dio_provider.dart';
+import 'package:gyeotae/core/router/app_router.dart';
 import 'package:gyeotae/core/theme/app_theme.dart';
 import 'package:gyeotae/core/widgets/loading_view.dart';
 import 'package:gyeotae/core/widgets/resolve_case_dialog.dart';
@@ -118,7 +120,20 @@ Future<void> _pumpMy(
           );
         }),
       ],
-      child: MaterialApp(theme: AppTheme.light, home: const MyScreen()),
+      child: MaterialApp.router(
+        theme: AppTheme.light,
+        routerConfig: GoRouter(
+          routes: [
+            GoRoute(path: '/', builder: (context, state) => const MyScreen()),
+            // 어느 사건으로 갔는지만 본다. 상세 화면은 따로 테스트한다.
+            GoRoute(
+              path: AppRoute.missingDetailPath,
+              builder: (context, state) =>
+                  Text('상세 ${state.pathParameters['id']}'),
+            ),
+          ],
+        ),
+      ),
     ),
   );
   if (settle) {
@@ -501,6 +516,51 @@ void main() {
 
       expect(find.byKey(MyCaseCard.resolveButtonKey), findsNothing);
     });
+
+    testWidgets('사건을 누르면 그 사건 상세로 간다', (tester) async {
+      await _pumpMy(
+        tester,
+        signedIn: true,
+        cases: MissingCaseList(count: 1, items: [fakeMyCase(id: 'm_7')]),
+      );
+
+      // 정보 수정·사진 추가·제보 관리는 상세에 있다. MY에서 바로 들어가야 한다.
+      await tester.tap(find.text('제보 6건'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('상세 m_7'), findsOneWidget);
+    });
+
+    testWidgets('지난 사건도 눌러서 상세로 간다', (tester) async {
+      await _pumpMy(
+        tester,
+        signedIn: true,
+        cases: MissingCaseList(
+          count: 1,
+          items: [fakeMyCase(id: 'm_old', status: CaseStatus.resolved)],
+        ),
+      );
+
+      await tester.tap(find.byType(MyCaseCard));
+      await tester.pumpAndSettle();
+
+      expect(find.text('상세 m_old'), findsOneWidget);
+    });
+
+    testWidgets('발견 완료 버튼은 상세로 가지 않고 확인 창만 띄운다', (tester) async {
+      await _pumpMy(
+        tester,
+        signedIn: true,
+        cases: MissingCaseList(count: 1, items: [fakeMyCase()]),
+      );
+
+      await tester.tap(find.byKey(MyCaseCard.resolveButtonKey));
+      await tester.pumpAndSettle();
+
+      // 카드 전체가 눌리는 자리 안에 버튼이 있다. 버튼이 탭을 삼켜야 한다.
+      expect(find.textContaining('찾으셨나요'), findsOneWidget);
+      expect(find.text('상세 m_1'), findsNothing);
+    });
   });
 
   group('제보 한 건', () {
@@ -538,6 +598,35 @@ void main() {
       );
 
       expect(find.textContaining('발견 완료'), findsOneWidget);
+    });
+
+    testWidgets('누르면 제보한 사건 상세로 간다', (tester) async {
+      await _pumpMy(
+        tester,
+        reports: MyReportList(
+          count: 1,
+          items: [fakeMyReport(missingId: 'm_9')],
+        ),
+      );
+
+      // 게스트도 된다. 내 사진이 경로 어디에 놓였는지는 상세에서 보인다.
+      await tester.tap(find.byType(MyReportTile));
+      await tester.pumpAndSettle();
+
+      expect(find.text('상세 m_9'), findsOneWidget);
+    });
+
+    testWidgets('사건 id를 모르면 눌리지 않는다', (tester) async {
+      await _pumpMy(
+        tester,
+        reports: MyReportList(count: 1, items: [fakeMyReport(missingId: null)]),
+      );
+
+      await tester.tap(find.byType(MyReportTile));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(MyScreen), findsOneWidget);
+      expect(find.textContaining('상세'), findsNothing);
     });
   });
 

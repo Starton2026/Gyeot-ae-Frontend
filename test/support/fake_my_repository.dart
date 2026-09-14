@@ -70,6 +70,7 @@ MissingCaseSummary fakeMyCase({
 /// 제보 한 건. 필요한 값만 이름으로 바꿔 쓴다.
 MyReport fakeMyReport({
   String id = 'r_1',
+  String? missingId = 'm_1',
   String missingName = '김하준',
   CaseStatus missingStatus = CaseStatus.active,
   double? similarity = 82.1,
@@ -79,6 +80,7 @@ MyReport fakeMyReport({
 }) {
   return MyReport(
     id: id,
+    missingId: missingId,
     missingName: missingName,
     missingStatus: missingStatus,
     similarity: similarity,

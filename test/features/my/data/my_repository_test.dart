@@ -31,6 +31,7 @@ void main() {
         'items': [
           {
             'id': 'r_01',
+            'missing_id': 'm_1',
             'missing_name': '김하준',
             'missing_thumbnail': '/uploads/m_1_thumb.jpg',
             'missing_status': 'resolved',
@@ -58,9 +59,13 @@ void main() {
     expect(env.adapter.lastRequest!.path, '/me/reports');
 
     expect(list.count, 2);
+    expect(list.items.first.missingId, 'm_1');
     expect(list.items.first.missingName, '김하준');
     expect(list.items.first.missingStatus, CaseStatus.resolved);
     expect(list.items.first.contributedToPath, isTrue);
+
+    // 명세서 예시에 없는 값이다. 옛 서버가 안 줘도 읽기는 깨지지 않는다.
+    expect(list.items.last.missingId, isNull);
 
     // 얼굴을 못 찾은 제보도 이력에 남는다(설계 결정 4번).
     expect(list.items.last.similarity, isNull);

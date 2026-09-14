@@ -202,6 +202,8 @@ class _MyCases extends ConsumerWidget {
           for (final item in active)
             MyCaseCard(
               summary: item,
+              // 상세가 곧 사건 관리 화면이다. 정보 수정·사진 추가·제보 관리가 거기 있다.
+              onTap: () => _openCase(context, item.id),
               onResolve: () => unawaited(_confirmResolve(context, ref, item)),
             ),
         ],
@@ -209,7 +211,13 @@ class _MyCases extends ConsumerWidget {
           MySectionHeader(title: '지난 사건', trailing: '${resolved.length}건'),
           MyFoldedList(
             collapsedCount: MyScreen.pastCasesPreview,
-            children: [for (final item in resolved) MyCaseCard(summary: item)],
+            children: [
+              for (final item in resolved)
+                MyCaseCard(
+                  summary: item,
+                  onTap: () => _openCase(context, item.id),
+                ),
+            ],
           ),
         ],
       ],
@@ -256,11 +264,24 @@ class _MyReports extends ConsumerWidget {
           : MyFoldedList(
               collapsedCount: MyScreen.reportsPreview,
               children: [
-                for (final report in data.items) MyReportTile(report: report),
+                for (final report in data.items)
+                  MyReportTile(
+                    report: report,
+                    // 내 제보가 경로 어디에 놓였는지, 그 사람을 찾았는지 본다.
+                    onTap: switch (report.missingId) {
+                      final caseId? => () => _openCase(context, caseId),
+                      null => null,
+                    },
+                  ),
               ],
             ),
     );
   }
+}
+
+/// 사건 상세(S3)를 MY 위에 쌓는다. 돌아오면 MY가 그대로 있다.
+void _openCase(BuildContext context, String caseId) {
+  unawaited(context.push(AppRoute.missingDetail(caseId)));
 }
 
 /// 아직 제보한 적이 없다.

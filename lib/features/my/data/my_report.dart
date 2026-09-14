@@ -11,6 +11,7 @@ class MyReport {
     required this.id,
     required this.missingName,
     required this.missingStatus,
+    this.missingId,
     this.missingAge,
     this.missingGender,
     required this.grade,
@@ -21,6 +22,11 @@ class MyReport {
   });
 
   final String id;
+
+  /// 제보한 사건. 누르면 그 사건 상세로 간다.
+  ///
+  /// 명세서 18) 예시에는 없는 값이라, 옛 서버가 안 주면 null이고 눌리지 않는다.
+  final String? missingId;
 
   final String missingName;
 
@@ -59,6 +65,7 @@ class MyReport {
   factory MyReport.fromJson(Map<String, dynamic> json) {
     return MyReport(
       id: jsonString(json['id']),
+      missingId: jsonStringOrNull(json['missing_id']),
       missingName: jsonString(json['missing_name']),
       missingAge: jsonIntOrNull(json['missing_age']),
       missingGender: json['missing_gender'] == null

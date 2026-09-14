@@ -18,7 +18,7 @@ class MyReportTile extends StatelessWidget {
 
   final MyReport report;
 
-  /// 누르면 그 사건으로. 아직 연결하지 않았으면 null이라 눌리지 않는다.
+  /// 누르면 그 사건으로. 사건 id를 모르면 null이라 눌리지 않는다.
   final VoidCallback? onTap;
 
   @override
