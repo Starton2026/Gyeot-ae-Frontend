@@ -16,12 +16,25 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   const AppTopBar.brand({super.key})
     : title = null,
       onClose = null,
+      onBack = null,
       action = null;
 
   /// 실종자·지도·MY. 가운데에 화면 제목을 둔다.
   const AppTopBar.title(String this.title, {super.key})
     : onClose = null,
+      onBack = null,
       action = null;
+
+  /// 탭에서 한 칸 들어간 화면(MY → 알림 설정). 뒤로 + 제목.
+  ///
+  /// 쓰던 것을 버리는 화면이 아니라 들어온 곳으로 돌아가는 화면이라 닫기(X)가
+  /// 아니라 뒤로 가기를 둔다. 알림 버튼도 두지 않는다.
+  const AppTopBar.back(
+    String this.title, {
+    required VoidCallback this.onBack,
+    super.key,
+  }) : onClose = null,
+       action = null;
 
   /// 제보창(S4)·등록 폼(S7). 닫기(X) + 제목.
   ///
@@ -33,17 +46,21 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     required VoidCallback this.onClose,
     this.action,
     super.key,
-  });
+  }) : onBack = null;
 
   final String? title;
 
   /// 닫기를 눌렀을 때. null이면 탭 상단바다.
   final VoidCallback? onClose;
 
+  /// 뒤로를 눌렀을 때. [AppTopBar.back]에만 있다.
+  final VoidCallback? onBack;
+
   /// 모달 상단바 오른쪽에 두는 것. 없으면 비운다.
   final Widget? action;
 
   static const Key closeButtonKey = Key('app_top_bar_close');
+  static const Key backButtonKey = Key('app_top_bar_back');
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -52,20 +69,32 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final label = title;
     final close = onClose;
+    final back = onBack;
     final trailing = action;
 
     return AppBar(
       title: label == null ? const _Wordmark() : Text(label),
-      leading: close == null
-          ? null
-          : IconButton(
+      leading: close != null
+          ? IconButton(
               key: closeButtonKey,
               onPressed: close,
               icon: const Icon(Icons.close_rounded, size: 24),
               color: AppColors.textSecondary,
               tooltip: '닫기',
-            ),
-      actions: close != null
+            )
+          : back != null
+          ? IconButton(
+              key: backButtonKey,
+              onPressed: back,
+              icon: const AppIcon(
+                AppIcons.leftArrow,
+                size: 17,
+                color: AppColors.textPrimary,
+              ),
+              tooltip: '뒤로',
+            )
+          : null,
+      actions: close != null || back != null
           ? [
               ?trailing,
               if (trailing != null) const SizedBox(width: 6),

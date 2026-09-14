@@ -13,9 +13,17 @@ import '../../../../core/widgets/app_icon.dart';
 /// 로그아웃은 반대로 **로그인한 사람에게만 보인다.** 게스트에게 자물쇠 달린
 /// 로그아웃은 뜻이 없다. 맨 끝에 두어 다른 메뉴를 누르려다 잘못 누르지 않게 한다.
 class MyMenu extends StatelessWidget {
-  const MyMenu({required this.signedIn, this.onSignOut, super.key});
+  const MyMenu({
+    required this.signedIn,
+    this.onNotificationSettings,
+    this.onSignOut,
+    super.key,
+  });
 
   final bool signedIn;
+
+  /// 알림 설정을 눌렀을 때. 게스트면 자물쇠라 불리지 않는다.
+  final VoidCallback? onNotificationSettings;
 
   /// 로그아웃을 눌렀을 때. 확인은 부르는 쪽이 받는다.
   final VoidCallback? onSignOut;
@@ -31,8 +39,8 @@ class MyMenu extends StatelessWidget {
           key: notificationKey,
           icon: Icons.notifications_none_rounded,
           label: '알림 설정',
-          // TODO(S8): 알림 설정 화면(반경·대상·야간 수신)이 생기면 연결한다.
           locked: !signedIn,
+          onTap: signedIn ? onNotificationSettings : null,
         ),
         const _MenuRow(icon: Icons.info_outline, label: '곁애 소개'),
         const _MenuRow(icon: Icons.description_outlined, label: '약관 및 개인정보'),
@@ -51,8 +59,9 @@ class MyMenu extends StatelessWidget {
 
 /// 메뉴 한 줄.
 ///
-/// TODO(S8): 알림 설정·곁애 소개·약관 화면이 생기면 누를 수 있게 한다. 지금은
-/// 로그아웃만 눌린다 — 눌러도 아무 일이 없는 것보다 안 눌리는 쪽이 덜 헷갈린다.
+/// TODO(S8): 곁애 소개·약관 화면이 생기면 누를 수 있게 한다. 지금은 알림
+/// 설정과 로그아웃만 눌린다 — 눌러도 아무 일이 없는 것보다 안 눌리는 쪽이 덜
+/// 헷갈린다.
 class _MenuRow extends StatelessWidget {
   const _MenuRow({
     required this.icon,

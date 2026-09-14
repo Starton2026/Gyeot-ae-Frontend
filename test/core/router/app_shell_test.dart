@@ -10,6 +10,7 @@ import 'package:gyeotae/core/mock/mock_backend.dart';
 import 'package:gyeotae/core/network/dio_provider.dart';
 import 'package:gyeotae/core/router/app_router.dart';
 import 'package:gyeotae/core/widgets/app_bottom_nav.dart';
+import 'package:gyeotae/core/widgets/app_top_bar.dart';
 import 'package:gyeotae/features/auth/data/auth_repository.dart';
 import 'package:gyeotae/features/auth/data/auth_session.dart';
 import 'package:gyeotae/features/home/presentation/home_screen.dart';
@@ -18,6 +19,8 @@ import 'package:gyeotae/features/missing/presentation/missing_detail_screen.dart
 import 'package:gyeotae/features/missing/presentation/missing_list_screen.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/missing_search_field.dart';
 import 'package:gyeotae/features/my/presentation/my_screen.dart';
+import 'package:gyeotae/features/my/presentation/notification_settings_screen.dart';
+import 'package:gyeotae/features/my/presentation/widgets/my_menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../support/fake_auth.dart';
@@ -171,6 +174,32 @@ void main() {
 
     await _goTab(tester, 'MY');
     expect(find.text('김보호'), findsOneWidget);
+  });
+
+  testWidgets('MY에서 알림 설정을 열고 뒤로 돌아온다', (tester) async {
+    await _launch(
+      tester,
+      extra: [
+        tokenStorageProvider.overrideWithValue(InMemoryTokenStorage('token')),
+        authRepositoryProvider.overrideWithValue(_CountingAuthRepository()),
+      ],
+    );
+    await _goTab(tester, 'MY');
+
+    await tester.ensureVisible(find.byKey(MyMenu.notificationKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(MyMenu.notificationKey));
+    await tester.pumpAndSettle();
+
+    // 설정을 만지는 동안 네비바로 다른 탭에 새지 않게 전체를 덮는다.
+    expect(find.byType(NotificationSettingsScreen), findsOneWidget);
+    expect(find.byType(AppBottomNav), findsNothing);
+
+    await tester.tap(find.byKey(AppTopBar.backButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MyScreen), findsOneWidget);
+    expect(find.byType(AppBottomNav), findsOneWidget);
   });
 
   testWidgets('네비바 탭 순서가 브랜치 순서와 같다', (tester) async {
