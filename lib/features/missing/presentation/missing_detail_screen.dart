@@ -1,26 +1,23 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/format/elapsed_time.dart';
-import '../../../core/map/kakao_map_init.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
-import '../../../core/widgets/map_preview_card.dart';
-import '../../../core/widgets/static_kakao_map.dart';
-import '../../report/data/report_repository.dart';
+import '../../../core/widgets/resolve_case_dialog.dart';
+import '../../report/data/report.dart';
 import '../data/missing_case.dart';
 import '../data/missing_repository.dart';
-import 'missing_detail_providers.dart';
-import 'widgets/detail_fact_list.dart';
-import 'widgets/detail_name_line.dart';
-import 'widgets/detail_photo_carousel.dart';
+import 'case_guardian_actions.dart';
+import 'widgets/detail_body.dart';
+import 'widgets/detail_guardian_bar.dart';
 import 'widgets/detail_report_cta.dart';
-import 'widgets/detail_status_line.dart';
 import 'widgets/detail_top_bar.dart';
-import 'widgets/report_timeline.dart';
 
 /// 실종자 상세(S3). 로그인 없이 볼 수 있다.
 ///
@@ -140,11 +137,13 @@ class _MissingDetailScreenState extends ConsumerState<MissingDetailScreen> {
                 onRetry: () =>
                     ref.invalidate(missingDetailProvider(widget.caseId)),
               ),
-              data: (detail) => _DetailBody(
+              data: (detail) => DetailBody(
                 detail: detail,
                 heroHeight: _heroHeight,
                 scrollController: _scrollController,
                 nameKey: _nameKey,
+                onToggleConfirmed: detail.isGuardian ? _toggleConfirmed : null,
+                onToggleHidden: detail.isGuardian ? _toggleHidden : null,
               ),
             ),
             Positioned(
@@ -169,132 +168,110 @@ class _MissingDetailScreenState extends ConsumerState<MissingDetailScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: data == null
-          ? null
-          : DetailReportCta(
-              label: data.category.witnessCtaLabel,
-              onTap: () => context.push(AppRoute.report(widget.caseId)),
-            ),
-    );
-  }
-}
-
-/// 본문. 사진과 본문이 **한 스크롤 안에** 있어야 상단바가 사진을 덮으며 올라온다.
-class _DetailBody extends StatelessWidget {
-  const _DetailBody({
-    required this.detail,
-    required this.heroHeight,
-    required this.scrollController,
-    required this.nameKey,
-  });
-
-  final MissingCaseDetail detail;
-  final double heroHeight;
-  final ScrollController scrollController;
-
-  /// 상단바가 제목을 이어받는 지점을 재려고 화면이 넘겨주는 키.
-  final GlobalKey nameKey;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      controller: scrollController,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          DetailPhotoCarousel(photos: detail.photos, height: heroHeight),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(18, 16, 18, 26),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DetailStatusLine(
-                  status: detail.status,
-                  elapsedMinutes: detail.elapsedMinutes,
-                ),
-                const SizedBox(height: 11),
-                DetailNameLine(
-                  key: nameKey,
-                  name: detail.name,
-                  ageGenderLabel: formatAgeGender(
-                    detail.age,
-                    detail.gender,
-                    separator: ' · ',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                DetailFactList(detail: detail),
-                const SizedBox(height: 6),
-                _ReportsSection(caseId: detail.id),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// 이동 경로 미니 지도(F-3.4)와 제보 타임라인(F-3.5).
-///
-/// 사건 정보와 따로 불러오기 때문에, 제보가 늦게 와도 사진과 인상착의는 먼저
-/// 읽을 수 있다.
-class _ReportsSection extends ConsumerWidget {
-  const _ReportsSection({required this.caseId});
-
-  final String caseId;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final reports = ref.watch(caseReportsProvider(caseId));
-    final highOnly = ref.watch(timelineHighOnlyProvider);
-
-    return reports.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.symmetric(vertical: 40),
-        child: LoadingView(),
-      ),
-      error: (error, stackTrace) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 24),
-        child: ErrorView(
-          message: error is ApiException ? error.message : '제보를 불러오지 못했어요.',
-          onRetry: () => ref.invalidate(caseReportsProvider(caseId)),
+      bottomNavigationBar: switch (data) {
+        null => null,
+        // 끝난 사건에서는 보호자가 이 화면에서 할 일이 없다.
+        MissingCaseDetail(isGuardian: true, status: CaseStatus.resolved) =>
+          null,
+        MissingCaseDetail(isGuardian: true) => DetailGuardianBar(
+          busy: _busy,
+          onEdit: () => unawaited(_edit()),
+          onAddPhotos: () => unawaited(_addPhotos(data)),
+          onResolve: () => unawaited(_resolve(data)),
         ),
-      ),
-      data: (bundle) {
-        final view = TimelineView.of(bundle, highOnly: highOnly);
-        // 타임라인과 같은 view로 찍는다. 번호가 어긋나 보이면 안 된다.
-        final plan = caseMapPlan(bundle, view);
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            MapPreviewCard(
-              height: 126,
-              label: bundle.count == 0
-                  ? '마지막 목격 위치'
-                  : '제보 ${bundle.count}건으로 복원한 이동 경로',
-              onTap: () => context.go(AppRoute.mapForCase(caseId)),
-              map: plan == null
-                  ? null
-                  : StaticKakaoMap(
-                      plan: plan,
-                      ready: ref.watch(kakaoMapReadyProvider),
-                    ),
-            ),
-            const SizedBox(height: 26),
-            ReportTimeline(
-              view: view,
-              totalCount: bundle.count,
-              origin: bundle.origin,
-              highOnly: highOnly,
-              onHighOnlyChanged: ref
-                  .read(timelineHighOnlyProvider.notifier)
-                  .set,
-            ),
-          ],
-        );
+        _ => DetailReportCta(
+          label: data.category.witnessCtaLabel,
+          onTap: () => context.push(AppRoute.report(widget.caseId)),
+        ),
       },
     );
   }
+
+  // ── 보호자 동작(F-3.8) ─────────────────────────────────────
+
+  /// 사진을 올리거나 발견 완료를 보내는 중. 두 번 눌리지 않게 잠근다.
+  bool _busy = false;
+
+  CaseGuardianActions get _actions => ref.read(caseGuardianActionsProvider);
+
+  void _say(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  /// 보호자 동작 하나를 잠근 채 돌리고, 실패하면 이유를 알린다.
+  Future<void> _guarded(Future<void> Function() action) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+
+    try {
+      await action();
+    } on ApiException catch (error) {
+      if (mounted) _say(error.message);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _edit() async {
+    final saved = await context.push<bool>(AppRoute.caseEdit(widget.caseId));
+    if (saved == true && mounted) _say('정보를 고쳤어요');
+  }
+
+  Future<void> _addPhotos(MissingCaseDetail detail) {
+    if (detail.photos.length >= CaseGuardianActions.maxCasePhotos) {
+      _say('사진은 ${CaseGuardianActions.maxCasePhotos}장까지 올릴 수 있어요');
+      return Future.value();
+    }
+
+    return _guarded(() async {
+      final result = await _actions.addPhotos(
+        detail.id,
+        currentPhotoCount: detail.photos.length,
+      );
+      if (result == null || !mounted) return;
+
+      // 사진을 더한 보람이 보여야 한다. 몇 건을 다시 봤는지 적는다.
+      _say(
+        result.reanalyzedReports == 0
+            ? '사진을 더했어요'
+            : '사진을 더했어요. 제보 ${result.reanalyzedReports}건을 다시 분석했어요',
+      );
+    });
+  }
+
+  Future<void> _resolve(MissingCaseDetail detail) async {
+    if (!await ResolveCaseDialog.show(context, name: detail.name)) return;
+
+    await _guarded(() async {
+      await _actions.resolve(detail.id);
+      if (mounted) _say('발견 완료로 바꿨어요. 제보해 주신 분들께 결과를 알려드렸어요');
+    });
+  }
+
+  void _toggleConfirmed(Report report) {
+    unawaited(
+      _guarded(
+        () => _actions.setReportConfirmed(
+          widget.caseId,
+          report.id,
+          confirmed: !report.confirmed,
+        ),
+      ),
+    );
+  }
+
+  void _toggleHidden(Report report) {
+    final hide = report.status != ReportStatus.hidden;
+
+    unawaited(
+      _guarded(() async {
+        await _actions.setReportHidden(widget.caseId, report.id, hidden: hide);
+        // 숨기기는 경로 번호를 바꾼다. 무엇이 달라졌는지 한 줄 남긴다.
+        if (mounted) _say(hide ? '숨겼어요. 경로와 지도에서 빠져요' : '다시 보이게 했어요');
+      }),
+    );
+  }
 }
+

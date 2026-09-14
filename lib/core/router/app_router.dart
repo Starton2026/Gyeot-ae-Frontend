@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/map/presentation/map_screen.dart';
+import '../../features/missing/presentation/case_edit_screen.dart';
 import '../../features/missing/presentation/missing_detail_screen.dart';
 import '../../features/missing/presentation/missing_list_screen.dart';
 import '../../features/missing/presentation/missing_register_screen.dart';
@@ -68,6 +69,12 @@ class AppRoute {
   /// 등록(S7)과 정보 수정이 함께 쓴다. 등록 경로 밑에 달아 두면 정보 수정에서
   /// 열 때 등록 화면까지 따라 쌓인다.
   static const String locationPicker = '/location';
+
+  /// 정보 수정(S3 보호자). 경로를 만들 때는 [caseEdit]를 쓴다.
+  static const String caseEditPath = '/missing/:id/edit';
+
+  /// `/missing/m_ab12cd34/edit`.
+  static String caseEdit(String caseId) => '/missing/$caseId/edit';
 
   /// 알림 설정(F-8.6). MY에서 한 칸 들어가는 화면이다.
   static const String notificationSettings = '/settings/notifications';
@@ -152,6 +159,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                     builder: (context, state) =>
                         MissingDetailScreen(caseId: state.pathParameters['id']!),
                     routes: [
+                      GoRoute(
+                        // AppRoute.caseEditPath
+                        path: 'edit',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) =>
+                            CaseEditScreen(caseId: state.pathParameters['id']!),
+                      ),
                       GoRoute(
                         // AppRoute.reportPath
                         path: 'report',

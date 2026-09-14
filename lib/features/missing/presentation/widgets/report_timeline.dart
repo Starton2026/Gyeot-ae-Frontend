@@ -19,8 +19,14 @@ class ReportTimeline extends StatelessWidget {
     required this.highOnly,
     required this.onHighOnlyChanged,
     this.origin,
+    this.onToggleConfirmed,
+    this.onToggleHidden,
     super.key,
   });
+
+  /// 보호자만 준다. 카드마다 확인함·숨기기가 붙는다(F-3.5.13).
+  final ValueChanged<Report>? onToggleConfirmed;
+  final ValueChanged<Report>? onToggleHidden;
 
   /// 토글을 반영한 목록.
   final TimelineView view;
@@ -68,7 +74,11 @@ class ReportTimeline extends StatelessWidget {
           _Rail(
             children: [
               for (final report in view.shown)
-                ReportTimelineCard.report(report: report),
+                ReportTimelineCard.report(
+                  report: report,
+                  onToggleConfirmed: _bind(onToggleConfirmed, report),
+                  onToggleHidden: _bind(onToggleHidden, report),
+                ),
               if (originPoint != null)
                 ReportTimelineCard.origin(origin: originPoint),
             ],
@@ -76,6 +86,12 @@ class ReportTimeline extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  static VoidCallback? _bind(ValueChanged<Report>? action, Report report) {
+    if (action == null) return null;
+
+    return () => action(report);
   }
 }
 

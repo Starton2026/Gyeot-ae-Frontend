@@ -16,20 +16,38 @@ import '../../../report/data/report.dart';
 /// 유사도 40% 미만과 얼굴 미검출은 **지우지 않고** 점선 테두리·흐린 글자·
 /// "확인 필요" 라벨로만 구분한다(설계 결정 3번, F-3.5.4). 옷을 갈아입었거나
 /// 뒷모습만 찍힌 진짜 제보가 걸러지면 경로에 구멍이 생긴다.
+///
+/// 보호자에게는 카드마다 "확인함"과 "숨기기"가 붙는다(F-3.5.13). 숨긴 제보는
+/// 지우지 않고 흐리게 남겨 되돌릴 수 있게 한다.
 class ReportTimelineCard extends StatelessWidget {
-  const ReportTimelineCard.report({required Report this.report, super.key})
-    : origin = null;
+  const ReportTimelineCard.report({
+    required Report this.report,
+    this.onToggleConfirmed,
+    this.onToggleHidden,
+    super.key,
+  }) : origin = null;
 
   const ReportTimelineCard.origin({
     required ReportOrigin this.origin,
     super.key,
-  }) : report = null;
+  }) : report = null,
+       onToggleConfirmed = null,
+       onToggleHidden = null;
 
   final Report? report;
   final ReportOrigin? origin;
 
+  /// 보호자만 준다. 둘 다 null이면 시민이 보는 카드다.
+  final VoidCallback? onToggleConfirmed;
+  final VoidCallback? onToggleHidden;
+
   /// 번호 배지 지름. 레일의 가로 위치를 여기에 맞춘다.
   static const double dotSize = 24;
+
+  static Key hideButtonKey(String reportId) => Key('timeline_hide_$reportId');
+
+  static Key confirmButtonKey(String reportId) =>
+      Key('timeline_confirm_$reportId');
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +64,11 @@ class ReportTimelineCard extends StatelessWidget {
           Expanded(
             child: report == null
                 ? _OriginCard(origin: origin!)
-                : _ReportCard(report: report!),
+                : _ReportCard(
+                    report: report!,
+                    onToggleConfirmed: onToggleConfirmed,
+                    onToggleHidden: onToggleHidden,
+                  ),
           ),
         ],
       ),
@@ -97,13 +119,21 @@ class _Dot extends StatelessWidget {
 }
 
 class _ReportCard extends StatelessWidget {
-  const _ReportCard({required this.report});
+  const _ReportCard({
+    required this.report,
+    this.onToggleConfirmed,
+    this.onToggleHidden,
+  });
 
   final Report report;
+  final VoidCallback? onToggleConfirmed;
+  final VoidCallback? onToggleHidden;
 
   @override
   Widget build(BuildContext context) {
-    final uncertain = !report.grade.countsTowardPath;
+    final hidden = report.status == ReportStatus.hidden;
+    final guardian = onToggleConfirmed != null || onToggleHidden != null;
+    final uncertain = !report.grade.countsTowardPath || hidden;
     final place = report.placeName;
 
     final card = Container(
@@ -141,9 +171,12 @@ class _ReportCard extends StatelessWidget {
                             : AppColors.textPrimary,
                       ),
                     ),
-                    if (report.grade == SimilarityGrade.low) ...[
+                    if (hidden) ...[
                       const SizedBox(width: 7),
-                      const _NeedCheckBadge(),
+                      const _NeedCheckBadge(label: '숨긴 제보'),
+                    ] else if (report.grade == SimilarityGrade.low) ...[
+                      const SizedBox(width: 7),
+                      const _NeedCheckBadge(label: '확인 필요'),
                     ],
                   ],
                 ),
@@ -165,6 +198,14 @@ class _ReportCard extends StatelessWidget {
                   similarity: report.similarity,
                   grade: report.grade,
                 ),
+                if (guardian) ...[
+                  const SizedBox(height: 4),
+                  _GuardianActions(
+                    report: report,
+                    onToggleConfirmed: onToggleConfirmed,
+                    onToggleHidden: onToggleHidden,
+                  ),
+                ],
               ],
             ),
           ),
@@ -177,6 +218,69 @@ class _ReportCard extends StatelessWidget {
     return CustomPaint(
       foregroundPainter: const _DashedBorderPainter(radius: 15),
       child: card,
+    );
+  }
+}
+
+/// 보호자의 제보 손잡이 두 개. 확인함 · 숨기기(F-3.5.13).
+///
+/// **숨기기는 지우기가 아니다.** 허위·중복 제보를 경로와 시민 화면에서 빼고,
+/// 보호자에게는 흐리게 남겨 "다시 보이기"로 되돌릴 수 있게 한다. 잘못 누르면
+/// 끝이라고 느끼면 보호자는 이 버튼을 누르지 못한다.
+class _GuardianActions extends StatelessWidget {
+  const _GuardianActions({
+    required this.report,
+    this.onToggleConfirmed,
+    this.onToggleHidden,
+  });
+
+  final Report report;
+  final VoidCallback? onToggleConfirmed;
+  final VoidCallback? onToggleHidden;
+
+  static final ButtonStyle _style = TextButton.styleFrom(
+    minimumSize: const Size(0, 40),
+    padding: const EdgeInsets.symmetric(horizontal: 6),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    final hidden = report.status == ReportStatus.hidden;
+    final confirmed = report.confirmed;
+
+    return Row(
+      children: [
+        TextButton.icon(
+          key: ReportTimelineCard.confirmButtonKey(report.id),
+          onPressed: onToggleConfirmed,
+          style: _style.copyWith(
+            foregroundColor: WidgetStatePropertyAll(
+              confirmed ? AppColors.primary : AppColors.textSecondary,
+            ),
+          ),
+          icon: Icon(
+            confirmed ? Icons.check_circle : Icons.radio_button_unchecked,
+            size: 16,
+          ),
+          label: const Text('확인함'),
+        ),
+        const SizedBox(width: 2),
+        TextButton.icon(
+          key: ReportTimelineCard.hideButtonKey(report.id),
+          onPressed: onToggleHidden,
+          style: _style.copyWith(
+            foregroundColor: const WidgetStatePropertyAll(
+              AppColors.textSecondary,
+            ),
+          ),
+          icon: Icon(
+            hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            size: 16,
+          ),
+          label: Text(hidden ? '다시 보이기' : '숨기기'),
+        ),
+      ],
     );
   }
 }
@@ -216,7 +320,10 @@ class _OriginCard extends StatelessWidget {
 }
 
 class _NeedCheckBadge extends StatelessWidget {
-  const _NeedCheckBadge();
+  const _NeedCheckBadge({required this.label});
+
+  /// "확인 필요" · "숨긴 제보".
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +334,7 @@ class _NeedCheckBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(5),
       ),
       child: Text(
-        '확인 필요',
+        label,
         style: AppTextStyles.small.copyWith(
           color: AppColors.textSecondary,
           fontWeight: FontWeight.w700,
