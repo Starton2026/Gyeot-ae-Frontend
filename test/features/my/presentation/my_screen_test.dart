@@ -7,6 +7,7 @@ import 'package:gyeotae/core/network/api_exception.dart';
 import 'package:gyeotae/core/network/dio_provider.dart';
 import 'package:gyeotae/core/theme/app_theme.dart';
 import 'package:gyeotae/core/widgets/loading_view.dart';
+import 'package:gyeotae/core/widgets/resolve_case_dialog.dart';
 import 'package:gyeotae/features/auth/data/auth_repository.dart';
 import 'package:gyeotae/features/auth/data/auth_session.dart';
 import 'package:gyeotae/features/auth/data/kakao_auth_source.dart';
@@ -426,7 +427,7 @@ void main() {
       expect(find.textContaining('찾으셨나요'), findsOneWidget);
       expect(lastRepository.resolved, isEmpty);
 
-      await tester.tap(find.byKey(const Key('my_case_resolve_confirm')));
+      await tester.tap(find.byKey(ResolveCaseDialog.confirmKey));
       await tester.pumpAndSettle();
 
       expect(lastRepository.resolved, ['m_1']);
@@ -448,7 +449,7 @@ void main() {
 
       await tester.tap(find.byKey(MyCaseCard.resolveButtonKey));
       await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const Key('my_case_resolve_confirm')));
+      await tester.tap(find.byKey(ResolveCaseDialog.confirmKey));
       await tester.pumpAndSettle();
 
       // 다시 받지 않으면 찾은 사람이 홈에 진행 중으로 남는다(실기기 2026-09-14).
@@ -466,9 +467,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final no = tester.getRect(find.text('아니요'));
-      final yes = tester.getRect(
-        find.byKey(const Key('my_case_resolve_confirm')),
-      );
+      final yes = tester.getRect(find.byKey(ResolveCaseDialog.confirmKey));
 
       // 가로를 꽉 채우는 버튼이 끼면 아니요가 위로 밀리고 확인이 커진다(실기기).
       expect(no.center.dy, moreOrLessEquals(yes.center.dy, epsilon: 1));

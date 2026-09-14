@@ -11,6 +11,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_top_bar.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../../core/widgets/resolve_case_dialog.dart';
 import '../../auth/presentation/auth_providers.dart';
 import '../../home/presentation/home_providers.dart';
 import '../../map/presentation/map_providers.dart';
@@ -215,37 +216,13 @@ class _MyCases extends ConsumerWidget {
     );
   }
 
-  /// 발견 완료는 되돌리기 어렵다. 한 번 묻는다.
-  ///
-  /// 찾았다는 것은 이 서비스에서 가장 좋은 소식이지만, 잘못 누르면 사건이
-  /// 목록 아래로 내려가고 제보자들에게 결과 알림이 나간다.
+  /// 발견 완료는 되돌리기 어렵다. 한 번 묻는다([ResolveCaseDialog]).
   Future<void> _confirmResolve(
     BuildContext context,
     WidgetRef ref,
     MissingCaseSummary summary,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('${summary.name} 님을 찾으셨나요?'),
-        content: const Text('제보해 주신 분들에게 결과를 알려드립니다.\n사건은 목록에 그대로 남습니다.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('아니요'),
-          ),
-          // FilledButton을 쓰지 않는다. 테마가 가로를 꽉 채우는 최소 크기를 줘서
-          // 대화상자 버튼 줄에 나란히 서지 못하고 아니요를 위로 밀어낸다.
-          TextButton(
-            key: const Key('my_case_resolve_confirm'),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('발견 완료'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
+    if (!await ResolveCaseDialog.show(context, name: summary.name)) return;
 
     await ref.read(myRepositoryProvider).resolveCase(summary.id);
     // 사건 목록과 건수가 함께 바뀐다. 홈·실종자 목록·지도·상세도 다시 받는다 —
