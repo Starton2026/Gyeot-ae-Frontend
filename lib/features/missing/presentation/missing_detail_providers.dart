@@ -59,8 +59,12 @@ class TimelineView {
 /// 제보가 있으면 번호가 어긋나 보인다.
 MapPlan? caseMapPlan(ReportBundle bundle, TimelineView view) {
   final origin = bundle.origin;
+  // 보호자가 숨긴 제보는 타임라인에는 흐리게 남지만 지도에는 찍지 않는다.
   final located = view.shown
-      .where((report) => report.hasLocation)
+      .where(
+        (report) =>
+            report.hasLocation && report.status != ReportStatus.hidden,
+      )
       .toList(growable: false);
 
   final marks = <MapMark>[

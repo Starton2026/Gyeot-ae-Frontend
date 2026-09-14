@@ -190,7 +190,11 @@ class MapCaseView {
     DateTime? cursor,
   }) {
     final origin = bundle.origin;
-    final all = bundle.reports;
+    // 보호자가 숨긴 제보는 지도에 올리지 않는다. 보호자에게만 오는 값이고,
+    // 숨긴 이유가 허위·중복이라 경로 옆에 점으로도 남기면 안 된다.
+    final all = bundle.reports
+        .where((report) => report.status != ReportStatus.hidden)
+        .toList(growable: false);
 
     // 슬라이더 양 끝은 거르기 전 값으로 잡는다. 토글을 켰다 끌 때마다 슬라이더
     // 길이가 바뀌면 손에 잡히지 않는다.

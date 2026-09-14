@@ -99,6 +99,34 @@ void main() {
     });
   });
 
+  test('보호자가 숨긴 제보는 지도에 올리지 않는다', () {
+    final bundle = _bundle();
+    final hidden = Report(
+      id: 'r_hidden',
+      lat: 37.45,
+      lng: 126.73,
+      observedAt: _origin.add(const Duration(minutes: 120)),
+      similarity: 91.5,
+      grade: SimilarityGrade.high,
+      faceFound: true,
+      photoUrl: '/uploads/r_hidden.jpg',
+      status: ReportStatus.hidden,
+    );
+    final withHidden = ReportBundle(
+      missingId: bundle.missingId,
+      count: bundle.count + 1,
+      reports: [hidden, ...bundle.reports],
+      path: bundle.path,
+      origin: bundle.origin,
+    );
+
+    final view = MapCaseView.of(withHidden, highOnly: false);
+
+    // 허위·중복이라 숨긴 것이다. 핀으로도, 눈금으로도 남기지 않는다.
+    expect(view.reports.map((report) => report.id), isNot(contains('r_hidden')));
+    expect(view.ticks, hasLength(4));
+  });
+
   group('MapCaseView — 경로(F-5.2.3)', () {
     test('경로는 번호가 붙은 제보만 시간순으로 잇는다', () {
       final view = MapCaseView.of(_bundle(), highOnly: false);
