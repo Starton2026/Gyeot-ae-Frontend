@@ -99,8 +99,11 @@ class _HomeFeedView extends StatelessWidget {
           if (urgent == null)
             QuietStateCard(nearbyCount: feed.nearbyCount)
           else
-            // TODO(S4): 제보창이 생기면 onReport를 연결한다.
-            UrgentCaseBanner(summary: urgent),
+            UrgentCaseBanner(
+              summary: urgent,
+              onReport: () =>
+                  unawaited(context.push(AppRoute.report(urgent.id))),
+            ),
           const SizedBox(height: 12),
           MapPreviewCard(
             height: 150,

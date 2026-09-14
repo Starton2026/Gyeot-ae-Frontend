@@ -10,6 +10,7 @@ import 'package:gyeotae/features/home/presentation/widgets/urgent_case_banner.da
 import 'package:gyeotae/features/missing/data/missing_case.dart';
 import 'package:gyeotae/features/map/presentation/map_screen.dart';
 import 'package:gyeotae/features/notifications/data/notification_repository.dart';
+import 'package:gyeotae/features/report/presentation/report_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/fake_notification_repository.dart';
@@ -77,6 +78,24 @@ void main() {
     expect(find.text('지금 찾고 있어요'), findsOneWidget);
     expect(find.text('김하준 · 7세 남아'), findsOneWidget);
     expect(find.text('이 아이를 봤어요'), findsOneWidget);
+  });
+
+  testWidgets('배너의 제보 버튼을 누르면 그 사건 제보창으로 간다', (tester) async {
+    final urgent = _summary(id: 'm_urgent', elapsedMinutes: 172);
+    await _pumpHome(
+      tester,
+      HomeFeed(urgentCase: urgent, nearbyCases: [urgent], nearbyCount: 1),
+    );
+    await tester.tap(find.byKey(UrgentCaseBanner.reportButtonKey));
+    await tester.pump();
+    await tester.pump();
+
+    // 골든타임 안 1위 사건이다. 버튼이 눌리지 않으면 가장 급한 제보를 놓친다.
+    final report = tester.widget<ReportScreen>(find.byType(ReportScreen));
+    expect(report.caseId, 'm_urgent');
+
+    // 제보창이 위치·사건을 부르며 건 타이머를 흘려보낸다. 여기서는 연결만 본다.
+    await tester.pump(const Duration(minutes: 2));
   });
 
   testWidgets('골든타임 안의 사건이 없으면 배너 대신 평상시 블록이 뜬다', (tester) async {
