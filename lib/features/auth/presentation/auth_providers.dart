@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/dio_provider.dart';
@@ -41,9 +42,20 @@ class AuthNotifier extends AsyncNotifier<AuthUser?> {
     return session;
   }
 
+  /// 로그아웃. **우리 토큰부터 지우고 상태를 바꾼다.**
+  ///
+  /// 카카오 쪽 로그아웃은 네트워크를 타서 실패할 수 있다. 그 때문에 앱이
+  /// 로그인 상태로 남으면 사용자는 버튼이 고장 난 줄 안다. 서버가 이 기기를
+  /// 누구 것으로 아는지는 푸시 등록이 상태 변화를 보고 다시 올려 정리한다.
   Future<void> signOut() async {
     await ref.read(tokenStorageProvider).clear();
     state = const AsyncData(null);
+
+    try {
+      await ref.read(kakaoAuthSourceProvider).signOut();
+    } on Object catch (error) {
+      debugPrint('카카오 로그아웃 실패(앱에서는 로그아웃됨): $error');
+    }
   }
 }
 

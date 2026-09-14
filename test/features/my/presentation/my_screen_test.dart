@@ -21,6 +21,7 @@ import 'package:gyeotae/features/my/presentation/widgets/my_folded_list.dart';
 import 'package:gyeotae/features/my/presentation/widgets/my_login_card.dart';
 import 'package:gyeotae/features/my/presentation/widgets/my_menu.dart';
 import 'package:gyeotae/features/my/presentation/widgets/my_report_tile.dart';
+import 'package:gyeotae/features/my/presentation/widgets/my_sign_out_dialog.dart';
 import 'package:gyeotae/features/report/data/report.dart';
 
 import '../../../support/fake_auth.dart';
@@ -34,6 +35,9 @@ class _PendingKakaoAuthSource implements KakaoAuthSource {
   int calls = 0;
 
   void complete(String? token) => _completer.complete(token);
+
+  @override
+  Future<void> signOut() async {}
 
   @override
   Future<String?> requestAccessToken() {
@@ -67,6 +71,7 @@ const _signedInProfile = AuthProfile(
 );
 
 late FakeMyRepository lastRepository;
+late InMemoryTokenStorage lastTokens;
 
 /// 홈 피드를 몇 번 받아왔는지. 발견 완료 뒤 홈이 옛 목록을 들고 있지 않은지 본다.
 int homeFeedFetches = 0;
@@ -91,7 +96,7 @@ Future<void> _pumpMy(
       overrides: [
         // 로그인 상태는 저장된 토큰으로 갈린다.
         tokenStorageProvider.overrideWithValue(
-          InMemoryTokenStorage(signedIn ? 'token' : null),
+          lastTokens = InMemoryTokenStorage(signedIn ? 'token' : null),
         ),
         authRepositoryProvider.overrideWithValue(
           authRepository ??
@@ -153,6 +158,11 @@ void main() {
 
       // 어디에 저장된 기록인지 알려준다.
       expect(find.textContaining('앱을 지우면 사라집니다'), findsOneWidget);
+    });
+
+    testWidgets('로그아웃은 없다', (tester) async {
+      await _pumpMy(tester);
+      expect(find.byKey(MyMenu.signOutKey), findsNothing);
     });
 
     testWidgets('알림 설정은 잠겨 있다', (tester) async {
@@ -286,6 +296,68 @@ void main() {
       // 확인하지 못했으니 게스트로 보여주고, 이 기기 제보 이력은 그대로 준다.
       expect(find.byType(MyLoginCard), findsOneWidget);
       expect(find.text('이 기기에서 한 제보'), findsOneWidget);
+    });
+
+    testWidgets('로그아웃은 로그인한 사람에게만 있다', (tester) async {
+      await _pumpMy(tester, signedIn: true);
+      expect(find.byKey(MyMenu.signOutKey), findsOneWidget);
+    });
+
+    testWidgets('로그아웃을 누르면 한 번 묻고, 확인하면 게스트 화면으로 돌아간다', (tester) async {
+      await _pumpMy(tester, signedIn: true);
+
+      await tester.ensureVisible(find.byKey(MyMenu.signOutKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(MyMenu.signOutKey));
+      await tester.pumpAndSettle();
+
+      // 로그아웃하면 이 폰으로 내 사건 제보 알림이 끊긴다. 모르고 누르면 안 된다.
+      expect(find.text('로그아웃할까요?'), findsOneWidget);
+      expect(find.textContaining('제보 알림이 오지 않아요'), findsOneWidget);
+      expect(lastTokens.token, 'token');
+
+      await tester.tap(find.byKey(MySignOutDialog.confirmKey));
+      await tester.pumpAndSettle();
+
+      expect(lastTokens.token, isNull);
+      expect((lastKakao as FakeKakaoAuthSource).signOutCalls, 1);
+      expect(find.byType(MyLoginCard), findsOneWidget);
+      expect(find.text('이 기기에서 한 제보'), findsOneWidget);
+      expect(find.byKey(MyMenu.signOutKey), findsNothing);
+    });
+
+    testWidgets('로그아웃을 취소하면 그대로 남는다', (tester) async {
+      await _pumpMy(tester, signedIn: true);
+
+      await tester.ensureVisible(find.byKey(MyMenu.signOutKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(MyMenu.signOutKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('취소'));
+      await tester.pumpAndSettle();
+
+      expect(lastTokens.token, 'token');
+      expect(find.text('김보호'), findsOneWidget);
+    });
+
+    testWidgets('카카오 로그아웃이 실패해도 앱에서는 로그아웃된다', (tester) async {
+      await _pumpMy(
+        tester,
+        signedIn: true,
+        kakao: FakeKakaoAuthSource(signOutError: Exception('network')),
+      );
+
+      await tester.ensureVisible(find.byKey(MyMenu.signOutKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(MyMenu.signOutKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(MySignOutDialog.confirmKey));
+      await tester.pumpAndSettle();
+
+      // 카카오 서버가 안 받는다고 로그인 상태로 남으면, 사용자는 로그아웃
+      // 버튼이 고장 난 줄 안다.
+      expect(lastTokens.token, isNull);
+      expect(find.byType(MyLoginCard), findsOneWidget);
     });
 
     testWidgets('알림 설정 자물쇠가 풀린다', (tester) async {

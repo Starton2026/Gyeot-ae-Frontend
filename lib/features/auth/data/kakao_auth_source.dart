@@ -15,6 +15,12 @@ abstract interface class KakaoAuthSource {
   /// 사용자가 취소하면 **null**이다. 취소는 오류가 아니다 — 로그인은 선택이고
   /// 제보는 로그인 없이도 된다.
   Future<String?> requestAccessToken();
+
+  /// 카카오 SDK가 기기에 쥐고 있는 카카오 토큰을 버린다.
+  ///
+  /// 앱에서 로그아웃했는데 카카오 토큰이 폰에 남아 있으면 안 된다. 네트워크를
+  /// 타서 실패할 수 있으므로, 부르는 쪽은 실패해도 로그아웃을 멈추지 않는다.
+  Future<void> signOut();
 }
 
 /// 카카오 SDK로 로그인한다.
@@ -45,6 +51,9 @@ class KakaoSdkAuthSource implements KakaoAuthSource {
       throw _failed(error);
     }
   }
+
+  @override
+  Future<void> signOut() => UserApi.instance.logout();
 
   /// 톡이 있으면 톡으로, 아니면 카카오계정으로.
   Future<OAuthToken> _login() async {

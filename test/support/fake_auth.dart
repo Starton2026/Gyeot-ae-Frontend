@@ -4,14 +4,31 @@ import 'package:gyeotae/features/auth/data/kakao_auth_source.dart';
 
 /// 카카오 SDK 대신. [token]이 null이면 사용자가 취소한 것으로 친다.
 class FakeKakaoAuthSource implements KakaoAuthSource {
-  FakeKakaoAuthSource({this.token = 'kakao-access-token', this.error});
+  FakeKakaoAuthSource({
+    this.token = 'kakao-access-token',
+    this.error,
+    this.signOutError,
+  });
 
   final String? token;
 
   /// 던질 오류. 주면 [token]보다 먼저다.
   final Object? error;
 
+  /// 카카오 로그아웃에서 던질 오류.
+  final Object? signOutError;
+
   int calls = 0;
+
+  int signOutCalls = 0;
+
+  @override
+  Future<void> signOut() async {
+    signOutCalls += 1;
+
+    final failure = signOutError;
+    if (failure != null) throw failure;
+  }
 
   @override
   Future<String?> requestAccessToken() async {

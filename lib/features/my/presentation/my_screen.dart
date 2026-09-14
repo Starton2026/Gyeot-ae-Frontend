@@ -26,6 +26,7 @@ import 'widgets/my_menu.dart';
 import 'widgets/my_profile_header.dart';
 import 'widgets/my_report_tile.dart';
 import 'widgets/my_section_header.dart';
+import 'widgets/my_sign_out_dialog.dart';
 
 /// MY(S8). 로그인 여부로 위쪽만 갈린다.
 ///
@@ -98,10 +99,21 @@ class MyScreen extends ConsumerWidget {
             const MyDeviceNote(),
           ],
           const SizedBox(height: 8),
-          MyMenu(signedIn: user != null),
+          MyMenu(
+            signedIn: user != null,
+            onSignOut: () => unawaited(_signOut(context, ref)),
+          ),
         ],
       ),
     );
+  }
+
+  /// 한 번 묻고 로그아웃한다. 화면은 로그인 상태를 지켜보고 있어서 게스트
+  /// 화면으로 알아서 다시 그려진다.
+  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    if (!await MySignOutDialog.show(context)) return;
+
+    await ref.read(authProvider.notifier).signOut();
   }
 }
 
