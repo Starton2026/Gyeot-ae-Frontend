@@ -7,6 +7,7 @@ import '../../../../core/widgets/app_icon.dart';
 import '../../../../core/widgets/missing_thumbnail.dart';
 import '../../../../core/widgets/similarity_gauge.dart';
 import '../../../report/data/report.dart';
+import '../timeline_labels.dart';
 
 /// 타임라인의 한 칸. 번호 배지 + 카드.
 ///
@@ -49,9 +50,14 @@ class ReportTimelineCard extends StatelessWidget {
   static Key confirmButtonKey(String reportId) =>
       Key('timeline_confirm_$reportId');
 
+  static Key gapKey(String reportId) => Key('timeline_gap_$reportId');
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final item = report;
+    final gap = item == null ? null : timelineGapLabel(item);
+
+    final row = Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,6 +78,23 @@ class ReportTimelineCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+    if (gap == null) return row;
+
+    // 최신이 위라, 이 제보와 그보다 앞선 지점 사이의 공백은 카드 아래에 온다.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        row,
+        Padding(
+          key: gapKey(item!.id),
+          padding: const EdgeInsets.fromLTRB(dotSize + 6 + 4, 0, 0, 16),
+          child: Text(
+            gap,
+            style: AppTextStyles.body0.copyWith(color: AppColors.textDisabled),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -135,6 +158,7 @@ class _ReportCard extends StatelessWidget {
     final guardian = onToggleConfirmed != null || onToggleHidden != null;
     final uncertain = !report.grade.countsTowardPath || hidden;
     final place = report.placeName;
+    final movement = timelineMovementLabel(report);
 
     final card = Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
@@ -163,12 +187,16 @@ class _ReportCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(
-                      koreanTimeLabel(report.observedAt),
-                      style: AppTextStyles.subtitle0.copyWith(
-                        color: uncertain
-                            ? AppColors.textDisabled
-                            : AppColors.textPrimary,
+                    Flexible(
+                      child: Text(
+                        // 제보가 며칠에 걸치면 시각만으로는 순서가 안 읽힌다.
+                        koreanDateTimeLabel(report.observedAt),
+                        style: AppTextStyles.subtitle0.copyWith(
+                          color: uncertain
+                              ? AppColors.textDisabled
+                              : AppColors.textPrimary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (hidden) ...[
@@ -191,6 +219,15 @@ class _ReportCard extends StatelessWidget {
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                if (movement != null) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    movement,
+                    style: AppTextStyles.body0.copyWith(
+                      color: AppColors.primary,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 7),
@@ -303,7 +340,7 @@ class _OriginCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(koreanTimeLabel(origin.at), style: AppTextStyles.subtitle0),
+          Text(koreanDateTimeLabel(origin.at), style: AppTextStyles.subtitle0),
           const SizedBox(height: 3),
           Text(
             address == null || address.isEmpty

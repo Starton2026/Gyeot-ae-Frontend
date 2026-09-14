@@ -175,6 +175,20 @@ void main() {
     expect(find.text('찾았어요'), findsOneWidget);
   });
 
+  testWidgets('경로에 든 제보는 앞 지점에서 어느 쪽으로 얼마나 갔는지 적는다', (tester) async {
+    await _pumpDetail(tester);
+    await _scrollBy(tester, 700);
+
+    // F-3.5.7. 경로 복원이 이 서비스의 핵심이라, 점만 찍지 않고 방향을 말한다.
+    expect(
+      find.textContaining(RegExp(r'^[↑↗→↘↓↙←↖] \S+쪽 \d+\.\dkm$')),
+      findsWidgets,
+    );
+    // 며칠에 걸친 제보도 순서가 읽히게 날짜를 붙인다.
+    // 시드 제보는 몇 시간 전이라 자정 직후에 돌리면 "어제"가 된다.
+    expect(find.textContaining(RegExp(r'^(오늘|어제) 오[전후] ')), findsWidgets);
+  });
+
   testWidgets('제보 버튼은 아동이 아니면 문구가 바뀐다', (tester) async {
     await _pumpDetail(tester, caseId: 'm_cd34ef56');
 
