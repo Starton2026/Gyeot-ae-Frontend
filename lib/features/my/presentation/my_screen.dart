@@ -53,7 +53,20 @@ class MyScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authProvider).value;
+    final auth = ref.watch(authProvider);
+
+    // 저장된 토큰으로 누구인지 서버에 묻는 중이다. 이때 값이 비어 있다고
+    // 게스트 화면을 그리면, 로그인한 사람에게 로그인 권유가 잠깐 번쩍였다가
+    // 프로필로 바뀐다. 한 번 확인한 뒤의 새로고침은 옛 값을 들고 있어서
+    // 여기에 걸리지 않는다.
+    //
+    // 실패했으면 기다리지 않는다. Riverpod이 40초 넘게 다시 시도하는데, 그동안
+    // 로딩만 돌리면 MY가 통째로 멈춘 것처럼 보인다.
+    if (!auth.hasValue && !auth.hasError) {
+      return const Scaffold(appBar: AppTopBar.title('MY'), body: LoadingView());
+    }
+
+    final user = auth.value;
     final profile = ref.watch(myProfileProvider).value;
     final reports = ref.watch(myReportsProvider);
 

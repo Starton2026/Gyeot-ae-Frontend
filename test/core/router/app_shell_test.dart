@@ -2,12 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gyeotae/app.dart';
 import 'package:gyeotae/core/location/location_source.dart';
 import 'package:gyeotae/core/mock/mock_backend.dart';
+import 'package:gyeotae/core/network/dio_provider.dart';
 import 'package:gyeotae/core/router/app_router.dart';
 import 'package:gyeotae/core/widgets/app_bottom_nav.dart';
+import 'package:gyeotae/features/auth/data/auth_repository.dart';
+import 'package:gyeotae/features/auth/data/auth_session.dart';
 import 'package:gyeotae/features/home/presentation/home_screen.dart';
 import 'package:gyeotae/features/map/presentation/map_screen.dart';
 import 'package:gyeotae/features/missing/presentation/missing_detail_screen.dart';
@@ -16,11 +20,35 @@ import 'package:gyeotae/features/missing/presentation/widgets/missing_search_fie
 import 'package:gyeotae/features/my/presentation/my_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../support/fake_auth.dart';
 import '../../support/fake_location_source.dart';
+import '../../support/in_memory_token_storage.dart';
 import '../../support/offline_repositories.dart';
 import '../../support/onboarding_overrides.dart';
 
-Future<ProviderContainer> _launch(WidgetTester tester) async {
+/// `GET /auth/me`를 몇 번 불렀는지 센다.
+class _CountingAuthRepository extends FakeAuthRepository {
+  _CountingAuthRepository()
+    : super(
+        user: const AuthProfile(
+          user: AuthUser(id: 'u_1', name: '김보호'),
+        ),
+      );
+
+  int meCalls = 0;
+
+  @override
+  Future<AuthProfile?> me() {
+    meCalls += 1;
+
+    return super.me();
+  }
+}
+
+Future<ProviderContainer> _launch(
+  WidgetTester tester, {
+  List<Override> extra = const [],
+}) async {
   // 상세의 '찾는 중' 점이 계속 깜빡이면 pumpAndSettle이 끝나지 않는다.
   tester.platformDispatcher.accessibilityFeaturesTestValue =
       const FakeAccessibilityFeatures(disableAnimations: true);
@@ -37,6 +65,7 @@ Future<ProviderContainer> _launch(WidgetTester tester) async {
         FakeLocationSource(known: (lat: 37.47, lng: 126.75)),
       ),
       ...offlineRepositories(),
+      ...extra,
     ],
   );
 
@@ -123,6 +152,25 @@ void main() {
 
     expect(find.byType(HomeScreen), findsOneWidget);
     expect(find.byType(AppBottomNav), findsOneWidget);
+  });
+
+  testWidgets('MY를 누르기 전에 로그인 상태를 미리 확인해 둔다', (tester) async {
+    final auth = _CountingAuthRepository();
+    await _launch(
+      tester,
+      extra: [
+        tokenStorageProvider.overrideWithValue(InMemoryTokenStorage('token')),
+        authRepositoryProvider.overrideWithValue(auth),
+      ],
+    );
+
+    // MY를 처음 누를 때에야 확인을 시작하면, 서버 답을 기다리는 동안 MY가
+    // 로딩부터 보인다. 홈에 닿았을 때 이미 물어봤어야 한다.
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(auth.meCalls, 1);
+
+    await _goTab(tester, 'MY');
+    expect(find.text('김보호'), findsOneWidget);
   });
 
   testWidgets('네비바 탭 순서가 브랜치 순서와 같다', (tester) async {

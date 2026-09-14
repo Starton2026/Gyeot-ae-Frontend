@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gyeotae/core/network/api_exception.dart';
 import 'package:gyeotae/core/network/dio_provider.dart';
 import 'package:gyeotae/core/theme/app_theme.dart';
+import 'package:gyeotae/core/widgets/loading_view.dart';
 import 'package:gyeotae/features/auth/data/auth_repository.dart';
 import 'package:gyeotae/features/auth/data/auth_session.dart';
 import 'package:gyeotae/features/auth/data/kakao_auth_source.dart';
@@ -42,6 +43,23 @@ class _PendingKakaoAuthSource implements KakaoAuthSource {
   }
 }
 
+/// `GET /auth/me`가 아직 안 돌아온 상태. [complete]를 불러야 끝난다.
+class _PendingAuthRepository extends FakeAuthRepository {
+  final _me = Completer<AuthProfile?>();
+
+  void complete(AuthProfile? profile) => _me.complete(profile);
+
+  @override
+  Future<AuthProfile?> me() => _me.future;
+}
+
+/// `GET /auth/me`가 실패한다. 서버가 죽었거나 네트워크가 끊겼다.
+class _FailingAuthRepository extends FakeAuthRepository {
+  @override
+  Future<AuthProfile?> me() async =>
+      throw const ApiException('서버 오류', statusCode: 500);
+}
+
 const _signedInProfile = AuthProfile(
   user: AuthUser(id: 'u_1', name: '김보호'),
   caseCount: 1,
@@ -61,6 +79,8 @@ Future<void> _pumpMy(
   MissingCaseList? cases,
   KakaoAuthSource? kakao,
   FakeAuthRepository? authRepository,
+  // 로딩 표시가 도는 동안에는 pumpAndSettle이 끝나지 않는다.
+  bool settle = true,
 }) async {
   tester.view.physicalSize = const Size(1200, 2600);
   tester.view.devicePixelRatio = 3;
@@ -95,7 +115,11 @@ Future<void> _pumpMy(
       child: MaterialApp(theme: AppTheme.light, home: const MyScreen()),
     ),
   );
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    await tester.pump();
+  }
 }
 
 /// 접힌 목록을 펼친다. [WidgetTester.ensureVisible]만으로는 스크롤이
@@ -224,6 +248,44 @@ void main() {
 
       expect(find.text('내 제보 이력'), findsOneWidget);
       expect(find.byType(MyLoginCard), findsNothing);
+    });
+
+    testWidgets('누구인지 확인하는 동안 비로그인 화면을 그리지 않는다', (tester) async {
+      final auth = _PendingAuthRepository();
+      await _pumpMy(
+        tester,
+        signedIn: true,
+        authRepository: auth,
+        settle: false,
+      );
+      await tester.pump();
+
+      // 토큰은 있는데 서버 답을 기다리는 중이다. 여기서 게스트 화면을 그리면
+      // 앱을 켜고 MY를 누를 때 로그인 권유가 잠깐 번쩍였다가 프로필로 바뀐다.
+      expect(find.byType(MyLoginCard), findsNothing);
+      expect(find.text('이 기기에서 한 제보'), findsNothing);
+      expect(find.byType(LoadingView), findsOneWidget);
+
+      auth.complete(_signedInProfile);
+      await tester.pumpAndSettle();
+
+      expect(find.text('김보호'), findsOneWidget);
+      expect(find.byType(MyLoginCard), findsNothing);
+    });
+
+    testWidgets('누구인지 확인하지 못하면 로딩에 갇히지 않는다', (tester) async {
+      await _pumpMy(
+        tester,
+        signedIn: true,
+        authRepository: _FailingAuthRepository(),
+        settle: false,
+      );
+      await tester.pump(const Duration(milliseconds: 50));
+
+      // Riverpod이 뒤에서 다시 시도하는 동안에도 화면은 움직여야 한다. 계정을
+      // 확인하지 못했으니 게스트로 보여주고, 이 기기 제보 이력은 그대로 준다.
+      expect(find.byType(MyLoginCard), findsOneWidget);
+      expect(find.text('이 기기에서 한 제보'), findsOneWidget);
     });
 
     testWidgets('알림 설정 자물쇠가 풀린다', (tester) async {

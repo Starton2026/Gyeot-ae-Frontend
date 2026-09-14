@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/auth_providers.dart';
 import '../push/push_providers.dart';
 import '../widgets/app_bottom_nav.dart';
 
@@ -29,6 +30,11 @@ class AppShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // 결과를 화면에 쓰지 않는다. 등록이 실패해도 앱은 그대로 돈다.
     ref.watch(pushRegistrationProvider);
+
+    // 로그인 상태도 미리 확인해 둔다. MY를 처음 누를 때에야 서버에 물으면
+    // 답을 기다리는 동안 MY가 로딩부터 보인다. 로그인이 바뀔 때마다 탭
+    // 껍데기를 다시 그릴 이유는 없어서 watch가 아니라 listen이다.
+    ref.listen(authProvider, (_, _) {});
 
     return Scaffold(
       // 키보드는 안쪽 화면이 각자 처리한다. 여기서 줄이면 지도 탭의 플랫폼
