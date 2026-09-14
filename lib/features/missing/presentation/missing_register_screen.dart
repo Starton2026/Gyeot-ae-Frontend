@@ -127,7 +127,7 @@ class _MissingRegisterScreenState extends ConsumerState<MissingRegisterScreen> {
     FocusManager.instance.primaryFocus?.unfocus();
 
     final picked = await context.push<LocationFix>(
-      AppRoute.registerLocation,
+      AppRoute.locationPicker,
       extra: initial,
     );
     if (picked == null) return;

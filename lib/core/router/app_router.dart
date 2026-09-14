@@ -62,9 +62,12 @@ class AppRoute {
   /// 열린 뒤 그 위에 로그인 시트를 덮는다.
   static const String register = '/register';
 
-  /// 등록 폼의 위치 고르기. 처음 비출 좌표를 `extra`로 넘기고, 고른 좌표를
+  /// 마지막 목격 위치 고르기. 처음 비출 좌표를 `extra`로 넘기고, 고른 좌표를
   /// `pop`으로 돌려받는다.
-  static const String registerLocation = '/register/location';
+  ///
+  /// 등록(S7)과 정보 수정이 함께 쓴다. 등록 경로 밑에 달아 두면 정보 수정에서
+  /// 열 때 등록 화면까지 따라 쌓인다.
+  static const String locationPicker = '/location';
 
   /// 알림 설정(F-8.6). MY에서 한 칸 들어가는 화면이다.
   static const String notificationSettings = '/settings/notifications';
@@ -107,17 +110,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoute.register,
         builder: (context, state) => const MissingRegisterScreen(),
-        routes: [
-          GoRoute(
-            // AppRoute.registerLocation
-            path: 'location',
-            builder: (context, state) {
-              final extra = state.extra;
+      ),
+      GoRoute(
+        path: AppRoute.locationPicker,
+        builder: (context, state) {
+          final extra = state.extra;
 
-              return RegisterLocationScreen(initial: extra is LocationFix ? extra : null);
-            },
-          ),
-        ],
+          return RegisterLocationScreen(initial: extra is LocationFix ? extra : null);
+        },
       ),
       // 알림 설정도 껍데기 위에 얹는다. 설정을 만지는 동안 다른 탭으로 새는
       // 길을 네비바가 열어두면, 돌아왔을 때 어디서 무엇을 하던 중인지 흐려진다.
