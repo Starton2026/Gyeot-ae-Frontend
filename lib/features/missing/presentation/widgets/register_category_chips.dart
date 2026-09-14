@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/app_choice_chip.dart';
 import '../../../../core/widgets/form_field_label.dart';
 import '../../data/missing_case.dart';
 import 'register_error_text.dart';
@@ -40,23 +39,10 @@ class RegisterCategoryChips extends StatelessWidget {
           spacing: 7,
           children: [
             for (final category in MissingCategory.values)
-              ChoiceChip(
-                label: Text(_label(category)),
+              AppChoiceChip(
+                label: _label(category),
                 selected: category == selected,
-                showCheckmark: false,
-                onSelected: (_) => onSelect(category),
-                backgroundColor: AppColors.background,
-                selectedColor: AppColors.primary,
-                side: BorderSide(
-                  color: category == selected
-                      ? AppColors.primary
-                      : AppColors.border,
-                ),
-                labelStyle: AppTextStyles.body1.copyWith(
-                  color: category == selected
-                      ? AppColors.white
-                      : AppColors.textSecondary,
-                ),
+                onTap: () => onSelect(category),
               ),
           ],
         ),
