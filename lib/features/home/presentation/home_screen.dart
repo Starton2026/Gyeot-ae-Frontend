@@ -14,6 +14,7 @@ import '../../../core/widgets/guardian_shortcut_banner.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/widgets/map_preview_card.dart';
 import '../../../core/widgets/static_kakao_map.dart';
+import '../../notifications/presentation/notification_providers.dart';
 import 'home_providers.dart';
 import 'widgets/guardian_register_block.dart';
 import 'widgets/nearby_cases_section.dart';
@@ -32,7 +33,10 @@ class HomeScreen extends ConsumerWidget {
     final feed = ref.watch(homeFeedProvider);
 
     return Scaffold(
-      appBar: const AppTopBar.brand(),
+      appBar: AppTopBar.brand(
+        hasUnreadNotifications: ref.watch(hasUnreadNotificationsProvider),
+        onNotifications: () => unawaited(context.push(AppRoute.notifications)),
+      ),
       body: Column(
         children: [
           GuardianShortcutBanner(onTap: () => _goRegister(context)),

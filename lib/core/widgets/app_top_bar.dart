@@ -13,17 +13,24 @@ import 'app_icon.dart';
 /// 두고 알림을 빼낸다([AppTopBar.modal]).
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// 홈 전용. 가운데에 워드마크를 둔다.
-  const AppTopBar.brand({super.key})
-    : title = null,
-      onClose = null,
-      onBack = null,
-      action = null;
+  const AppTopBar.brand({
+    this.onNotifications,
+    this.hasUnreadNotifications = false,
+    super.key,
+  }) : title = null,
+       onClose = null,
+       onBack = null,
+       action = null;
 
   /// 실종자·지도·MY. 가운데에 화면 제목을 둔다.
-  const AppTopBar.title(String this.title, {super.key})
-    : onClose = null,
-      onBack = null,
-      action = null;
+  const AppTopBar.title(
+    String this.title, {
+    this.onNotifications,
+    this.hasUnreadNotifications = false,
+    super.key,
+  }) : onClose = null,
+       onBack = null,
+       action = null;
 
   /// 탭에서 한 칸 들어간 화면(MY → 알림 설정). 뒤로 + 제목.
   ///
@@ -34,7 +41,9 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     required VoidCallback this.onBack,
     super.key,
   }) : onClose = null,
-       action = null;
+       action = null,
+       onNotifications = null,
+       hasUnreadNotifications = false;
 
   /// 제보창(S4)·등록 폼(S7). 닫기(X) + 제목.
   ///
@@ -46,7 +55,9 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
     required VoidCallback this.onClose,
     this.action,
     super.key,
-  }) : onBack = null;
+  }) : onBack = null,
+       onNotifications = null,
+       hasUnreadNotifications = false;
 
   final String? title;
 
@@ -59,8 +70,16 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// 모달 상단바 오른쪽에 두는 것. 없으면 비운다.
   final Widget? action;
 
+  /// 알림 버튼을 눌렀을 때. 탭 상단바에만 있다.
+  final VoidCallback? onNotifications;
+
+  /// 안 읽은 알림이 있으면 알림 버튼에 점을 찍는다.
+  final bool hasUnreadNotifications;
+
   static const Key closeButtonKey = Key('app_top_bar_close');
   static const Key backButtonKey = Key('app_top_bar_back');
+  static const Key notificationButtonKey = Key('app_top_bar_notifications');
+  static const Key unreadDotKey = Key('app_top_bar_unread_dot');
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -100,18 +119,48 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
               if (trailing != null) const SizedBox(width: 6),
             ]
           : [
-              const IconButton(
-                // TODO(알림): 알림 화면이 생기면 연결한다.
-                onPressed: null,
-                icon: AppIcon(
-                  AppIcons.bell,
-                  size: 22,
-                  color: AppColors.textSecondary,
-                ),
-                tooltip: '알림',
+              IconButton(
+                key: notificationButtonKey,
+                onPressed: onNotifications,
+                icon: _Bell(unread: hasUnreadNotifications),
+                tooltip: hasUnreadNotifications ? '알림, 새 알림 있음' : '알림',
               ),
               const SizedBox(width: 4),
             ],
+    );
+  }
+}
+
+/// 알림 종. 안 읽은 알림이 있으면 오른쪽 위에 점을 찍는다.
+class _Bell extends StatelessWidget {
+  const _Bell({required this.unread});
+
+  final bool unread;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        const AppIcon(AppIcons.bell, size: 22, color: AppColors.textSecondary),
+        if (unread)
+          const Positioned(
+            top: 0,
+            right: 1,
+            child: DecoratedBox(
+              key: AppTopBar.unreadDotKey,
+              decoration: BoxDecoration(
+                color: AppColors.accent,
+                shape: BoxShape.circle,
+                // 종 선 위에 얹혀도 점이 또렷하게 떨어져 보이게 흰 테를 두른다.
+                border: Border.fromBorderSide(
+                  BorderSide(color: AppColors.white, width: 1.5),
+                ),
+              ),
+              child: SizedBox.square(dimension: 8),
+            ),
+          ),
+      ],
     );
   }
 }

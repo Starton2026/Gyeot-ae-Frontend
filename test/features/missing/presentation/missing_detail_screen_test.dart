@@ -11,10 +11,12 @@ import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
 import 'package:gyeotae/features/missing/presentation/missing_detail_screen.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/detail_top_bar.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/report_timeline.dart';
+import 'package:gyeotae/features/notifications/data/notification_repository.dart';
 import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/fake_notification_repository.dart';
 import '../../../support/onboarding_overrides.dart';
 
 /// 상세 화면을 띄운다. 사건과 제보가 같은 mock 저장소를 보게 맞춘다.
@@ -31,6 +33,9 @@ Future<ProviderContainer> _pumpDetail(
   final backend = MockBackend.seeded();
   final container = ProviderContainer.test(
     overrides: [
+      notificationRepositoryProvider.overrideWithValue(
+        FakeNotificationRepository(),
+      ),
       ...startAfterOnboarding(),
       missingRepositoryProvider.overrideWithValue(
         MockMissingRepository(backend, latency: Duration.zero),

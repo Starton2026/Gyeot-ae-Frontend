@@ -11,6 +11,7 @@ import '../../features/missing/presentation/missing_register_screen.dart';
 import '../../features/missing/presentation/register_location_screen.dart';
 import '../../features/my/presentation/my_screen.dart';
 import '../../features/my/presentation/notification_settings_screen.dart';
+import '../../features/notifications/presentation/notification_inbox_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/report/data/report.dart';
@@ -79,6 +80,9 @@ class AppRoute {
   /// 알림 설정(F-8.6). MY에서 한 칸 들어가는 화면이다.
   static const String notificationSettings = '/settings/notifications';
 
+  /// 알림함. 탭 상단바의 알림 버튼이 연다.
+  static const String notifications = '/notifications';
+
   // 로그인(S6)은 경로가 없다. 독립 화면이 아니라 등록을 시도할 때 끼어드는
   // 바텀시트라서, `showLoginSheet`로 띄운다(기능정의서 3).
 }
@@ -131,6 +135,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoute.notificationSettings,
         builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      // 알림함도 껍데기 위에 얹는다. 알림을 누르면 상세가 그 위에 쌓이고,
+      // 닫으면 알림함으로 돌아온다.
+      GoRoute(
+        path: AppRoute.notifications,
+        builder: (context, state) => const NotificationInboxScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(shell: shell),

@@ -11,6 +11,7 @@ import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/guardian_shortcut_banner.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../../core/widgets/missing_case_tile.dart';
+import '../../notifications/presentation/notification_providers.dart';
 import 'missing_list_providers.dart';
 import 'widgets/missing_empty_view.dart';
 import 'widgets/missing_filter_chips.dart';
@@ -69,7 +70,11 @@ class _MissingListScreenState extends ConsumerState<MissingListScreen> {
     final page = list.value;
 
     return Scaffold(
-      appBar: const AppTopBar.title('실종자'),
+      appBar: AppTopBar.title(
+        '실종자',
+        hasUnreadNotifications: ref.watch(hasUnreadNotificationsProvider),
+        onNotifications: () => unawaited(context.push(AppRoute.notifications)),
+      ),
       body: Column(
         children: [
           // 로그인은 등록 화면이 연 뒤에 필요할 때만 묻는다.

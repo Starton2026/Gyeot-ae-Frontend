@@ -9,6 +9,7 @@ import 'core/push/push_messaging.dart';
 import 'core/push/push_providers.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/notifications/presentation/notification_providers.dart';
 
 class GyeotaeApp extends ConsumerStatefulWidget {
   const GyeotaeApp({super.key});
@@ -23,6 +24,7 @@ class _GyeotaeAppState extends ConsumerState<GyeotaeApp> {
 
   StreamSubscription<PushOpen>? _opens;
   StreamSubscription<PushAlert>? _alerts;
+  AppLifecycleListener? _lifecycle;
 
   @override
   void initState() {
@@ -42,12 +44,18 @@ class _GyeotaeAppState extends ConsumerState<GyeotaeApp> {
         WidgetsBinding.instance.addPostFrameCallback((_) => _go(open));
       }),
     );
+
+    // 앱을 다시 앞으로 가져오면 그사이 쌓인 알림이 있을 수 있다.
+    _lifecycle = AppLifecycleListener(
+      onResume: () => ref.invalidate(notificationInboxProvider),
+    );
   }
 
   @override
   void dispose() {
     unawaited(_opens?.cancel());
     unawaited(_alerts?.cancel());
+    _lifecycle?.dispose();
     super.dispose();
   }
 
@@ -58,6 +66,7 @@ class _GyeotaeAppState extends ConsumerState<GyeotaeApp> {
   void _go(PushOpen? open) {
     if (open == null || !mounted) return;
 
+    ref.invalidate(notificationInboxProvider);
     unawaited(
       ref.read(routerProvider).push(AppRoute.missingDetail(open.caseId)),
     );
@@ -65,6 +74,8 @@ class _GyeotaeAppState extends ConsumerState<GyeotaeApp> {
 
   /// 앱이 켜져 있는 동안 온 알림을 직접 띄운다.
   void _show(PushAlert alert) {
+    ref.invalidate(notificationInboxProvider);
+
     final messenger = _messengerKey.currentState;
     if (messenger == null) return;
 

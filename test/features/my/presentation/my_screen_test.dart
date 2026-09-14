@@ -25,10 +25,12 @@ import 'package:gyeotae/features/my/presentation/widgets/my_login_card.dart';
 import 'package:gyeotae/features/my/presentation/widgets/my_menu.dart';
 import 'package:gyeotae/features/my/presentation/widgets/my_report_tile.dart';
 import 'package:gyeotae/features/my/presentation/widgets/my_sign_out_dialog.dart';
+import 'package:gyeotae/features/notifications/data/notification_repository.dart';
 import 'package:gyeotae/features/report/data/report.dart';
 
 import '../../../support/fake_auth.dart';
 import '../../../support/fake_my_repository.dart';
+import '../../../support/fake_notification_repository.dart';
 import '../../../support/in_memory_token_storage.dart';
 
 /// 카카오 로그인 창이 아직 안 닫힌 상태. [complete]를 불러야 끝난다.
@@ -97,6 +99,9 @@ Future<void> _pumpMy(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        notificationRepositoryProvider.overrideWithValue(
+          FakeNotificationRepository(),
+        ),
         // 로그인 상태는 저장된 토큰으로 갈린다.
         tokenStorageProvider.overrideWithValue(
           lastTokens = InMemoryTokenStorage(signedIn ? 'token' : null),

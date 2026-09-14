@@ -18,6 +18,7 @@ import '../../map/presentation/map_providers.dart';
 import '../../missing/data/missing_case.dart';
 import '../../missing/data/missing_repository.dart';
 import '../../missing/presentation/missing_list_providers.dart';
+import '../../notifications/presentation/notification_providers.dart';
 import '../data/my_report.dart';
 import '../data/my_repository.dart';
 import 'my_providers.dart';
@@ -58,6 +59,11 @@ class MyScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final auth = ref.watch(authProvider);
+    final topBar = AppTopBar.title(
+      'MY',
+      hasUnreadNotifications: ref.watch(hasUnreadNotificationsProvider),
+      onNotifications: () => unawaited(context.push(AppRoute.notifications)),
+    );
 
     // 저장된 토큰으로 누구인지 서버에 묻는 중이다. 이때 값이 비어 있다고
     // 게스트 화면을 그리면, 로그인한 사람에게 로그인 권유가 잠깐 번쩍였다가
@@ -67,7 +73,7 @@ class MyScreen extends ConsumerWidget {
     // 실패했으면 기다리지 않는다. Riverpod이 40초 넘게 다시 시도하는데, 그동안
     // 로딩만 돌리면 MY가 통째로 멈춘 것처럼 보인다.
     if (!auth.hasValue && !auth.hasError) {
-      return const Scaffold(appBar: AppTopBar.title('MY'), body: LoadingView());
+      return Scaffold(appBar: topBar, body: const LoadingView());
     }
 
     final user = auth.value;
@@ -75,7 +81,7 @@ class MyScreen extends ConsumerWidget {
     final reports = ref.watch(myReportsProvider);
 
     return Scaffold(
-      appBar: const AppTopBar.title('MY'),
+      appBar: topBar,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
         children: [

@@ -16,6 +16,7 @@ import 'package:gyeotae/features/map/presentation/map_screen.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
 import 'package:gyeotae/features/missing/presentation/missing_detail_screen.dart';
+import 'package:gyeotae/features/notifications/data/notification_repository.dart';
 import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:gyeotae/features/report/presentation/report_done_screen.dart';
@@ -28,6 +29,7 @@ import 'package:gyeotae/features/report/presentation/widgets/report_submit_bar.d
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/fake_auth.dart';
+import '../../../support/fake_notification_repository.dart';
 import '../../../support/in_memory_token_storage.dart';
 import '../../../support/onboarding_overrides.dart';
 import '../../../support/fake_location_source.dart';
@@ -55,6 +57,9 @@ Future<ProviderContainer> _submitReport(
   final backend = MockBackend.seeded();
   final container = ProviderContainer.test(
     overrides: [
+      notificationRepositoryProvider.overrideWithValue(
+        FakeNotificationRepository(),
+      ),
       ...startAfterOnboarding(),
       photoPickerProvider.overrideWithValue(FakePhotoPicker('/tmp/shot.jpg')),
       locationSourceProvider.overrideWithValue(

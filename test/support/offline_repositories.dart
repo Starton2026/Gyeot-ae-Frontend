@@ -3,10 +3,12 @@ import 'package:gyeotae/core/mock/mock_backend.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
 import 'package:gyeotae/features/my/data/my_repository.dart';
+import 'package:gyeotae/features/notifications/data/notification_repository.dart';
 import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 
 import 'fake_my_repository.dart';
+import 'fake_notification_repository.dart';
 
 /// 네트워크를 타지 않는 저장소. 사건과 제보가 같은 mock 백엔드를 본다.
 ///
@@ -16,6 +18,7 @@ import 'fake_my_repository.dart';
 List<Override> offlineRepositories({
   MockBackend? backend,
   Duration latency = Duration.zero,
+  NotificationRepository? notifications,
 }) {
   final shared = backend ?? MockBackend.seeded();
 
@@ -27,5 +30,9 @@ List<Override> offlineRepositories({
       MockReportRepository(shared, latency: latency),
     ),
     myRepositoryProvider.overrideWithValue(FakeMyRepository()),
+    // 탭 상단바의 알림 버튼이 앱을 띄우자마자 알림함을 부른다.
+    notificationRepositoryProvider.overrideWithValue(
+      notifications ?? FakeNotificationRepository(),
+    ),
   ];
 }

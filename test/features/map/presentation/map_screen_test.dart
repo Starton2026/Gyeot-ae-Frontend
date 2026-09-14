@@ -10,10 +10,12 @@ import 'package:gyeotae/features/map/presentation/widgets/map_route_panel.dart';
 import 'package:gyeotae/features/map/presentation/widgets/map_search_bar.dart';
 import 'package:gyeotae/features/missing/data/missing_repository.dart';
 import 'package:gyeotae/features/missing/data/mock_missing_repository.dart';
+import 'package:gyeotae/features/notifications/data/notification_repository.dart';
 import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/fake_notification_repository.dart';
 import '../../../support/onboarding_overrides.dart';
 
 /// 지도 화면을 띄운다.
@@ -24,6 +26,9 @@ Future<ProviderContainer> _pumpMap(WidgetTester tester) async {
   final backend = MockBackend.seeded();
   final container = ProviderContainer.test(
     overrides: [
+      notificationRepositoryProvider.overrideWithValue(
+        FakeNotificationRepository(),
+      ),
       ...startAfterOnboarding(),
       missingRepositoryProvider.overrideWithValue(
         MockMissingRepository(backend, latency: Duration.zero),

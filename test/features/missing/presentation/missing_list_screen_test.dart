@@ -10,14 +10,19 @@ import 'package:gyeotae/features/missing/presentation/missing_list_screen.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/missing_empty_view.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/missing_resolved_divider.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/missing_search_field.dart';
+import 'package:gyeotae/features/notifications/data/notification_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/fake_notification_repository.dart';
 import '../../../support/onboarding_overrides.dart';
 
 Future<void> _pumpList(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        notificationRepositoryProvider.overrideWithValue(
+          FakeNotificationRepository(),
+        ),
         ...startAfterOnboarding(),
         missingRepositoryProvider.overrideWithValue(
           MockMissingRepository(MockBackend.seeded(), latency: Duration.zero),
@@ -144,7 +149,12 @@ void main() {
   testWidgets('홈에서 실종자 탭을 누르면 목록으로 간다', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: startAfterOnboarding(),
+        overrides: [
+          ...startAfterOnboarding(),
+          notificationRepositoryProvider.overrideWithValue(
+            FakeNotificationRepository(),
+          ),
+        ],
         child: const GyeotaeApp(),
       ),
     );

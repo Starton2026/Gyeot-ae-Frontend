@@ -50,6 +50,23 @@ String koreanDateTimeLabel(
 
 DateTime _dateOnly(DateTime time) => DateTime(time.year, time.month, time.day);
 
+/// 얼마 전인지. `방금` · `12분 전` · `3시간 전` · `어제 오후 2시`.
+///
+/// 알림처럼 **새것인지가 중요한 자리**에 쓴다. 오늘 안이면 몇 분·몇 시간 전으로,
+/// 날짜가 넘어가면 [koreanDateTimeLabel]로 적는다. "27시간 전"은 셈을 시킨다.
+///
+/// 폰 시계가 서버보다 조금 늦어 앞선 시각이 오면 `방금`으로 둔다.
+String koreanAgoLabel(DateTime time, {DateTime? now}) {
+  final current = now ?? DateTime.now();
+  final diff = current.difference(time);
+
+  if (diff.inMinutes < 1) return '방금';
+  if (diff.inHours < 1) return '${diff.inMinutes}분 전';
+  if (_dateOnly(current) == _dateOnly(time)) return '${diff.inHours}시간 전';
+
+  return koreanDateTimeLabel(time, now: current);
+}
+
 /// 시각을 짧게 읽는다. `오후 2:40`.
 ///
 /// 시간 슬라이더처럼 폭이 좁아 `오후 2시 40분`이 들어가지 않는 자리에 쓴다.

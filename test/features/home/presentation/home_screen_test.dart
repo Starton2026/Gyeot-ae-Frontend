@@ -9,8 +9,10 @@ import 'package:gyeotae/features/home/presentation/widgets/quiet_state_card.dart
 import 'package:gyeotae/features/home/presentation/widgets/urgent_case_banner.dart';
 import 'package:gyeotae/features/missing/data/missing_case.dart';
 import 'package:gyeotae/features/map/presentation/map_screen.dart';
+import 'package:gyeotae/features/notifications/data/notification_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../support/fake_notification_repository.dart';
 import '../../../support/onboarding_overrides.dart';
 
 MissingCaseSummary _summary({
@@ -45,6 +47,9 @@ Future<void> _pumpHome(WidgetTester tester, HomeFeed feed) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        notificationRepositoryProvider.overrideWithValue(
+          FakeNotificationRepository(),
+        ),
         ...startAfterOnboarding(),
         homeFeedProvider.overrideWith((ref) => feed),
       ],

@@ -77,4 +77,35 @@ void main() {
       );
     });
   });
+
+  group('koreanAgoLabel', () {
+    final now = DateTime(2026, 9, 14, 16, 0);
+
+    test('1분이 안 됐으면 "방금"', () {
+      expect(koreanAgoLabel(DateTime(2026, 9, 14, 15, 59, 30), now: now), '방금');
+    });
+
+    test('한 시간 안이면 분으로', () {
+      expect(koreanAgoLabel(DateTime(2026, 9, 14, 15, 48), now: now), '12분 전');
+    });
+
+    test('오늘 안이면 시간으로', () {
+      expect(koreanAgoLabel(DateTime(2026, 9, 14, 12, 40), now: now), '3시간 전');
+    });
+
+    test('날짜가 넘어가면 몇 시간 전이 아니라 날짜로 적는다', () {
+      // 자정 너머 8시간 전을 "8시간 전"이라 적으면 오늘 일로 읽힌다.
+      expect(
+        koreanAgoLabel(
+          DateTime(2026, 9, 14, 23, 0),
+          now: DateTime(2026, 9, 15, 7, 0),
+        ),
+        '어제 오후 11시',
+      );
+    });
+
+    test('폰 시계가 늦어 앞선 시각이 와도 "방금"', () {
+      expect(koreanAgoLabel(DateTime(2026, 9, 14, 16, 2), now: now), '방금');
+    });
+  });
 }

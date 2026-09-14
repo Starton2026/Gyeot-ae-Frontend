@@ -15,11 +15,13 @@ import 'package:gyeotae/features/missing/presentation/case_edit_screen.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/detail_guardian_bar.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/detail_report_cta.dart';
 import 'package:gyeotae/features/missing/presentation/widgets/report_timeline_card.dart';
+import 'package:gyeotae/features/notifications/data/notification_repository.dart';
 import 'package:gyeotae/features/report/data/mock_report_repository.dart';
 import 'package:gyeotae/features/report/data/report_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../support/fake_address_lookup.dart';
+import '../../../support/fake_notification_repository.dart';
 import '../../../support/fake_photo_picker.dart';
 import '../../../support/onboarding_overrides.dart';
 
@@ -40,6 +42,9 @@ Future<_Env> _pumpDetail(WidgetTester tester, {bool guardian = true}) async {
 
   final container = ProviderContainer.test(
     overrides: [
+      notificationRepositoryProvider.overrideWithValue(
+        FakeNotificationRepository(),
+      ),
       ...startAfterOnboarding(),
       missingRepositoryProvider.overrideWithValue(
         MockMissingRepository(backend, latency: Duration.zero),
