@@ -73,7 +73,7 @@ class _ReportPlaceSheetState extends State<_ReportPlaceSheet> {
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _confirm(),
                 decoration: const InputDecoration(
-                  hintText: '만수주공 앞 버스정류장',
+                  hintText: '예) 인하공전 도서관 앞',
                 ),
               ),
               const SizedBox(height: 14),
