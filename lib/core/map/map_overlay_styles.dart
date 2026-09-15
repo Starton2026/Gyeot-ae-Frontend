@@ -17,7 +17,11 @@ class MapOverlayStyles {
 
   /// 이동 경로. 연결색이다 — 시민과 사건이 이어진 자리라는 뜻이고, 실종
   /// 위치(관심색)·제보 핀(신뢰색)과도 색이 겹치지 않는다.
-  static final RouteStyle route = RouteStyle(
+  ///
+  /// **부를 때마다 새로 만든다.** 하나를 여러 지도(홈·상세·지도 탭)가 같이
+  /// 쓰면, 두 번째 지도부터 SDK가 스타일 없이 등록해 선이 안 그려진다
+  /// (IndexOutOfBoundsException).
+  static RouteStyle get route => RouteStyle(
     AppColors.brandConnection,
     6,
     strokeColor: AppColors.white,
