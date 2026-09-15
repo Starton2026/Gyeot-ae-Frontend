@@ -50,6 +50,38 @@ class _StaticKakaoMapState extends State<StaticKakaoMap> {
   /// SDK가 오류를 알렸다(대개 키 인증). 흰 판 대신 회색 판으로 물러난다.
   bool _failed = false;
 
+  /// 지도를 새로 올린 횟수. 바뀌면 플랫폼 뷰를 통째로 다시 만든다.
+  int _generation = 0;
+
+  /// 앱이 잠깐 가려졌다 돌아오면 지도를 새로 올린다.
+  ///
+  /// 첫 실행에는 홈 지도가 만들어지는 도중에 알림 권한 팝업이 뜬다. 그 사이
+  /// 안드로이드 지도의 GL 표면이 멈춰 검은 판으로 남고, SDK의 복구 옵션으로도
+  /// 돌아오지 않았다. 앱을 다시 켜면 멀쩡하므로, 같은 일을 위젯에서 한다.
+  late final AppLifecycleListener _lifecycle = AppLifecycleListener(
+    onResume: _remount,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle;
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  void _remount() {
+    if (!mounted) return;
+    setState(() {
+      _generation++;
+      _controller = null;
+    });
+  }
+
   @override
   void didUpdateWidget(covariant StaticKakaoMap oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -60,6 +92,10 @@ class _StaticKakaoMapState extends State<StaticKakaoMap> {
   Future<void> _onMapReady(KakaoMapController controller) async {
     _controller = controller;
     _drawnSignature = null;
+    // 네이티브 지도가 새로 만들어졌으면 옛 핀·경로는 이미 없다. 지우려 들면
+    // 오류가 나서 그리기가 중간에 멈춘다.
+    _pins.clear();
+    _route = null;
 
     // IgnorePointer로 이미 막았지만, 플랫폼 뷰가 터치를 직접 받는 경우를 위해
     // SDK 쪽 제스처도 끈다.
@@ -158,6 +194,7 @@ class _StaticKakaoMapState extends State<StaticKakaoMap> {
     return IgnorePointer(
       child: ExcludeSemantics(
         child: KakaoMap(
+          key: ValueKey(_generation),
           option: KakaoMapOption(
             position: LatLng(center.lat, center.lng),
             zoomLevel: widget.plan.zoomLevel,
