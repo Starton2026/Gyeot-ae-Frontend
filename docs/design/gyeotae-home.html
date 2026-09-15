@@ -1,0 +1,914 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>곁애 — 홈화면 디자인</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Nanum+Myeongjo:wght@700;800&display=swap">
+<style>
+  :root{
+    --trust:#3B6CB7;
+    --link:#7FB3FF;
+    --care:#FF7E7E;
+    --hope:#FFE5E1;
+    --calm:#DEE6F0;
+    --ink:#17273D;
+    --ink-2:#5C6E85;
+    --ink-3:#8B9AAD;
+    --field:#EDF2F9;
+    --care-ink:#C9504F;
+    --white:#fff;
+    --r:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,
+      'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
+    background:linear-gradient(180deg,#F7FAFD 0%,#EFF4FA 100%);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    padding:56px 24px 80px;
+    font-feature-settings:"tnum";
+  }
+  .page{max-width:1020px;margin:0 auto}
+
+  /* ── 페이지 헤더 ── */
+  .masthead{margin-bottom:44px;max-width:60ch}
+  .masthead h1{font-size:26px;font-weight:700;letter-spacing:-.03em}
+  .masthead p{margin-top:10px;font-size:15px;color:var(--ink-2);line-height:1.65}
+
+  /* ── 목업 배치 ── */
+  .frames{display:flex;gap:52px;flex-wrap:wrap;align-items:flex-start}
+  .slot{flex:0 0 auto}
+  .slot-name{
+    font-size:13px;font-weight:600;color:var(--ink-2);
+    margin-bottom:14px;padding-left:4px;
+    display:flex;align-items:center;gap:7px;
+  }
+  .slot-name i{width:7px;height:7px;border-radius:50%;display:block}
+  .slot-note{
+    margin-top:16px;font-size:13px;color:var(--ink-3);
+    line-height:1.6;max-width:330px;padding-left:4px;
+  }
+
+  /* ── 폰 프레임 ── */
+  .phone{
+    width:360px;height:740px;
+    background:var(--white);
+    border:1px solid #DDE5EF;
+    border-radius:34px;
+    overflow:hidden;
+    display:flex;flex-direction:column;
+    box-shadow:0 18px 44px -18px rgba(23,39,61,.22);
+  }
+  .status{
+    height:30px;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 20px;font-size:11px;font-weight:600;color:var(--ink-3);
+  }
+  .status b{font-weight:600;letter-spacing:.02em}
+  .bars{display:flex;gap:3px;align-items:flex-end}
+  .bars s{display:block;width:3px;background:var(--ink-3);border-radius:1px;text-decoration:none}
+
+  /* ── 앱 상단바 ── */
+  .appbar{
+    flex:0 0 auto;
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+    padding:4px 18px 14px;
+  }
+  .appbar-side{display:flex;align-items:center}
+  .appbar-side.right{justify-content:flex-end}
+  .bell{position:relative;width:26px;height:26px;color:var(--ink-2)}
+  .bell b{
+    position:absolute;top:1px;right:1px;
+    width:8px;height:8px;border-radius:50%;
+    background:var(--care);border:1.5px solid var(--white);
+  }
+
+
+
+  /* ── 워드마크 레터링 : 곁·애는 SVG 손글씨, 愛는 서예 서체 ── */
+  .lettering{
+    display:inline-flex;align-items:center;
+    line-height:1;white-space:nowrap;
+  }
+  .ltr{display:block;height:.88em;width:auto;flex:0 0 auto}
+  .lettering .g{color:var(--trust)}
+  .lettering .a{color:var(--care)}
+  .ltr.a{margin-left:.07em}
+  .lettering .han{
+    font-family:'Ma Shan Zheng','Nanum Myeongjo','Songti SC','Yu Mincho',serif;
+    font-weight:400;font-style:normal;
+    font-size:1.15em;line-height:1;
+    color:var(--care);
+    margin-left:.05em;
+    transform:translateY(.01em);
+    display:inline-block;
+  }
+  .lettering .hrt{
+    width:.27em;height:.27em;
+    margin-left:.09em;align-self:flex-start;margin-top:.08em;
+    color:var(--care);flex:0 0 auto;
+  }
+  .lettering.rev .g,.lettering.rev .a,.lettering.rev .han{color:var(--white)}
+  .lettering.rev .hrt{color:rgba(255,255,255,.75)}
+
+  /* ── 워드마크 (곁愛) ── */
+  .wordmark{display:flex;align-items:center;gap:7px;justify-content:center}
+  .mark{width:24px;height:21px;flex:0 0 auto;display:block}
+  .wm{font-size:20px;font-weight:800;letter-spacing:-.045em;line-height:1}
+  .wm span{color:var(--trust)}
+  .wm em{color:var(--care);font-style:normal;margin-left:1px}
+
+  /* ── 마스코트 곁이 ── */
+  .mascot{flex:0 0 auto;display:block}
+
+
+  /* ── 워드마크 스펙 시트 ── */
+  .marks{margin-top:60px;padding-top:34px;border-top:1px solid var(--calm)}
+  .marks h2{font-size:19px;font-weight:700;letter-spacing:-.03em}
+  .marks > p{margin-top:9px;font-size:14px;color:var(--ink-2);line-height:1.65;max-width:62ch}
+  .mgrid{margin-top:26px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+  .mcard{
+    background:var(--white);border:1px solid var(--calm);
+    border-radius:20px;padding:30px 26px 22px;
+  }
+  .mcard.dark{background:var(--trust);border-color:var(--trust)}
+  .mcard.tint{background:var(--hope);border-color:var(--hope)}
+  .mtag{font-size:11.5px;font-weight:700;color:var(--ink-3);letter-spacing:-.01em}
+  .mcard.dark .mtag{color:rgba(255,255,255,.65)}
+  .mstage{
+    margin:20px 0 22px;min-height:84px;
+    display:flex;align-items:center;justify-content:center;gap:11px;
+  }
+  .mstage.col{flex-direction:column;gap:8px;min-height:132px}
+  .mstage .mark{width:38px;height:33px}
+  .mstage.col .mark{width:52px;height:45px}
+  .mstage .lettering{font-size:38px}
+  .mstage.col .lettering{font-size:30px}
+  .mdesc{font-size:12.5px;color:var(--ink-2);line-height:1.6;border-top:1px solid rgba(23,39,61,.07);padding-top:13px}
+  .mcard.dark .mdesc{color:rgba(255,255,255,.8);border-top-color:rgba(255,255,255,.18)}
+  .mcard.tint .mdesc{color:var(--care-ink);border-top-color:rgba(201,80,79,.16)}
+
+  .sizes{margin-top:20px;background:var(--white);border:1px solid var(--calm);border-radius:20px;padding:24px 26px}
+  .sizerow{display:flex;align-items:flex-end;gap:30px;flex-wrap:wrap}
+  .sizeitem{text-align:center}
+  .sizeitem .lettering{display:flex;align-items:center;justify-content:center;gap:5px}
+  .sizeitem u{display:block;margin-top:9px;font-size:11px;color:var(--ink-3);text-decoration:none}
+
+  .usage{margin-top:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}
+  .ucard{border-radius:18px;padding:18px 20px;background:var(--field)}
+  .ucard h4{font-size:13.5px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:baseline;gap:7px}
+  .ucard h4 .lettering{font-size:17px}
+  .ucard ul{margin-top:11px;list-style:none;display:flex;flex-direction:column;gap:7px}
+  .ucard li{font-size:12.5px;color:var(--ink-2);line-height:1.55;padding-left:12px;position:relative}
+  .ucard li::before{content:"";position:absolute;left:0;top:7px;width:4px;height:4px;border-radius:50%;background:#B3C2D4}
+
+  /* ── 마스코트 사용 원칙 ── */
+  .rules{margin-top:60px;padding-top:34px;border-top:1px solid var(--calm)}
+  .rules h2{font-size:19px;font-weight:700;letter-spacing:-.03em}
+  .rules > p{margin-top:9px;font-size:14px;color:var(--ink-2);line-height:1.65;max-width:62ch}
+  .rules-grid{margin-top:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px}
+  .rule{border-radius:20px;padding:20px 22px}
+  .rule.ok{background:var(--hope)}
+  .rule.no{background:var(--calm)}
+  .rule-head{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;letter-spacing:-.02em}
+  .rule.ok .rule-head{color:var(--care-ink)}
+  .rule.no .rule-head{color:var(--ink)}
+  .rule ul{margin-top:12px;list-style:none;display:flex;flex-direction:column;gap:8px}
+  .rule li{font-size:13px;line-height:1.6;padding-left:13px;position:relative;color:var(--ink-2)}
+  .rule li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%}
+  .rule.ok li::before{background:var(--care)}
+  .rule.no li::before{background:#B3C2D4}
+  .rule li b{font-weight:700;color:var(--ink)}
+  .poses{margin-top:24px;display:flex;gap:26px;flex-wrap:wrap;align-items:flex-end}
+  .pose{text-align:center;width:112px}
+  .pose svg{width:58px;height:74px;margin:0 auto}
+  .pose b{display:block;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--trust)}
+  .pose i{display:block;margin-top:3px;font-size:11.5px;font-style:normal;color:var(--ink-3);line-height:1.45}
+
+  /* ── 상단 보호자 바로가기 띠 ── */
+  .quickreg{
+    flex:0 0 auto;margin:0 16px 12px;
+    height:44px;border-radius:13px;
+    background:var(--hope);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 13px 0 14px;cursor:pointer;
+  }
+  .quickreg-l{display:flex;align-items:center;gap:8px;color:var(--care-ink)}
+  .quickreg-l svg{width:16px;height:16px;flex:0 0 auto}
+  .quickreg-l b{font-size:12.5px;font-weight:600;letter-spacing:-.02em}
+  .quickreg-r{
+    display:flex;align-items:center;gap:2px;
+    color:var(--care-ink);font-size:12px;font-weight:700;
+  }
+
+  /* ── 스크롤 영역 ── */
+  .scroll{flex:1 1 auto;overflow:hidden;padding:0 16px}
+
+  /* ── ② 긴급 배너 (히어로) ── */
+  .alert{
+    background:var(--care);
+    border-radius:22px;
+    padding:16px 18px 15px;
+    color:var(--white);
+    position:relative;overflow:hidden;
+  }
+  .alert::after{
+    content:"";position:absolute;right:-54px;top:-64px;
+    width:172px;height:172px;border-radius:50%;
+    background:rgba(255,255,255,.11);
+  }
+  .live{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(255,255,255,.22);
+    padding:4px 10px 4px 8px;border-radius:20px;
+    font-size:11px;font-weight:600;letter-spacing:-.01em;
+  }
+  .live i{
+    width:6px;height:6px;border-radius:50%;background:var(--white);
+    animation:beat 1.9s ease-in-out infinite;
+  }
+  @keyframes beat{0%,100%{opacity:1}50%{opacity:.32}}
+  @media (prefers-reduced-motion:reduce){.live i{animation:none}}
+
+  .alert-body{display:flex;gap:14px;align-items:flex-start;margin-top:13px;position:relative}
+  .face{
+    flex:0 0 auto;border-radius:15px;overflow:hidden;background:var(--field);
+  }
+  .face.lg{width:74px;height:88px}
+  .face.sm{width:52px;height:60px;border-radius:12px}
+  .face svg{display:block;width:100%;height:100%}
+
+  .alert-who{font-size:16px;font-weight:700;letter-spacing:-.02em}
+  .timer{
+    margin-top:5px;display:flex;align-items:baseline;gap:3px;
+    font-variant-numeric:tabular-nums;
+  }
+  .timer u{font-size:33px;font-weight:700;line-height:1;text-decoration:none;letter-spacing:-.035em}
+  .timer em{font-size:13px;font-weight:600;font-style:normal;margin-right:5px;opacity:.9}
+  .seen{
+    margin-top:9px;font-size:11.5px;line-height:1.55;
+    color:rgba(255,255,255,.9);
+  }
+  .alert-cta{
+    margin-top:14px;width:100%;
+    background:var(--white);color:var(--care-ink);
+    border:0;border-radius:13px;
+    padding:12px;font-size:14px;font-weight:700;
+    font-family:inherit;cursor:pointer;position:relative;
+  }
+
+  /* ── 평상시 상태 블록 ── */
+  .quiet{
+    background:var(--hope);
+    border-radius:22px;padding:16px 12px 16px 19px;
+    display:flex;gap:10px;align-items:center;justify-content:space-between;
+  }
+  .quiet-ico{
+    flex:0 0 auto;width:38px;height:38px;border-radius:50%;
+    background:var(--white);display:grid;place-items:center;color:var(--care);
+  }
+  .quiet h4{font-size:14px;font-weight:700;letter-spacing:-.02em}
+  .quiet p{font-size:11.5px;color:var(--care-ink);margin-top:3px;line-height:1.5}
+
+  /* ── ③ 지도 프리뷰 ── */
+  .mapcard{
+    margin-top:12px;border-radius:20px;overflow:hidden;
+    border:1px solid var(--calm);background:var(--white);cursor:pointer;
+  }
+  .mapcard.tall .mapart{height:196px}
+  .mapart{height:142px;position:relative;background:#F4F8FD}
+  .mapart svg{position:absolute;inset:0;width:100%;height:100%}
+  .mapfoot{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:11px 14px;border-top:1px solid var(--calm);
+  }
+  .mapfoot b{font-size:13px;font-weight:600;letter-spacing:-.02em}
+  .mapfoot span{font-size:12px;color:var(--trust);font-weight:600;display:flex;align-items:center;gap:3px}
+
+  /* ── ④ 주변 목록 ── */
+  .sec{margin-top:22px;display:flex;align-items:baseline;justify-content:space-between;padding:0 3px}
+  .sec h3{font-size:15px;font-weight:700;letter-spacing:-.025em}
+  .sec b{font-size:11.5px;color:var(--ink-3);font-weight:500}
+
+  .list{margin-top:11px;display:flex;flex-direction:column}
+  .item{
+    display:flex;gap:12px;padding:13px 3px;
+    border-bottom:1px solid #EEF2F7;cursor:pointer;align-items:center;
+  }
+  .item:last-child{border-bottom:0}
+  .item-txt{flex:1 1 auto;min-width:0}
+  .item-top{display:flex;align-items:center;gap:6px}
+  .item-top b{font-size:14px;font-weight:700;letter-spacing:-.025em}
+  .item-top span{font-size:11.5px;color:var(--ink-3)}
+  .look{
+    font-size:12px;color:var(--ink-2);margin-top:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.45;
+  }
+  .meta{display:flex;align-items:center;gap:7px;margin-top:7px}
+  .dist{font-size:11.5px;color:var(--trust);font-weight:600}
+  .tag{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px;letter-spacing:-.01em}
+  .tag.now{background:var(--care);color:var(--white)}
+  .tag.soon{background:var(--hope);color:var(--care-ink)}
+  .tag.long{background:var(--calm);color:var(--ink-2)}
+
+  .more{
+    margin-top:6px;width:100%;background:var(--field);border:0;
+    border-radius:12px;padding:11px;font-family:inherit;
+    font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;
+  }
+
+  /* ── ⑤ 보호자 CTA ── */
+  .guardian{
+    margin:22px 0 8px;padding:17px;border-radius:20px;
+    background:var(--trust);color:var(--white);
+  }
+  .guardian p{font-size:12.5px;color:rgba(255,255,255,.82);line-height:1.55}
+  .guardian h4{font-size:15.5px;font-weight:700;margin-top:2px;letter-spacing:-.025em}
+  .guardian button{
+    margin-top:13px;width:100%;border:0;border-radius:12px;
+    background:var(--white);color:var(--trust);
+    padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;
+  }
+
+  /* ── ⑥ 하단 네비 ── */
+  .nav{
+    flex:0 0 auto;display:flex;
+    border-top:1px solid var(--calm);
+    padding:9px 8px 16px;background:var(--white);
+  }
+  .tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    color:var(--ink-3);font-size:10.5px;font-weight:600;cursor:pointer;
+  }
+  .tab.on{color:var(--trust)}
+  .tab svg{width:23px;height:23px}
+
+  /* ── 팔레트 사용처 ── */
+  .swatches{
+    margin-top:64px;padding-top:32px;border-top:1px solid var(--calm);
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:22px;
+  }
+  .sw dt{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:700}
+  .sw i{width:20px;height:20px;border-radius:6px;display:block;border:1px solid rgba(23,39,61,.09)}
+  .sw dd{margin-top:7px;font-size:12.5px;color:var(--ink-2);line-height:1.6}
+
+  @media (max-width:820px){
+    body{padding:36px 18px 60px}
+    .frames{gap:40px;justify-content:center}
+    .phone{width:100%;max-width:360px}
+  }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- 곁 : ㄱ + ㅕ + 받침 ㅌ -->
+  <symbol id="wm-gyeot" viewBox="5 7 108 113">
+    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M13 22C27 15 42 16 53 21C55 37 47 51 34 62" stroke-width="13.5"/>
+      <path d="M105 14C102 31 102 47 104 63" stroke-width="13"/>
+      <path d="M75 29C84 25.5 94 25.5 102 28" stroke-width="10.5"/>
+      <path d="M76 50C85 46.5 95 46.5 103 49" stroke-width="10.5"/>
+      <path d="M21 82C18 93 18 103 20 114" stroke-width="12.5"/>
+      <path d="M21 83C45 78.5 76 80 102 83" stroke-width="10.5"/>
+      <path d="M21 97C43 93.5 72 94.5 97 97" stroke-width="10.5"/>
+      <path d="M21 113C45 109 78 110 104 113.5" stroke-width="10.5"/>
+    </g>
+  </symbol>
+
+  <!-- 애 : 한글 전용판용 손글씨 -->
+  <symbol id="wm-ae" viewBox="4 10 108 111">
+    <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <!-- ㅇ : 한 번에 돌려 쓴 원, 끝이 살짝 겹침 -->
+      <path d="M53 46C45 37 30 35 21 44C11 53 10 71 21 81C31 91 48 89 56 79
+               C62 71 61 56 53 47" stroke-width="12"/>
+      <!-- ㅐ -->
+      <path d="M76 17C73 49 73 84 75 114" stroke-width="12"/>
+      <path d="M76 65C85 61.5 94 61.5 101 64" stroke-width="10.5"/>
+      <path d="M106 17C103 49 103 84 105 114" stroke-width="12"/>
+    </g>
+  </symbol>
+
+  <symbol id="gyeotae-mark" viewBox="0 0 100 86">
+    <!-- 큰 사람 : 보호자 (신뢰색) -->
+    <circle cx="29" cy="15.5" r="13" fill="#3B6CB7"/>
+    <path d="M19.5 30C11.5 45 24 60.5 50 77" fill="none" stroke="#3B6CB7"
+          stroke-width="15" stroke-linecap="round"/>
+    <!-- 작은 사람 : 찾는 사람 (연결색) -->
+    <circle cx="72" cy="20" r="10" fill="#7FB3FF"/>
+    <path d="M80.5 32.5C87 45.5 73 58 53.5 72" fill="none" stroke="#7FB3FF"
+          stroke-width="12" stroke-linecap="round"/>
+    <!-- 가운데 위치 핀 : 관심색 -->
+    <path d="M50 28c-7.6 0-13.8 6.2-13.8 13.8C36.2 51.6 50 68 50 68s13.8-16.4 13.8-26.2
+             C63.8 34.2 57.6 28 50 28z" fill="#FF7E7E" stroke="#fff" stroke-width="3.4"/>
+    <circle cx="50" cy="41.4" r="4.8" fill="#fff"/>
+  </symbol>
+  <symbol id="gyeoti" viewBox="0 0 100 130">
+    <circle cx="50" cy="16" r="10" fill="none" stroke="#5A87C9" stroke-width="9"/>
+    <path d="M72 76c11 7 14 20 10 30-6-9-15-13-21-14z" fill="#FF9E9E"/>
+    <ellipse cx="38" cy="122" rx="10" ry="5.5" fill="#FBF8F4"/>
+    <ellipse cx="62" cy="122" rx="10" ry="5.5" fill="#FBF8F4"/>
+    <ellipse cx="50" cy="100" rx="24" ry="22" fill="#FBF8F4"/>
+    <rect x="24" y="60" width="52" height="22" rx="9" fill="#5A87C9"/>
+    <circle cx="50" cy="55" r="30" fill="#5A87C9"/>
+    <circle cx="50" cy="57" r="23.5" fill="#FBF8F4"/>
+    <ellipse cx="41" cy="55" rx="4" ry="5.4" fill="#22303F"/>
+    <ellipse cx="59" cy="55" rx="4" ry="5.4" fill="#22303F"/>
+    <circle cx="32.5" cy="65" r="4.4" fill="#FFB9B9"/>
+    <circle cx="67.5" cy="65" r="4.4" fill="#FFB9B9"/>
+    <path d="M45.5 66.5q4.5 4.5 9 0" fill="none" stroke="#22303F" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="77" cy="82" r="8.5" fill="#FBF8F4"/>
+    <circle cx="23" cy="88" r="8.5" fill="#FBF8F4"/>
+  </symbol>
+</svg>
+
+<div class="page">
+
+  <div class="masthead">
+    <h1>곁愛 홈화면</h1>
+    <p>같은 화면의 두 가지 상태입니다. 골든타임(3시간) 안의 사건이 있으면 긴급 배너가 최상단을 차지하고,
+       없으면 배너가 사라지고 지도가 그 자리를 넘겨받습니다. 상시 노출되는 빨간 배너는 곧 무시되기 때문입니다.<br>
+       실종자 등록은 위·아래 두 곳에 두되 위계를 다르게 줬습니다. 위는 급한 보호자를 위한 바로가기,
+       아래는 평소 사용자가 기능을 알게 되는 자리입니다.<br>
+       브랜드 컬러 5색과 워드마크, 마스코트 곁이를 적용했습니다. 단, 곁이는 긴급 화면에서 물러납니다.</p>
+  </div>
+
+  <div class="frames">
+
+    <!-- ══════════ 상태 A : 긴급 사건 있음 ══════════ -->
+    <div class="slot">
+      <div class="slot-name"><i style="background:#FF7E7E"></i>골든타임 내 사건 있음</div>
+
+      <div class="phone">
+        <div class="status">
+          <b>2:52</b>
+          <div class="bars"><s style="height:5px"></s><s style="height:7px"></s><s style="height:9px"></s><s style="height:11px"></s></div>
+        </div>
+
+        <div class="appbar">
+          <span class="appbar-side"></span>
+          <div class="wordmark">
+            <svg class="mark" viewBox="0 0 100 86"><use href="#gyeotae-mark"/></svg>
+            <b class="wm lettering"><svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><em class="a han">愛</em></b>
+          </div>
+          <div class="appbar-side right">
+            <div class="bell">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+              <path d="M18 8.5a6 6 0 1 0-12 0c0 6-2 7.5-2 7.5h16s-2-1.5-2-7.5"/>
+              <path d="M10.3 19.5a2 2 0 0 0 3.4 0"/>
+            </svg>
+            <b></b>
+          </div>
+          </div>
+        </div>
+
+        <div class="quickreg">
+          <div class="quickreg-l">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 21s7.2-6.4 7.2-11.4A7.2 7.2 0 1 0 4.8 9.6C4.8 14.6 12 21 12 21z"/>
+              <path d="M12 6.6v3.2M12 12.9h.01"/>
+            </svg>
+            <b>가족이 실종되셨나요?</b>
+          </div>
+          <div class="quickreg-r">등록
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+
+        <div class="scroll">
+
+          <!-- 긴급 배너 -->
+          <div class="alert">
+            <span class="live"><i></i>지금 찾고 있어요</span>
+            <div class="alert-body">
+              <div class="face lg">
+                <svg viewBox="0 0 60 72"><rect width="60" height="72" fill="#EDF2F9"/><circle cx="30" cy="26" r="11" fill="#C6D5E8"/><path d="M8 72c0-12 10-19 22-19s22 7 22 19z" fill="#C6D5E8"/></svg>
+              </div>
+              <div>
+                <div class="alert-who">김하준 · 7세 남아</div>
+                <div class="timer"><em>실종</em><u>3</u>시간 <u>12</u>분 경과</div>
+                <div class="seen">인천 남동구 구월동 로데오거리<br>오후 2시 40분 마지막 목격</div>
+              </div>
+            </div>
+            <button class="alert-cta">이 아이를 봤어요</button>
+          </div>
+
+          <!-- 지도 프리뷰 -->
+          <div class="mapcard">
+            <div class="mapart">
+              <svg viewBox="0 0 330 142" preserveAspectRatio="xMidYMid slice">
+                <rect width="330" height="142" fill="#F4F8FD"/>
+                <g fill="#E7EEF7">
+                  <rect x="14" y="16" width="74" height="42" rx="5"/>
+                  <rect x="106" y="10" width="58" height="48" rx="5"/>
+                  <rect x="186" y="18" width="64" height="40" rx="5"/>
+                  <rect x="268" y="12" width="56" height="46" rx="5"/>
+                  <rect x="20" y="84" width="62" height="46" rx="5"/>
+                  <rect x="100" y="90" width="70" height="40" rx="5"/>
+                  <rect x="192" y="82" width="52" height="48" rx="5"/>
+                  <rect x="262" y="88" width="62" height="42" rx="5"/>
+                </g>
+                <g stroke="#DEE6F0" stroke-width="7" stroke-linecap="round">
+                  <path d="M0 71h330"/><path d="M96 0v142"/><path d="M254 0v142"/>
+                </g>
+                <!-- 내 위치 -->
+                <circle cx="150" cy="76" r="16" fill="#7FB3FF" opacity=".22"/>
+                <circle cx="150" cy="76" r="5.5" fill="#3B6CB7" stroke="#fff" stroke-width="2.2"/>
+                <!-- 실종 위치 핀 3개 -->
+                <g fill="#FF7E7E">
+                  <path d="M72 30c-6 0-11 4.8-11 10.8C61 48.6 72 58 72 58s11-9.4 11-17.2C83 34.8 78 30 72 30z" stroke="#fff" stroke-width="2"/>
+                  <path d="M214 56c-6 0-11 4.8-11 10.8C203 74.6 214 84 214 84s11-9.4 11-17.2C225 60.8 220 56 214 56z" stroke="#fff" stroke-width="2"/>
+                  <path d="M118 98c-6 0-11 4.8-11 10.8C107 116.6 118 126 118 126s11-9.4 11-17.2C129 102.8 124 98 118 98z" stroke="#fff" stroke-width="2"/>
+                </g>
+                <g fill="#fff"><circle cx="72" cy="41" r="3.4"/><circle cx="214" cy="67" r="3.4"/><circle cx="118" cy="109" r="3.4"/></g>
+              </svg>
+            </div>
+            <div class="mapfoot">
+              <b>내 주변 실종 3건</b>
+              <span>지도에서 보기
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+              </span>
+            </div>
+          </div>
+
+          <!-- 주변 목록 -->
+          <div class="sec">
+            <h3>내 주변</h3>
+            <b>인천 남동구 기준 · 긴급도순</b>
+          </div>
+
+          <div class="list">
+            <div class="item">
+              <div class="face sm"><svg viewBox="0 0 52 60"><rect width="52" height="60" fill="#EDF2F9"/><circle cx="26" cy="22" r="9" fill="#C6D5E8"/><path d="M7 60c0-10 8.5-16 19-16s19 6 19 16z" fill="#C6D5E8"/></svg></div>
+              <div class="item-txt">
+                <div class="item-top"><b>김하준</b><span>7세 남아</span></div>
+                <div class="look">노란 후드티, 검정 백팩, 파란 운동화</div>
+                <div class="meta"><span class="dist">1.2km</span><span class="tag now">3시간 경과</span></div>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="face sm"><svg viewBox="0 0 52 60"><rect width="52" height="60" fill="#EDF2F9"/><circle cx="26" cy="22" r="9" fill="#C6D5E8"/><path d="M7 60c0-10 8.5-16 19-16s19 6 19 16z" fill="#C6D5E8"/></svg></div>
+              <div class="item-txt">
+                <div class="item-top"><b>이순자</b><span>81세 여성</span></div>
+                <div class="look">회색 등산복 상하의, 지팡이, 흰머리</div>
+                <div class="meta"><span class="dist">2.8km</span><span class="tag soon">9시간 경과</span></div>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="face sm"><svg viewBox="0 0 52 60"><rect width="52" height="60" fill="#EDF2F9"/><circle cx="26" cy="22" r="9" fill="#C6D5E8"/><path d="M7 60c0-10 8.5-16 19-16s19 6 19 16z" fill="#C6D5E8"/></svg></div>
+              <div class="item-txt">
+                <div class="item-top"><b>박서연</b><span>9세 여아</span></div>
+                <div class="look">분홍 원피스, 흰 가디건, 머리 양갈래</div>
+                <div class="meta"><span class="dist">4.1km</span><span class="tag long">2일 경과</span></div>
+              </div>
+            </div>
+          </div>
+
+          <button class="more">진행 중인 사건 14건 모두 보기</button>
+
+          <div class="guardian">
+            <p>112 신고와 함께 등록하면, 주변 시민에게 바로 전달됩니다</p>
+            <h4>사진 한 장으로 2분이면 됩니다</h4>
+            <button>실종자 등록하기</button>
+          </div>
+        </div>
+
+        <!-- 하단 네비 -->
+        <div class="nav">
+          <div class="tab on">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/></svg>
+            홈
+          </div>
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="8" r="4"/><path d="M3.5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/><path d="M17 4.5a3.5 3.5 0 0 1 0 7"/></svg>
+            실종자
+          </div>
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+            지도
+          </div>
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.2 3.6-6.8 8-6.8s8 2.6 8 6.8"/></svg>
+            MY
+          </div>
+        </div>
+      </div>
+
+      <p class="slot-note">배너가 화면에서 가장 큰 활자를 가져갑니다. 서비스가 파는 것이 시간이기 때문입니다.
+         CTA는 “제보하기”가 아니라 “이 아이를 봤어요” — 시민이 하는 일을 시민의 말로 적었습니다.
+         상단 띠는 높이 44px, 배려색 배경으로 두어 스크롤 없이 보이면서도 긴급 배너를 누르지 않습니다.</p>
+    </div>
+
+    <!-- ══════════ 상태 B : 긴급 사건 없음 ══════════ -->
+    <div class="slot">
+      <div class="slot-name"><i style="background:#7FB3FF"></i>골든타임 내 사건 없음</div>
+
+      <div class="phone">
+        <div class="status">
+          <b>9:14</b>
+          <div class="bars"><s style="height:5px"></s><s style="height:7px"></s><s style="height:9px"></s><s style="height:11px"></s></div>
+        </div>
+
+        <div class="appbar">
+          <span class="appbar-side"></span>
+          <div class="wordmark">
+            <svg class="mark" viewBox="0 0 100 86"><use href="#gyeotae-mark"/></svg>
+            <b class="wm lettering"><svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><em class="a han">愛</em></b>
+          </div>
+          <div class="appbar-side right">
+            <div class="bell">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+              <path d="M18 8.5a6 6 0 1 0-12 0c0 6-2 7.5-2 7.5h16s-2-1.5-2-7.5"/>
+              <path d="M10.3 19.5a2 2 0 0 0 3.4 0"/>
+            </svg>
+          </div>
+          </div>
+        </div>
+
+        <div class="quickreg">
+          <div class="quickreg-l">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 21s7.2-6.4 7.2-11.4A7.2 7.2 0 1 0 4.8 9.6C4.8 14.6 12 21 12 21z"/>
+              <path d="M12 6.6v3.2M12 12.9h.01"/>
+            </svg>
+            <b>가족이 실종되셨나요?</b>
+          </div>
+          <div class="quickreg-r">등록
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+
+        <div class="scroll">
+
+          <div class="quiet">
+            <div>
+              <h4>지금 급한 사건은 없어요</h4>
+              <p>근처 사건 2건은 곁이가 계속 찾고 있어요</p>
+            </div>
+            <svg class="mascot" width="58" height="75"><use href="#gyeoti"/></svg>
+          </div>
+
+          <div class="mapcard tall">
+            <div class="mapart">
+              <svg viewBox="0 0 330 196" preserveAspectRatio="xMidYMid slice">
+                <rect width="330" height="196" fill="#F4F8FD"/>
+                <g fill="#E7EEF7">
+                  <rect x="14" y="18" width="74" height="52" rx="5"/>
+                  <rect x="106" y="12" width="58" height="58" rx="5"/>
+                  <rect x="186" y="20" width="64" height="50" rx="5"/>
+                  <rect x="268" y="14" width="56" height="56" rx="5"/>
+                  <rect x="20" y="112" width="62" height="64" rx="5"/>
+                  <rect x="100" y="120" width="70" height="56" rx="5"/>
+                  <rect x="192" y="110" width="52" height="66" rx="5"/>
+                  <rect x="262" y="118" width="62" height="58" rx="5"/>
+                </g>
+                <g stroke="#DEE6F0" stroke-width="8" stroke-linecap="round">
+                  <path d="M0 92h330"/><path d="M96 0v196"/><path d="M254 0v196"/>
+                </g>
+                <circle cx="150" cy="100" r="19" fill="#7FB3FF" opacity=".22"/>
+                <circle cx="150" cy="100" r="6" fill="#3B6CB7" stroke="#fff" stroke-width="2.4"/>
+                <g fill="#FF7E7E">
+                  <path d="M76 40c-6.4 0-11.6 5.1-11.6 11.4C64.4 59.7 76 69.6 76 69.6s11.6-9.9 11.6-18.2C87.6 45.1 82.4 40 76 40z" stroke="#fff" stroke-width="2.1"/>
+                  <path d="M220 122c-6.4 0-11.6 5.1-11.6 11.4C208.4 141.7 220 151.6 220 151.6s11.6-9.9 11.6-18.2C231.6 127.1 226.4 122 220 122z" stroke="#fff" stroke-width="2.1"/>
+                </g>
+                <g fill="#fff"><circle cx="76" cy="51.6" r="3.6"/><circle cx="220" cy="133.6" r="3.6"/></g>
+              </svg>
+            </div>
+            <div class="mapfoot">
+              <b>내 주변 실종 2건</b>
+              <span>지도에서 보기
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+              </span>
+            </div>
+          </div>
+
+          <div class="sec">
+            <h3>내 주변</h3>
+            <b>인천 남동구 기준 · 긴급도순</b>
+          </div>
+
+          <div class="list">
+            <div class="item">
+              <div class="face sm"><svg viewBox="0 0 52 60"><rect width="52" height="60" fill="#EDF2F9"/><circle cx="26" cy="22" r="9" fill="#C6D5E8"/><path d="M7 60c0-10 8.5-16 19-16s19 6 19 16z" fill="#C6D5E8"/></svg></div>
+              <div class="item-txt">
+                <div class="item-top"><b>이순자</b><span>81세 여성</span></div>
+                <div class="look">회색 등산복 상하의, 지팡이, 흰머리</div>
+                <div class="meta"><span class="dist">2.8km</span><span class="tag soon">9시간 경과</span></div>
+              </div>
+            </div>
+
+            <div class="item">
+              <div class="face sm"><svg viewBox="0 0 52 60"><rect width="52" height="60" fill="#EDF2F9"/><circle cx="26" cy="22" r="9" fill="#C6D5E8"/><path d="M7 60c0-10 8.5-16 19-16s19 6 19 16z" fill="#C6D5E8"/></svg></div>
+              <div class="item-txt">
+                <div class="item-top"><b>박서연</b><span>9세 여아</span></div>
+                <div class="look">분홍 원피스, 흰 가디건, 머리 양갈래</div>
+                <div class="meta"><span class="dist">4.1km</span><span class="tag long">2일 경과</span></div>
+              </div>
+            </div>
+          </div>
+
+          <button class="more">진행 중인 사건 11건 모두 보기</button>
+
+          <div class="guardian">
+            <p>112 신고와 함께 등록하면, 주변 시민에게 바로 전달됩니다</p>
+            <h4>사진 한 장으로 2분이면 됩니다</h4>
+            <button>실종자 등록하기</button>
+          </div>
+        </div>
+
+        <div class="nav">
+          <div class="tab on">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/></svg>
+            홈
+          </div>
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="8" r="4"/><path d="M3.5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/><path d="M17 4.5a3.5 3.5 0 0 1 0 7"/></svg>
+            실종자
+          </div>
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+            지도
+          </div>
+          <div class="tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.2 3.6-6.8 8-6.8s8 2.6 8 6.8"/></svg>
+            MY
+          </div>
+        </div>
+      </div>
+
+      <p class="slot-note">배너가 빠진 자리를 지도가 넘겨받아 높이가 커집니다.
+         빈 화면 대신 “계속 찾고 있다”는 상태를 알려, 조용한 날에도 서비스가 살아 있음을 보여줍니다.
+         급한 사건이 없는 날에도 보호자 바로가기는 같은 자리에 유지됩니다.</p>
+    </div>
+
+  </div>
+
+  <!-- 팔레트 사용처 -->
+  <dl class="swatches">
+    <div class="sw"><dt><i style="background:#3B6CB7"></i>#3B6CB7 신뢰·안전</dt>
+      <dd>하단 등록 블록, 활성 탭, 거리 표기. 시스템의 골격만 담당합니다.</dd></div>
+    <div class="sw"><dt><i style="background:#7FB3FF"></i>#7FB3FF 연결·기술</dt>
+      <dd>지도의 내 위치 반경. 시민과 사건이 연결되는 지점에만 씁니다.</dd></div>
+    <div class="sw"><dt><i style="background:#FF7E7E"></i>#FF7E7E 관심·따뜻함</dt>
+      <dd>긴급 배너와 실종 위치 핀. 화면에서 딱 한 번만 크게 등장합니다.</dd></div>
+    <div class="sw"><dt><i style="background:#FFE5E1"></i>#FFE5E1 배려·희망</dt>
+      <dd>상단 보호자 바로가기, 평상시 상태 블록, 12시간대 경과 뱃지. 코랄의 낮은 온도 버전입니다.</dd></div>
+    <div class="sw"><dt><i style="background:#DEE6F0"></i>#DEE6F0 균형·신뢰감</dt>
+      <dd>카드 테두리, 도로, 오래된 사건 뱃지. 배경을 잡아주는 중립 축입니다.</dd></div>
+  </dl>
+
+
+  <!-- 워드마크 스펙 -->
+  <section class="marks">
+    <h2>워드마크 두 가지</h2>
+    <p>‘곁’과 ‘애’는 서체를 쓰지 않고 붓펜 획으로 직접 그렸습니다. 획 끝을 둥글게 하고 각 획에 미세한 곡률과
+       어긋남을 남겨, 자모가 완벽히 정렬되지 않도록 했습니다. ‘愛’는 서예 서체로 붓의 온도를 맞췄습니다.
+       고딕의 각진 균질함이 사라지면서, 사람이 손으로 적어 건넨 이름처럼 읽힙니다. 색은 신뢰색과 관심색을 그대로 유지했습니다.</p>
+
+    <div class="mgrid">
+      <div class="mcard">
+        <div class="mtag">기본 · 로고용</div>
+        <div class="mstage">
+          <svg class="mark" viewBox="0 0 100 86"><use href="#gyeotae-mark"/></svg>
+          <b class="lettering"><svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><em class="a han">愛</em><svg class="hrt" viewBox="0 0 16 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M8 13.8S1.4 9.3 1.4 5.4A3.9 3.9 0 0 1 8 2.8a3.9 3.9 0 0 1 6.6 2.6c0 3.9-6.6 8.4-6.6 8.4z"/></svg></b>
+        </div>
+        <p class="mdesc">‘곁’은 손으로 그린 SVG 획, ‘愛’는 서예 서체. 손글씨는 자모 사이가 이미 불규칙하므로
+          자간을 더 좁히지 않고 붙여만 둡니다. 하트는 오른쪽 어깨에 작게 올려 마침표 역할을 합니다.</p>
+      </div>
+
+      <div class="mcard">
+        <div class="mtag">한글 전용 · UI·본문용</div>
+        <div class="mstage">
+          <svg class="mark" viewBox="0 0 100 86"><use href="#gyeotae-mark"/></svg>
+          <b class="lettering"><svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><svg class="ltr a" viewBox="4 10 108 111"><use href="#wm-ae"/></svg><svg class="hrt" viewBox="0 0 16 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M8 13.8S1.4 9.3 1.4 5.4A3.9 3.9 0 0 1 8 2.8a3.9 3.9 0 0 1 6.6 2.6c0 3.9-6.6 8.4-6.6 8.4z"/></svg></b>
+        </div>
+        <p class="mdesc">두 글자 모두 같은 붓펜 획으로 그려 굵기가 일정합니다. 한자 획이 없어 작은 크기에서 더 안정적이고,
+          화면 낭독과 검색에도 유리합니다.</p>
+      </div>
+
+      <div class="mcard dark">
+        <div class="mtag">반전 · 어두운 배경</div>
+        <div class="mstage">
+          <svg class="mark" viewBox="0 0 100 86" style="filter:brightness(0) invert(1)"><use href="#gyeotae-mark"/></svg>
+          <b class="lettering rev"><svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><em class="a han">愛</em><svg class="hrt" viewBox="0 0 16 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M8 13.8S1.4 9.3 1.4 5.4A3.9 3.9 0 0 1 8 2.8a3.9 3.9 0 0 1 6.6 2.6c0 3.9-6.6 8.4-6.6 8.4z"/></svg></b>
+        </div>
+        <p class="mdesc">신뢰색 배경에서는 획을 모두 흰색으로 통일합니다. 관심색을 남기면 채도가 부딪혀
+          ‘愛’만 떠 보입니다.</p>
+      </div>
+
+      <div class="mcard tint">
+        <div class="mtag">세로 조합 · 스플래시·온보딩</div>
+        <div class="mstage col">
+          <svg class="mark" viewBox="0 0 100 86"><use href="#gyeotae-mark"/></svg>
+          <b class="lettering"><svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><em class="a han">愛</em><svg class="hrt" viewBox="0 0 16 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M8 13.8S1.4 9.3 1.4 5.4A3.9 3.9 0 0 1 8 2.8a3.9 3.9 0 0 1 6.6 2.6c0 3.9-6.6 8.4-6.6 8.4z"/></svg></b>
+        </div>
+        <p class="mdesc">공간이 넉넉한 화면에서는 마크를 위에 둡니다. 마크 높이의 40%를 간격으로 둬
+          하트와 핀이 겹쳐 보이지 않게 합니다.</p>
+      </div>
+    </div>
+
+    <div class="sizes">
+      <div class="mtag">크기별 거동</div>
+      <div class="sizerow" style="margin-top:18px">
+        <div class="sizeitem">
+          <div class="lettering" style="font-size:44px">
+            <svg class="mark" viewBox="0 0 100 86" style="width:44px;height:38px"><use href="#gyeotae-mark"/></svg>
+            <svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><em class="a han">愛</em><svg class="hrt" viewBox="0 0 16 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M8 13.8S1.4 9.3 1.4 5.4A3.9 3.9 0 0 1 8 2.8a3.9 3.9 0 0 1 6.6 2.6c0 3.9-6.6 8.4-6.6 8.4z"/></svg>
+          </div>
+          <u>44px · 스플래시</u>
+        </div>
+        <div class="sizeitem">
+          <div class="lettering" style="font-size:26px">
+            <svg class="mark" viewBox="0 0 100 86" style="width:27px;height:23px"><use href="#gyeotae-mark"/></svg>
+            <svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><em class="a han">愛</em>
+          </div>
+          <u>26px · 상단바</u>
+        </div>
+        <div class="sizeitem">
+          <div class="lettering" style="font-size:20px">
+            <svg class="mark" viewBox="0 0 100 86" style="width:21px;height:18px"><use href="#gyeotae-mark"/></svg>
+            <svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><em class="a han">愛</em>
+          </div>
+          <u>20px · 현재 목업</u>
+        </div>
+        <div class="sizeitem">
+          <div class="lettering" style="font-size:15px">
+            <svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><svg class="ltr a" viewBox="4 10 108 111"><use href="#wm-ae"/></svg>
+          </div>
+          <u>15px 이하 · 한글판만</u>
+        </div>
+      </div>
+      <p class="mdesc" style="margin-top:20px">26px 미만에서는 하트를 뺍니다. 15px 이하에서는 손글씨 획이 머리카락처럼 얇아지므로
+        획을 굵게 다듬은 소형용 버전을 따로 써야 합니다. 이 두 가지가 레터링의 유일한 규칙입니다.</p>
+    </div>
+
+    <div class="usage">
+      <div class="ucard">
+        <h4><b class="lettering"><svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><em class="a han">愛</em></b> 를 쓰는 곳</h4>
+        <ul>
+          <li>앱 아이콘, 스플래시, 온보딩</li>
+          <li>상단바 로고</li>
+          <li>발표 자료, 포스터, 굿즈</li>
+          <li>브랜드를 ‘보여주는’ 모든 자리</li>
+        </ul>
+      </div>
+      <div class="ucard">
+        <h4><b class="lettering"><svg class="ltr g" viewBox="5 7 108 113"><use href="#wm-gyeot"/></svg><svg class="ltr a" viewBox="4 10 108 111"><use href="#wm-ae"/></svg></b> 를 쓰는 곳</h4>
+        <ul>
+          <li>본문 안에 서비스명이 섞일 때</li>
+          <li>15px 이하의 작은 표기</li>
+          <li>알림 제목, 푸시 메시지</li>
+          <li>고령 사용자를 대상으로 한 안내문</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 마스코트 사용 원칙 -->
+  <section class="rules">
+    <h2>곁이를 쓰는 자리, 쓰지 않는 자리</h2>
+    <p>캐릭터의 따뜻함은 아껴 써야 힘이 생깁니다. 곁이는 사건이 진행 중인 화면에서 물러나고,
+       기다림과 안도의 순간에만 등장합니다. 브랜드 가이드의 포즈별 의미를 화면 상태에 그대로 대응시켰습니다.</p>
+
+    <div class="rules-grid">
+      <div class="rule ok">
+        <div class="rule-head">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          여기서는 곁이가 말합니다
+        </div>
+        <ul>
+          <li><b>급한 사건이 없는 홈</b> — 빈 화면 대신 계속 찾고 있다는 상태를 전합니다</li>
+          <li><b>제보 완료 화면</b> — 시민의 참여에 고맙다고 말할 수 있는 유일한 자리입니다</li>
+          <li><b>발견 완료 처리</b> — 서비스가 존재하는 이유가 완성되는 순간입니다</li>
+          <li><b>온보딩과 스플래시</b> — 서비스를 처음 소개할 때</li>
+          <li><b>검색 결과 없음</b> — 실패가 아니라 안내의 자리입니다</li>
+        </ul>
+      </div>
+
+      <div class="rule no">
+        <div class="rule-head">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          여기서는 물러납니다
+        </div>
+        <ul>
+          <li><b>긴급 배너</b> — 경과 시간 옆에서 웃는 얼굴은 보호자에게 상처가 됩니다</li>
+          <li><b>실종자 등록 폼</b> — 인생에서 가장 무거운 입력입니다. 장식을 두지 않습니다</li>
+          <li><b>AI 분석 결과</b> — 유사도 수치의 신뢰를 흐리지 않습니다</li>
+          <li><b>지도의 이동 경로</b> — 실제 단서를 읽는 화면입니다</li>
+          <li><b>사건 상세와 제보 타임라인</b> — 정보 전달에만 집중합니다</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="poses">
+      <div class="pose"><svg viewBox="0 0 100 130"><use href="#gyeoti"/></svg><b>찾아요</b><i>검색 결과 없음</i></div>
+      <div class="pose"><svg viewBox="0 0 100 130"><use href="#gyeoti"/></svg><b>함께해요</b><i>제보 완료</i></div>
+      <div class="pose"><svg viewBox="0 0 100 130"><use href="#gyeoti"/></svg><b>달려가요</b><i>제보 전송 중</i></div>
+      <div class="pose"><svg viewBox="0 0 100 130"><use href="#gyeoti"/></svg><b>연결해요</b><i>온보딩 · 지도 안내</i></div>
+      <div class="pose"><svg viewBox="0 0 100 130"><use href="#gyeoti"/></svg><b>언제나, 곁에</b><i>발견 완료</i></div>
+    </div>
+  </section>
+
+</div>

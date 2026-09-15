@@ -1,0 +1,437 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>곁애 — S3 상단바 전환</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+  :root{
+    --trust:#3B6CB7; --link:#7FB3FF; --care:#FF7E7E;
+    --hope:#FFE5E1; --calm:#DEE6F0;
+    --ink:#17273D; --ink-2:#5C6E85; --ink-3:#8B9AAD;
+    --field:#EDF2F9; --care-ink:#C9504F; --white:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,
+      'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
+    background:linear-gradient(180deg,#F7FAFD 0%,#EFF4FA 100%);
+    color:var(--ink);-webkit-font-smoothing:antialiased;
+    padding:52px 24px 80px;font-feature-settings:"tnum";
+  }
+  .page{max-width:900px;margin:0 auto}
+  .masthead{margin-bottom:36px;max-width:60ch}
+  .masthead h1{font-size:25px;font-weight:700;letter-spacing:-.03em}
+  .masthead p{margin-top:10px;font-size:15px;color:var(--ink-2);line-height:1.65}
+  .hint{margin-top:12px;display:inline-flex;align-items:center;gap:8px;
+    background:var(--hope);color:var(--care-ink);font-size:13px;font-weight:600;
+    padding:9px 14px;border-radius:11px}
+
+  .lab{display:flex;gap:40px;align-items:flex-start;flex-wrap:wrap}
+
+  /* ── 폰 ── */
+  .phone{width:360px;height:748px;background:var(--white);border:1px solid #DDE5EF;
+    border-radius:34px;overflow:hidden;display:flex;flex-direction:column;flex:0 0 auto;
+    box-shadow:0 18px 44px -18px rgba(23,39,61,.22);position:relative}
+  .status{height:30px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+    padding:0 20px;font-size:11px;font-weight:600;color:var(--ink-3);
+    position:relative;z-index:4;background:var(--white)}
+  .bars{display:flex;gap:3px;align-items:flex-end}
+  .bars s{display:block;width:3px;background:var(--ink-3);border-radius:1px;text-decoration:none}
+
+  .stage{flex:1 1 auto;position:relative;overflow:hidden}
+
+  /* 떠 있는 상단바 */
+  .topbar{position:absolute;top:0;left:0;right:0;z-index:3;
+    display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+    padding:12px 16px;height:56px}
+  .topbar::before{content:"";position:absolute;inset:0;background:var(--white);
+    border-bottom:1px solid var(--calm);opacity:0}
+  .topbar::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(23,39,61,.30),rgba(23,39,61,0));opacity:1}
+  .tb-in{position:relative;z-index:1;display:contents}
+  .rbtn{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;
+    color:var(--ink);cursor:pointer;position:relative;z-index:1}
+  .rbtn::before{content:"";position:absolute;inset:0;border-radius:50%;
+    background:rgba(255,255,255,.94);opacity:1}
+  .rbtn svg{position:relative;z-index:1}
+  .tb-title{position:relative;z-index:1;text-align:center;font-size:16px;font-weight:700;
+    letter-spacing:-.03em;opacity:0;transform:translateY(7px);white-space:nowrap}
+  .tb-title em{font-style:normal;font-size:11.5px;font-weight:700;color:var(--care-ink);
+    margin-left:7px;font-variant-numeric:tabular-nums}
+  .tb-right{display:flex;justify-content:flex-end}
+
+  /* 스크롤 영역 */
+  .scroller{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;
+    scrollbar-width:none}
+  .scroller::-webkit-scrollbar{display:none}
+
+  .hero{height:246px;position:relative;background:var(--field);overflow:hidden}
+  .hero svg{position:absolute;inset:0;width:100%;height:100%}
+  .dots{position:absolute;bottom:12px;left:0;right:0;display:flex;justify-content:center;gap:5px}
+  .dots i{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.55)}
+  .dots i.on{background:var(--white);width:16px;border-radius:3px}
+  .counter{position:absolute;bottom:11px;right:14px;font-size:10.5px;font-weight:700;
+    color:var(--white);background:rgba(23,39,61,.45);padding:3px 8px;border-radius:10px}
+
+  .content{padding:16px 18px 26px}
+  .statusline{display:flex;align-items:center;gap:8px}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:var(--care);color:var(--white);
+    font-size:11px;font-weight:700;padding:5px 10px 5px 8px;border-radius:20px}
+  .pill i{width:6px;height:6px;border-radius:50%;background:var(--white);
+    animation:beat 1.9s ease-in-out infinite}
+  @keyframes beat{0%,100%{opacity:1}50%{opacity:.32}}
+  @media (prefers-reduced-motion:reduce){.pill i{animation:none}}
+  .elapsed{font-size:12px;font-weight:700;color:var(--care-ink);font-variant-numeric:tabular-nums}
+  .who{margin-top:11px;font-size:22px;font-weight:700;letter-spacing:-.035em}
+  .who em{font-style:normal;font-size:14px;font-weight:600;color:var(--ink-3);margin-left:7px}
+
+  .facts{margin-top:16px;display:flex;flex-direction:column;gap:11px}
+  .fact{display:flex;gap:12px;font-size:13px;line-height:1.5}
+  .fact dt{flex:0 0 62px;color:var(--ink-3);font-weight:600}
+  .fact dd{flex:1 1 auto;font-weight:500}
+
+  .minimap{margin-top:17px;border:1px solid var(--calm);border-radius:18px;overflow:hidden}
+  .minimap .art{height:126px;position:relative;background:#F4F8FD}
+  .minimap .art svg{position:absolute;inset:0;width:100%;height:100%}
+  .mmfoot{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;
+    border-top:1px solid var(--calm)}
+  .mmfoot b{font-size:12.5px;font-weight:700;letter-spacing:-.02em}
+  .mmfoot span{font-size:12px;color:var(--trust);font-weight:700}
+
+  .tlhead{display:flex;align-items:baseline;justify-content:space-between;margin-top:26px;padding:0 2px}
+  .tlhead h3{font-size:15px;font-weight:700;letter-spacing:-.025em}
+  .toggle{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2);font-weight:600}
+  .sw{width:30px;height:18px;border-radius:10px;background:var(--trust);position:relative}
+  .sw::after{content:"";position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#fff}
+
+  .tl{margin-top:14px;position:relative;padding-left:30px}
+  .tl::before{content:"";position:absolute;left:11px;top:6px;bottom:14px;
+    border-left:2px dashed var(--calm)}
+  .ev{position:relative;padding-bottom:16px}
+  .num{position:absolute;left:-30px;top:4px;width:24px;height:24px;border-radius:50%;
+    display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--white);
+    border:2.5px solid var(--white);box-shadow:0 0 0 1.5px var(--calm)}
+  .num.high{background:var(--trust)} .num.mid{background:var(--link)}
+  .num.low{background:#B3C2D4} .num.origin{background:var(--care)}
+  .card{background:var(--white);border:1px solid var(--calm);border-radius:15px;padding:11px 12px;
+    display:flex;gap:11px;align-items:center}
+  .ev.faded .card{background:#FAFCFE;border-style:dashed}
+  .ev.faded b,.ev.faded .where{color:var(--ink-3)}
+  .face{flex:0 0 auto;width:44px;height:52px;border-radius:10px;overflow:hidden;background:var(--field)}
+  .face svg{display:block;width:100%;height:100%}
+  .cd{flex:1 1 auto;min-width:0}
+  .cd-top{display:flex;align-items:center;gap:7px}
+  .cd-top b{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
+  .where{font-size:11.5px;color:var(--ink-2);margin-top:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .simrow{display:flex;align-items:center;gap:7px;margin-top:7px}
+  .gauge{flex:1 1 auto;height:5px;border-radius:3px;background:var(--field);overflow:hidden}
+  .gauge i{display:block;height:100%;border-radius:3px}
+  .simval{font-size:11px;font-weight:700;font-variant-numeric:tabular-nums}
+  .need{font-size:10px;font-weight:700;color:var(--ink-3);background:var(--field);
+    padding:2px 6px;border-radius:5px}
+  .origin-card{background:var(--hope);border-color:var(--hope)}
+  .origin-card .where{color:var(--care-ink)}
+
+  .cta{flex:0 0 auto;padding:11px 16px 20px;border-top:1px solid var(--calm);background:var(--white);
+    position:relative;z-index:4}
+  .cta button{width:100%;border:0;border-radius:14px;background:var(--care);color:var(--white);
+    padding:15px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer}
+  .cta p{text-align:center;font-size:11px;color:var(--ink-3);margin-top:8px}
+
+  /* ── 계측 패널 ── */
+  .meter{flex:1 1 300px;min-width:300px;position:sticky;top:40px}
+  .meter h3{font-size:15px;font-weight:700;letter-spacing:-.025em}
+  .readout{margin-top:16px;background:var(--white);border:1px solid var(--calm);
+    border-radius:18px;padding:20px 22px}
+  .yline{display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums}
+  .yline u{font-size:34px;font-weight:700;text-decoration:none;letter-spacing:-.03em}
+  .yline span{font-size:13px;color:var(--ink-3);font-weight:600}
+  .track{margin-top:20px;height:8px;border-radius:5px;background:var(--field);position:relative}
+  .track i{position:absolute;top:0;bottom:0;left:0;border-radius:5px;background:var(--trust);width:0}
+  .track u{position:absolute;top:-5px;width:2px;height:18px;background:var(--ink-3);text-decoration:none}
+  .marks{margin-top:22px;display:flex;flex-direction:column;gap:11px}
+  .mk{display:flex;gap:11px;align-items:flex-start;padding:11px 13px;border-radius:13px;
+    background:var(--field)}
+  .mk.live{background:var(--hope)}
+  .mk-n{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--ink-3);color:#fff;
+    display:grid;place-items:center;font-size:11px;font-weight:700;margin-top:1px}
+  .mk.live .mk-n{background:var(--care)}
+  .mk b{font-size:12.5px;font-weight:700;display:block}
+  .mk p{font-size:12px;color:var(--ink-2);line-height:1.55;margin-top:3px}
+  .mk .px{font-variant-numeric:tabular-nums;color:var(--trust)}
+  .stage-now{margin-top:18px;font-size:12.5px;color:var(--ink-2);line-height:1.6;
+    border-top:1px solid var(--calm);padding-top:15px}
+  .stage-now b{color:var(--ink)}
+
+  @media (max-width:820px){body{padding:32px 16px 60px}.lab{gap:28px;justify-content:center}
+    .meter{position:static;min-width:0}}
+</style>
+
+<div class="page">
+  <div class="masthead">
+    <h1>S3 상단바 전환 지점</h1>
+    <p>사진이 올라가면서 상단바가 흰색으로 바뀌고, 본문의 이름이 가려지는 순간 상단바가 그 이름을 이어받습니다.
+       두 전환을 분리해야 이름이 두 곳에 동시에 보이는 어색함이 없습니다.</p>
+    <div class="hint">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 5v14"/><path d="M6 13l6 6 6-6"/>
+      </svg>
+      화면 안에서 스크롤해 보세요
+    </div>
+  </div>
+
+  <div class="lab">
+
+    <div class="phone">
+      <div class="status"><b>4:09</b>
+        <div class="bars"><s style="height:5px"></s><s style="height:7px"></s><s style="height:9px"></s><s style="height:11px"></s></div>
+      </div>
+
+      <div class="stage">
+        <div class="topbar" id="topbar">
+          <div class="rbtn" id="btnBack">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"/></svg>
+          </div>
+          <div class="tb-title" id="tbTitle">김하준 · 7세<em>3시간 12분</em></div>
+          <div class="tb-right">
+            <div class="rbtn" id="btnShare">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="M7.5 7.5L12 3l4.5 4.5"/><path d="M5 14v6h14v-6"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="scroller" id="scroller">
+          <div class="hero">
+            <svg viewBox="0 0 360 246" preserveAspectRatio="xMidYMid slice">
+              <rect width="360" height="246" fill="#E7EEF7"/>
+              <circle cx="180" cy="96" r="42" fill="#C6D5E8"/>
+              <path d="M92 246c0-46 39-74 88-74s88 28 88 74z" fill="#C6D5E8"/>
+            </svg>
+            <div class="dots"><i class="on"></i><i></i><i></i><i></i></div>
+            <div class="counter">1 / 4</div>
+          </div>
+
+          <div class="content">
+            <div class="statusline">
+              <span class="pill"><i></i>찾는 중</span>
+              <span class="elapsed">3시간 12분 경과</span>
+            </div>
+
+            <div class="who" id="whoName">김하준<em>7세 · 남아</em></div>
+
+            <div class="facts">
+              <dl class="fact"><dt>실종 일시</dt><dd>9월 11일 오후 2시 40분</dd></dl>
+              <dl class="fact"><dt>실종 장소</dt><dd>인천 남동구 구월동 로데오거리<br>학원 차량 승차 지점</dd></dl>
+              <dl class="fact"><dt>신체</dt><dd>키 122cm · 몸무게 24kg</dd></dl>
+              <dl class="fact"><dt>인상착의</dt><dd>노란 후드티, 검정 백팩, 파란 운동화.
+                말수가 적고 버스·간판에 관심을 보이면 오래 서 있습니다.</dd></dl>
+            </div>
+
+            <div class="minimap">
+              <div class="art">
+                <svg viewBox="0 0 324 126" preserveAspectRatio="xMidYMid slice">
+                  <rect width="324" height="126" fill="#F4F8FD"/>
+                  <g fill="#E7EEF7">
+                    <rect x="12" y="12" width="70" height="40" rx="5"/><rect x="100" y="8" width="58" height="44" rx="5"/>
+                    <rect x="182" y="14" width="62" height="38" rx="5"/><rect x="262" y="10" width="52" height="42" rx="5"/>
+                    <rect x="16" y="76" width="60" height="42" rx="5"/><rect x="96" y="82" width="66" height="36" rx="5"/>
+                    <rect x="186" y="74" width="50" height="44" rx="5"/><rect x="256" y="80" width="58" height="38" rx="5"/>
+                  </g>
+                  <g stroke="#DEE6F0" stroke-width="7" stroke-linecap="round"><path d="M0 64h324"/><path d="M90 0v126"/><path d="M248 0v126"/></g>
+                  <path d="M62 34 L128 58 L196 46 L272 84" fill="none" stroke="#7FB3FF" stroke-width="2.6" stroke-dasharray="6 5" stroke-linecap="round"/>
+                  <path d="M62 20c-6.2 0-11.2 5-11.2 11.2C50.8 39.2 62 49 62 49s11.2-9.8 11.2-17.8C73.2 25 68.2 20 62 20z" fill="#FF7E7E" stroke="#fff" stroke-width="2.2"/>
+                  <circle cx="62" cy="31" r="3.4" fill="#fff"/>
+                  <g stroke="#fff" stroke-width="2.2">
+                    <circle cx="128" cy="58" r="9" fill="#7FB3FF"/>
+                    <circle cx="196" cy="46" r="9" fill="#3B6CB7"/>
+                    <circle cx="272" cy="84" r="9" fill="#3B6CB7"/>
+                  </g>
+                  <g fill="#fff" font-size="9" font-weight="700" text-anchor="middle" font-family="sans-serif">
+                    <text x="128" y="61.5">1</text><text x="196" y="49.5">2</text><text x="272" y="87.5">3</text>
+                  </g>
+                </svg>
+              </div>
+              <div class="mmfoot"><b>제보 6건으로 복원한 이동 경로</b><span>지도에서 보기</span></div>
+            </div>
+
+            <div class="tlhead">
+              <h3>제보 6건</h3>
+              <div class="toggle">유사도 60% 이상<span class="sw"></span></div>
+            </div>
+
+            <div class="tl">
+              <div class="ev"><div class="num high">3</div>
+                <div class="card">
+                  <div class="face"><svg viewBox="0 0 44 52"><rect width="44" height="52" fill="#EDF2F9"/><circle cx="22" cy="19" r="8" fill="#C6D5E8"/><path d="M6 52c0-9 7-14 16-14s16 5 16 14z" fill="#C6D5E8"/></svg></div>
+                  <div class="cd"><div class="cd-top"><b>오후 5시 12분</b></div>
+                    <div class="where">남동구 만수동 버스정류장</div>
+                    <div class="simrow"><div class="gauge"><i style="width:82%;background:#3B6CB7"></i></div><span class="simval" style="color:#3B6CB7">82%</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="ev"><div class="num high">2</div>
+                <div class="card">
+                  <div class="face"><svg viewBox="0 0 44 52"><rect width="44" height="52" fill="#EDF2F9"/><circle cx="22" cy="19" r="8" fill="#C6D5E8"/><path d="M6 52c0-9 7-14 16-14s16 5 16 14z" fill="#C6D5E8"/></svg></div>
+                  <div class="cd"><div class="cd-top"><b>오후 4시 30분</b></div>
+                    <div class="where">남동구 간석동 지하상가 입구</div>
+                    <div class="simrow"><div class="gauge"><i style="width:74%;background:#3B6CB7"></i></div><span class="simval" style="color:#3B6CB7">74%</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="ev"><div class="num mid">1</div>
+                <div class="card">
+                  <div class="face"><svg viewBox="0 0 44 52"><rect width="44" height="52" fill="#EDF2F9"/><circle cx="22" cy="19" r="8" fill="#C6D5E8"/><path d="M6 52c0-9 7-14 16-14s16 5 16 14z" fill="#C6D5E8"/></svg></div>
+                  <div class="cd"><div class="cd-top"><b>오후 3시 05분</b></div>
+                    <div class="where">남동구 구월동 문화로 사거리</div>
+                    <div class="simrow"><div class="gauge"><i style="width:61%;background:#7FB3FF"></i></div><span class="simval" style="color:#5C6E85">61%</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="ev faded"><div class="num low">·</div>
+                <div class="card">
+                  <div class="face" style="opacity:.6"><svg viewBox="0 0 44 52"><rect width="44" height="52" fill="#EDF2F9"/><circle cx="22" cy="19" r="8" fill="#C6D5E8"/><path d="M6 52c0-9 7-14 16-14s16 5 16 14z" fill="#C6D5E8"/></svg></div>
+                  <div class="cd"><div class="cd-top"><b>오후 2시 58분</b><span class="need">확인 필요</span></div>
+                    <div class="where">남동구 구월동 지하철 2번 출구</div>
+                    <div class="simrow"><div class="gauge"><i style="width:34%;background:#B3C2D4"></i></div><span class="simval" style="color:#8B9AAD">34%</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="ev"><div class="num origin">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/></svg>
+                </div>
+                <div class="card origin-card">
+                  <div class="cd"><div class="cd-top"><b>오후 2시 40분</b></div>
+                    <div class="where">최초 실종 · 구월동 로데오거리 학원 차량 승차 지점</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta">
+        <button>이 아이를 봤어요</button>
+        <p>사진 한 장이면 됩니다 · 로그인 없이 제보</p>
+      </div>
+    </div>
+
+    <!-- 계측 패널 -->
+    <div class="meter">
+      <h3>지금 스크롤 위치</h3>
+      <div class="readout">
+        <div class="yline"><u id="yVal">0</u><span>px</span></div>
+        <div class="track"><i id="trackFill"></i><u id="mk1"></u><u id="mk2"></u></div>
+
+        <div class="marks">
+          <div class="mk" id="row1">
+            <div class="mk-n">1</div>
+            <div><b>배경 전환 <span class="px" id="p1">130 → 190px</span></b>
+              <p>사진 아래쪽이 상단바에 닿는 지점입니다. 상단바 뒤에 사진이 없어지므로 흰 배경이 들어와야 합니다.
+                 사진 높이에서 상단바 높이를 뺀 값이 기준입니다.</p></div>
+          </div>
+          <div class="mk" id="row2">
+            <div class="mk-n">2</div>
+            <div><b>이름 등장 <span class="px" id="p2">— px</span></b>
+              <p>본문의 이름이 상단바 밑으로 들어가는 지점입니다. 본문에서 사라지는 순간 상단바가 이어받으므로
+                 이름이 두 곳에 동시에 보이지 않습니다.</p></div>
+          </div>
+        </div>
+
+        <p class="stage-now" id="stageNow">현재 상태: <b>투명 상단바</b> · 사진 위에 흰 원형 버튼만 떠 있습니다.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  var sc = document.getElementById('scroller');
+  var bar = document.getElementById('topbar');
+  var title = document.getElementById('tbTitle');
+  var who = document.getElementById('whoName');
+  var back = document.getElementById('btnBack');
+  var share = document.getElementById('btnShare');
+
+  var HERO = 246;
+  var BAR  = bar.offsetHeight;          // 56
+  var bgEnd   = HERO - BAR;             // 190
+  var bgStart = bgEnd - 60;             // 130
+  var tEnd, tStart;
+
+  function measure(){
+    var nameBottom = who.offsetTop + who.offsetHeight;   // 스크롤 콘텐츠 기준
+    tEnd   = Math.round(nameBottom - BAR);
+    tStart = tEnd - 40;
+    document.getElementById('p1').textContent = bgStart + ' → ' + bgEnd + 'px';
+    document.getElementById('p2').textContent = tStart + ' → ' + tEnd + 'px';
+    var max = sc.scrollHeight - sc.clientHeight;
+    document.getElementById('mk1').style.left = (bgEnd/max*100) + '%';
+    document.getElementById('mk2').style.left = (tEnd/max*100) + '%';
+  }
+
+  function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+  function frame(){
+    var y = sc.scrollTop;
+    var bg = clamp01((y - bgStart) / (bgEnd - bgStart));
+    var tt = clamp01((y - tStart) / (tEnd - tStart));
+
+    bar.style.setProperty('--bg', bg);
+    bar.querySelector; // noop
+    bar.style.cssText = bar.style.cssText; // keep
+    // 배경/스크림
+    bar.firstElementChild; // noop
+    barBg(bg);
+    title.style.opacity = tt;
+    title.style.transform = 'translateY(' + (7 - 7*tt) + 'px)';
+    // 흰 원형 버튼은 배경이 흰색이 되면 불필요
+    back.style.setProperty('--c', 1-bg);
+    btnCircle(back, 1-bg); btnCircle(share, 1-bg);
+
+    document.getElementById('yVal').textContent = Math.round(y);
+    var max = sc.scrollHeight - sc.clientHeight;
+    document.getElementById('trackFill').style.width = (y/max*100) + '%';
+
+    document.getElementById('row1').classList.toggle('live', bg > 0 && bg < 1);
+    document.getElementById('row2').classList.toggle('live', tt > 0 && tt < 1);
+
+    var s;
+    if (y < bgStart) s = '<b>투명 상단바</b> · 사진 위에 흰 원형 버튼만 떠 있습니다.';
+    else if (y < bgEnd) s = '<b>배경 전환 중</b> · 흰 배경이 차오르고 원형 버튼이 사라집니다.';
+    else if (y < tStart) s = '<b>흰 상단바 · 제목 없음</b> · 비어 보이지만 정상 구간입니다.';
+    else if (y < tEnd) s = '<b>이름 등장 중</b> · 본문 이름이 가려지며 상단바가 이어받습니다.';
+    else s = '<b>완전 고정</b> · 이름과 경과 시간이 상단바에 남습니다.';
+    document.getElementById('stageNow').innerHTML = '현재 상태: ' + s;
+  }
+
+  function barBg(v){
+    var before = v;
+    bar.style.setProperty('background', 'rgba(255,255,255,' + v + ')');
+    bar.style.setProperty('border-bottom', '1px solid rgba(222,230,240,' + v + ')');
+    bar.style.setProperty('box-shadow', 'none');
+    scrim.style.opacity = 1 - v;
+  }
+  function btnCircle(el, v){
+    el.style.background = 'rgba(255,255,255,' + (0.94*v) + ')';
+  }
+
+  // 스크림을 별도 레이어로 분리
+  var scrim = document.createElement('div');
+  scrim.style.cssText = 'position:absolute;inset:0;pointer-events:none;'+
+    'background:linear-gradient(180deg,rgba(23,39,61,.30),rgba(23,39,61,0));';
+  bar.insertBefore(scrim, bar.firstChild);
+  bar.style.setProperty('--x','0');
+
+  // ::before/::after 대신 인라인 레이어 사용
+  var st = document.createElement('style');
+  st.textContent = '.topbar::before,.topbar::after{display:none}'+
+    '.rbtn::before{display:none}';
+  document.head.appendChild(st);
+
+  sc.addEventListener('scroll', function(){ requestAnimationFrame(frame); }, {passive:true});
+  window.addEventListener('resize', function(){ measure(); frame(); });
+  measure(); frame();
+})();
+</script>

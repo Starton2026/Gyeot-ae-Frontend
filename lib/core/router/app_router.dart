@@ -1,0 +1,243 @@
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../features/home/presentation/home_screen.dart';
+import '../../features/map/presentation/map_screen.dart';
+import '../../features/missing/presentation/case_edit_screen.dart';
+import '../../features/missing/presentation/missing_detail_screen.dart';
+import '../../features/missing/presentation/missing_list_screen.dart';
+import '../../features/missing/presentation/missing_register_screen.dart';
+import '../../features/missing/presentation/register_location_screen.dart';
+import '../../features/my/presentation/my_screen.dart';
+import '../../features/my/presentation/notification_settings_screen.dart';
+import '../../features/notifications/presentation/notification_inbox_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/onboarding/presentation/splash_screen.dart';
+import '../../features/report/data/report.dart';
+import '../../features/report/presentation/report_done_screen.dart';
+import '../../features/report/presentation/report_screen.dart';
+import '../location/location_source.dart';
+import 'app_shell.dart';
+
+/// 경로 문자열은 여기서만 정의하고 화면에서는 상수로 참조한다.
+class AppRoute {
+  const AppRoute._();
+
+  /// 스플래시(S0). 앱이 처음 서는 자리.
+  static const String splash = '/splash';
+
+  /// 온보딩(S0). 첫 실행에 한 번만 본다.
+  static const String onboarding = '/onboarding';
+
+  static const String home = '/';
+  static const String missingList = '/missing';
+
+  /// 실종자 상세(S3). 경로를 만들 때는 [missingDetail]을 쓴다.
+  static const String missingDetailPath = '/missing/:id';
+
+  /// `/missing/m_ab12cd34`.
+  static String missingDetail(String caseId) => '/missing/$caseId';
+
+  /// 앱 밖 링크(앱 링크·카카오톡 공유)로 여는 상세. 뒤로 대신 작은 심볼을
+  /// 두고 누르면 홈으로 간다(기능정의서 5.5 외부 유입 상세).
+  static String missingDetailFromLink(String caseId) =>
+      '/missing/$caseId?$entryParam=$entryLink';
+
+  /// 상세를 어디서 열었는지 싣는 쿼리 키와 값.
+  static const String entryParam = 'from';
+  static const String entryLink = 'link';
+
+  /// 제보창(S4). 경로를 만들 때는 [report]를 쓴다.
+  static const String reportPath = '/missing/:id/report';
+
+  /// `/missing/m_ab12cd34/report`.
+  static String report(String caseId) => '/missing/$caseId/report';
+
+  /// 제보 완료(S4-2). 확정된 제보를 `extra`로 넘긴다.
+  static const String reportDonePath = '/missing/:id/report/done';
+
+  /// `/missing/m_ab12cd34/report/done`.
+  static String reportDone(String caseId) =>
+      '/missing/$caseId/report/done';
+
+  static const String map = '/map';
+
+  /// MY(S8). 로그인 여부로 내용이 갈린다.
+  static const String my = '/my';
+
+  /// 지도를 열면서 사건 하나를 바로 편다(S3 미니 지도 → S5 사건 선택 모드).
+  static String mapForCase(String caseId) => '/map?case=$caseId';
+
+  /// 실종자 등록(S7). 로그인이 필요하지만 리다이렉트로 막지 않는다 — 화면이
+  /// 열린 뒤 그 위에 로그인 시트를 덮는다.
+  static const String register = '/register';
+
+  /// 마지막 목격 위치 고르기. 처음 비출 좌표를 `extra`로 넘기고, 고른 좌표를
+  /// `pop`으로 돌려받는다.
+  ///
+  /// 등록(S7)과 정보 수정이 함께 쓴다. 등록 경로 밑에 달아 두면 정보 수정에서
+  /// 열 때 등록 화면까지 따라 쌓인다.
+  static const String locationPicker = '/location';
+
+  /// 정보 수정(S3 보호자). 경로를 만들 때는 [caseEdit]를 쓴다.
+  static const String caseEditPath = '/missing/:id/edit';
+
+  /// `/missing/m_ab12cd34/edit`.
+  static String caseEdit(String caseId) => '/missing/$caseId/edit';
+
+  /// 알림 설정(F-8.6). MY에서 한 칸 들어가는 화면이다.
+  static const String notificationSettings = '/settings/notifications';
+
+  /// 알림함. 탭 상단바의 알림 버튼이 연다.
+  static const String notifications = '/notifications';
+
+  // 로그인(S6)은 경로가 없다. 독립 화면이 아니라 등록을 시도할 때 끼어드는
+  // 바텀시트라서, `showLoginSheet`로 띄운다(기능정의서 3).
+}
+
+/// 로그인은 선택이라 진입 화면은 항상 홈이고, 별도의 리다이렉트 가드가 없다.
+///
+/// 로그인이 필요한 화면을 나중에 추가할 때는 해당 [GoRoute]에만
+/// `redirect`를 걸어서 그 화면에서만 로그인을 요구하도록 한다.
+///
+/// **네 탭은 [StatefulShellRoute]로 묶는다.** 탭마다 Navigator를 따로 들고
+/// 있어서 탭을 옮겨도 보던 화면이 살아 있다([AppShell] 주석 참고).
+final routerProvider = Provider<GoRouter>((ref) {
+  // 탭 위를 덮는 화면(상세·제보·완료)이 얹히는 Navigator. 여기 얹어야
+  // 하단 네비바를 가리고 전체를 덮는다(기능정의서 5.5). 껍데기는 그 아래에
+  // 살아 있어서 닫고 나오면 보던 탭과 스크롤이 그대로다.
+  //
+  // provider 안에서 만든다. 라이브러리 최상위에 두면 테스트처럼 앱을 여러 번
+  // 세우는 자리에서 같은 GlobalKey가 두 번 붙는다.
+  final rootNavigatorKey = GlobalKey<NavigatorState>();
+
+  return GoRouter(
+    navigatorKey: rootNavigatorKey,
+    // 첫 실행인지 아닌지는 스플래시가 판단한다. 여기서 리다이렉트로 가르면
+    // 저장소를 읽는 동안 홈이 한 번 깜빡였다가 온보딩으로 넘어간다.
+    initialLocation: AppRoute.splash,
+    routes: [
+      GoRoute(
+        path: AppRoute.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: AppRoute.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      // 탭 밖, 껍데기 위에 얹는다. 네비바를 가리고 전체를 덮는다.
+      GoRoute(
+        path: AppRoute.register,
+        builder: (context, state) => const MissingRegisterScreen(),
+      ),
+      GoRoute(
+        path: AppRoute.locationPicker,
+        builder: (context, state) {
+          final extra = state.extra;
+
+          return RegisterLocationScreen(initial: extra is LocationFix ? extra : null);
+        },
+      ),
+      // 알림 설정도 껍데기 위에 얹는다. 설정을 만지는 동안 다른 탭으로 새는
+      // 길을 네비바가 열어두면, 돌아왔을 때 어디서 무엇을 하던 중인지 흐려진다.
+      GoRoute(
+        path: AppRoute.notificationSettings,
+        builder: (context, state) => const NotificationSettingsScreen(),
+      ),
+      // 알림함도 껍데기 위에 얹는다. 알림을 누르면 상세가 그 위에 쌓이고,
+      // 닫으면 알림함으로 돌아온다.
+      GoRoute(
+        path: AppRoute.notifications,
+        builder: (context, state) => const NotificationInboxScreen(),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, shell) => AppShell(shell: shell),
+        // **브랜치 순서가 [AppTab] 순서다.** 네비바가 그 순서로 탭을 고른다.
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoute.home,
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoute.missingList,
+                builder: (context, state) => const MissingListScreen(),
+                // 상세·제보는 목록 가지에 달되 껍데기 위에 얹는다. 가지에
+                // 달아야 상세를 닫았을 때 목록이 보던 자리 그대로 남는다.
+                routes: [
+                  GoRoute(
+                    // AppRoute.missingDetailPath
+                    path: ':id',
+                    parentNavigatorKey: rootNavigatorKey,
+                    builder: (context, state) => MissingDetailScreen(
+                      caseId: state.pathParameters['id']!,
+                      fromLink:
+                          state.uri.queryParameters[AppRoute.entryParam] ==
+                          AppRoute.entryLink,
+                    ),
+                    routes: [
+                      GoRoute(
+                        // AppRoute.caseEditPath
+                        path: 'edit',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) =>
+                            CaseEditScreen(caseId: state.pathParameters['id']!),
+                      ),
+                      GoRoute(
+                        // AppRoute.reportPath
+                        path: 'report',
+                        parentNavigatorKey: rootNavigatorKey,
+                        builder: (context, state) =>
+                            ReportScreen(caseId: state.pathParameters['id']!),
+                        routes: [
+                          GoRoute(
+                            // AppRoute.reportDonePath
+                            path: 'done',
+                            parentNavigatorKey: rootNavigatorKey,
+                            builder: (context, state) {
+                              // 링크로 바로 들어오면 제보가 없다. 요약만
+                              // 빠지고 화면은 선다.
+                              final extra = state.extra;
+
+                              return ReportDoneScreen(
+                                caseId: state.pathParameters['id']!,
+                                report: extra is Report ? extra : null,
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoute.map,
+                builder: (context, state) =>
+                    MapScreen(initialCaseId: state.uri.queryParameters['case']),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoute.my,
+                builder: (context, state) => const MyScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  );
+});

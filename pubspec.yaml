@@ -1,89 +1,126 @@
 name: gyeotae
-description: "A new Flutter project."
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+description: "곁애 - 곁에 있다 + 사랑"
+publish_to: 'none'
 
-# The following defines the version and build number for your application.
-# A version number is three numbers separated by dots, like 1.2.43
-# followed by an optional build number separated by a +.
-# Both the version and the builder number may be overridden in flutter
-# build by specifying --build-name and --build-number, respectively.
-# In Android, build-name is used as versionName while build-number used as versionCode.
-# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
-# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
-# Read more about iOS versioning at
-# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-# In Windows, build-name is used as the major, minor, and patch parts
-# of the product and file versions while build-number is used as the build suffix.
 version: 1.0.0+1
 
 environment:
   sdk: ^3.11.5
 
-# Dependencies specify other packages that your package needs in order to work.
-# To automatically upgrade your package dependencies to the latest versions
-# consider running `flutter pub upgrade --major-versions`. Alternatively,
-# dependencies can be manually updated by changing the version numbers below to
-# the latest version available on pub.dev. To see which dependencies have newer
-# versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+
+  # 상태관리
+  flutter_riverpod: ^3.3.2
+
+  # 라우팅
+  go_router: ^17.5.0
+
+  # 네트워크 (API 서버 통신)
+  dio: ^5.11.1
+
+  # 로컬 저장 (토큰 등)
+  shared_preferences: ^2.5.5
+
+  # 날짜/숫자 포맷 (flutter_localizations가 0.20.2로 고정)
+  intl: ^0.20.2
+
+  # Firebase — 설정은 `flutterfire configure`가 만든 lib/firebase_options.dart.
+  # 푸시 알림(FCM)에 쓴다. 로그인은 카카오, 사진은 자체 서버라 auth·storage·
+  # firestore는 앱에서 쓰는 데가 없다(백엔드만 Firestore로 관제 화면에 쏜다).
+  firebase_core: ^4.14.0
+  firebase_messaging: ^16.6.0
+  firebase_auth: ^6.6.1
+  cloud_firestore: ^6.9.0
+  firebase_storage: ^13.5.0
+
+  # 제보 화면 — 사진 촬영/선택, 위치, 권한
+  image_picker: ^1.2.3
+  geolocator: ^14.0.3
+  permission_handler: 12.0.0
+
+  # 지도 (네이티브 카카오맵) — 네이티브 앱 키를 env의 KAKAO_MAP_KEY로 주입
+  kakao_map_sdk: ^1.3.0
+
+  # SVG 아이콘 (assets/icons/) — Flutter는 SVG를 기본으로 못 그린다
+  flutter_svg: ^2.3.0
+  exif: ^3.3.0
+  kakao_flutter_sdk_user: ^2.0.1
+
+  # 실종자 상세 공유 — 카카오톡 피드 메시지. 로그인과 같은 네이티브 앱 키를 쓴다.
+  kakao_flutter_sdk_share: ^2.0.1
+
+  # 앱 링크(gyeotae://)와 카카오톡 공유 링크를 받아 상세를 연다
+  app_links: ^7.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  # The "flutter_lints" package below contains a set of recommended lints to
-  # encourage good coding practices. The lint set provided by the package is
-  # activated in the `analysis_options.yaml` file located at the root of your
-  # package. See that file for information about deactivating specific lint
-  # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
 
-# For information on the generic Dart part of this file, see the
-# following page: https://dart.dev/tools/pub/pubspec
+# 앱 아이콘 생성 설정. 아이콘을 바꾸면 아래를 한 번 돌린다.
+#   dart run flutter_launcher_icons
+#
+# 돌린 뒤 ios/Runner.xcodeproj/project.pbxproj의 변경을 꼭 확인할 것.
+# 이 도구가 ASSETCATALOG_COMPILER_APPICON_NAME 대신 이름이 비슷한
+# ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS를 AppIcon으로
+# 덮어쓴다(YES/NO만 들어가는 값이다). 아이콘 이름은 이미 맞게 설정돼 있으니
+# 그 변경은 되돌리면 된다.
+#
+# 원본은 assets/images/app_icon.png 하나이고, 안드로이드·iOS 리소스는 전부
+# 여기서 만들어진다. 생성된 파일은 손으로 고치지 않는다.
+flutter_launcher_icons:
+  image_path: "assets/images/app_icon.png"
 
-# The following section is specific to Flutter packages.
+  android: true
+  # 적응형 아이콘. 기기 모양(원·둥근네모)에 맞춰 잘리므로 배경은 흰색으로 두고
+  # 마크만 얹는다. 마크가 이미 여백을 갖고 있어 안전 영역 안에 들어온다.
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+  min_sdk_android: 24
+
+  ios: true
+  # iOS 아이콘은 알파를 허용하지 않는다. 투명한 부분을 흰색으로 메운다.
+  remove_alpha_ios: true
+
 flutter:
-
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
   uses-material-design: true
 
-  # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/Pretendard-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/Pretendard-Bold.otf
+          weight: 700
 
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/to/resolution-aware-images
+    # 워드마크의 `愛` 한 글자 전용. Pretendard에 그 글자가 없다.
+    #
+    # Noto Sans KR Bold에서 글자 하나만 잘라낸 서브셋이라 2KB다. 통째로
+    # 넣으면 4MB가 넘는다. 다른 한자가 필요해지면 같은 방식으로 다시 뽑는다.
+    #   pyftsubset NotoSansKR-Bold.otf --text=愛 --output-file=Hanja-Bold.ttf
+    - family: Hanja
+      fonts:
+        - asset: assets/fonts/Hanja-Bold.ttf
+          weight: 700
 
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/to/asset-from-package
+  # 텍스트 스타일이 실제로 쓰는 4종만 등록한다.
 
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+  assets:
+    - assets/icons/
+    - assets/images/
+    - assets/characters/
+
+  # 폴더 단위로 등록해서 파일을 추가할 때마다 여기를 고치지 않아도 되게 한다.
+  # assets/fonts/는 일부러 넣지 않는다. 폰트는 위 fonts: 가 등록하고, 여기에
+  # 넣으면 쓰지 않는 5종까지 번들에 들어간다.

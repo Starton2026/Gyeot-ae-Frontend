@@ -1,0 +1,932 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>곁애 — S4 제보창 · S5 지도 · S7 실종자 등록</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<style>
+  :root{
+    --trust:#3B6CB7; --link:#7FB3FF; --care:#FF7E7E;
+    --hope:#FFE5E1; --calm:#DEE6F0;
+    --ink:#17273D; --ink-2:#5C6E85; --ink-3:#8B9AAD;
+    --field:#EDF2F9; --care-ink:#C9504F; --white:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,
+      'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
+    background:linear-gradient(180deg,#F7FAFD 0%,#EFF4FA 100%);
+    color:var(--ink);-webkit-font-smoothing:antialiased;
+    padding:56px 24px 80px;font-feature-settings:"tnum";
+  }
+  .page{max-width:1700px;margin:0 auto}
+  .masthead{margin-bottom:44px;max-width:64ch}
+  .masthead h1{font-size:26px;font-weight:700;letter-spacing:-.03em}
+  .masthead p{margin-top:10px;font-size:15px;color:var(--ink-2);line-height:1.65}
+
+  .frames{display:flex;gap:44px;flex-wrap:wrap;align-items:flex-start}
+  .slot{flex:0 0 auto;width:360px}
+  .slot-name{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:14px;
+    padding-left:4px;display:flex;align-items:center;gap:7px}
+  .slot-name i{width:7px;height:7px;border-radius:50%;display:block}
+  .slot-note{margin-top:16px;font-size:13px;color:var(--ink-3);line-height:1.6;padding-left:4px}
+
+  .phone{width:360px;height:748px;background:var(--white);border:1px solid #DDE5EF;
+    border-radius:34px;overflow:hidden;display:flex;flex-direction:column;position:relative;
+    box-shadow:0 18px 44px -18px rgba(23,39,61,.22)}
+  .status{height:30px;flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;
+    padding:0 20px;font-size:11px;font-weight:600;color:var(--ink-3);z-index:6;background:var(--white)}
+  .status.on-map{background:transparent;color:var(--ink)}
+  .bars{display:flex;gap:3px;align-items:flex-end}
+  .bars s{display:block;width:3px;background:currentColor;border-radius:1px;text-decoration:none;opacity:.75}
+
+  .appbar{flex:0 0 auto;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+    padding:4px 16px 12px}
+  .appbar h2{font-size:16px;font-weight:700;letter-spacing:-.03em;text-align:center}
+  .ab-side{display:flex;align-items:center;color:var(--ink-2)}
+  .ab-side.right{justify-content:flex-end}
+  .icobtn{width:26px;height:26px;color:var(--ink-2);cursor:pointer}
+  .textbtn{font-size:12.5px;font-weight:700;color:var(--ink-3)}
+
+  .scroll{flex:1 1 auto;overflow:hidden;padding:0 18px}
+
+  /* 공통 폼 요소 */
+  .lab{font-size:12.5px;font-weight:700;color:var(--ink-2);letter-spacing:-.02em;
+    display:flex;align-items:center;gap:5px}
+  .lab u{color:var(--care);text-decoration:none}
+  .fld{margin-top:8px;background:var(--field);border-radius:12px;padding:12px 14px;
+    font-size:13.5px;color:var(--ink);display:flex;align-items:center;justify-content:space-between}
+  .fld.ph{color:var(--ink-3)}
+  .grp{margin-top:18px}
+  .grp:first-child{margin-top:0}
+  .row2{display:flex;gap:10px}
+  .row2 > *{flex:1 1 0}
+  .chips{display:flex;gap:7px;margin-top:8px}
+  .chip{font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:20px;
+    background:var(--white);border:1px solid var(--calm);color:var(--ink-2);cursor:pointer}
+  .chip.on{background:var(--trust);border-color:var(--trust);color:var(--white)}
+  .ta{margin-top:8px;background:var(--field);border-radius:12px;padding:12px 14px;
+    font-size:13px;line-height:1.55;min-height:78px;color:var(--ink)}
+  .help{margin-top:7px;font-size:11.5px;color:var(--ink-3);line-height:1.5}
+
+  /* 대상 확인 헤더 */
+  .target{display:flex;align-items:center;gap:11px;background:var(--hope);border-radius:15px;
+    padding:11px 13px}
+  .target .face{width:40px;height:48px;border-radius:10px;overflow:hidden;flex:0 0 auto}
+  .target b{font-size:14px;font-weight:700;letter-spacing:-.025em;color:var(--care-ink)}
+  .target p{font-size:11.5px;color:var(--care-ink);opacity:.85;margin-top:2px}
+  .face svg{display:block;width:100%;height:100%}
+
+  /* 사진 첨부 */
+  .shot{margin-top:8px;border-radius:15px;overflow:hidden;position:relative;height:186px;
+    background:var(--field)}
+  .shot svg.ph{position:absolute;inset:0;width:100%;height:100%}
+  .retake{position:absolute;right:10px;bottom:10px;background:rgba(23,39,61,.62);color:#fff;
+    font-size:11.5px;font-weight:700;padding:7px 12px;border-radius:20px;display:flex;
+    align-items:center;gap:5px}
+  .dropzone{margin-top:8px;height:150px;border:1.5px dashed #C3D1E2;border-radius:15px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    color:var(--ink-3);background:#FBFDFF}
+  .dropzone b{font-size:13px;font-weight:700;color:var(--ink-2)}
+  .dropzone p{font-size:11.5px}
+
+  /* 자동 정보 */
+  .auto{margin-top:8px;border:1px solid var(--calm);border-radius:14px;overflow:hidden}
+  .auto-row{display:flex;align-items:center;gap:11px;padding:12px 14px;border-bottom:1px solid var(--calm)}
+  .auto-row:last-child{border-bottom:0}
+  .auto-ico{width:30px;height:30px;border-radius:9px;background:#EAF2FF;display:grid;
+    place-items:center;color:var(--trust);flex:0 0 auto}
+  .auto-t{flex:1 1 auto;min-width:0}
+  .auto-t b{font-size:13px;font-weight:600;display:block;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .auto-t span{font-size:11px;color:var(--ink-3)}
+  .edit{font-size:11.5px;font-weight:700;color:var(--trust);flex:0 0 auto}
+
+  /* 분석 결과 슬롯 */
+  .aslot{margin-top:8px;border:1.5px dashed var(--calm);border-radius:14px;padding:16px 14px;
+    text-align:center;background:#FBFDFF}
+  .aslot p{font-size:12px;color:var(--ink-3);line-height:1.55}
+  .analyze{margin-top:11px;width:100%;border:0;border-radius:12px;background:var(--trust);
+    color:#fff;padding:13px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:7px}
+
+  /* 하단 고정 */
+  .foot{flex:0 0 auto;padding:11px 16px 20px;border-top:1px solid var(--calm);background:var(--white)}
+  .foot .two{display:flex;gap:10px}
+  .btn{border:0;border-radius:14px;padding:15px;font-size:15px;font-weight:700;
+    font-family:inherit;cursor:pointer}
+  .btn.ghost{flex:0 0 104px;background:var(--field);color:var(--ink-2)}
+  .btn.primary{flex:1 1 auto;background:var(--care);color:#fff}
+  .btn.trust{flex:1 1 auto;background:var(--trust);color:#fff;width:100%}
+  .btn.off{background:var(--calm);color:#93A3B6;cursor:not-allowed}
+  .foot p{text-align:center;font-size:11px;color:var(--ink-3);margin-top:8px}
+
+  /* ── 바텀시트 ── */
+  .dim{position:absolute;inset:0;background:rgba(23,39,61,.45);z-index:5}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--white);
+    border-radius:26px 26px 0 0;padding:10px 20px 22px;box-shadow:0 -10px 30px -12px rgba(23,39,61,.3)}
+  .handle{width:38px;height:4px;border-radius:3px;background:var(--calm);margin:0 auto 14px}
+  .sheet h3{font-size:17px;font-weight:700;letter-spacing:-.03em;text-align:center}
+  .gaugewrap{margin-top:14px;display:flex;flex-direction:column;align-items:center}
+  .gaugewrap svg{display:block}
+  .gval{margin-top:-30px;text-align:center}
+  .gval u{font-size:34px;font-weight:700;text-decoration:none;letter-spacing:-.03em;
+    font-variant-numeric:tabular-nums;color:var(--link)}
+  .gval span{font-size:13px;font-weight:700;color:var(--ink-3);margin-left:2px}
+  .glabel{margin-top:5px;font-size:12px;font-weight:700;color:var(--ink-2);
+    background:var(--field);padding:4px 11px;border-radius:20px}
+
+  .compare{margin-top:16px;display:flex;gap:10px;align-items:center}
+  .cmp{flex:1 1 0;text-align:center}
+  .cmp .box{height:96px;border-radius:13px;overflow:hidden;background:var(--field);
+    border:1px solid var(--calm)}
+  .cmp .box svg{display:block;width:100%;height:100%}
+  .cmp u{display:block;margin-top:7px;font-size:11px;font-weight:700;color:var(--ink-3);
+    text-decoration:none}
+  .vs{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--ink-3);
+    background:var(--field);width:26px;height:26px;border-radius:50%;display:grid;place-items:center}
+
+  .sheetinfo{margin-top:16px;background:var(--field);border-radius:13px;padding:12px 14px;
+    display:flex;flex-direction:column;gap:8px}
+  .si{display:flex;gap:10px;font-size:12.5px}
+  .si dt{flex:0 0 52px;color:var(--ink-3);font-weight:600}
+  .si dd{flex:1 1 auto;font-weight:500}
+  .reassure{margin-top:13px;font-size:11.5px;color:var(--care-ink);background:var(--hope);
+    border-radius:11px;padding:11px 13px;line-height:1.55}
+
+  /* ── S5 지도 ── */
+  .mapfull{position:absolute;inset:0;z-index:0}
+  .mapfull svg{position:absolute;inset:0;width:100%;height:100%}
+  .mapchrome{position:relative;z-index:2;display:flex;flex-direction:column;height:100%}
+  .caseselect{margin:6px 16px 0;background:rgba(255,255,255,.96);border-radius:14px;
+    padding:10px 13px;display:flex;align-items:center;gap:10px;
+    box-shadow:0 6px 18px -8px rgba(23,39,61,.35)}
+  .caseselect .face{width:32px;height:38px;border-radius:8px;overflow:hidden;flex:0 0 auto}
+  .caseselect b{font-size:13.5px;font-weight:700;letter-spacing:-.025em;flex:1 1 auto}
+  .caseselect span{font-size:11px;color:var(--care-ink);font-weight:700}
+  .mapspacer{flex:1 1 auto}
+  .locbtn{align-self:flex-end;margin:0 16px 10px;width:38px;height:38px;border-radius:50%;
+    background:var(--white);display:grid;place-items:center;color:var(--trust);
+    box-shadow:0 6px 16px -6px rgba(23,39,61,.35)}
+  .panel{background:var(--white);border-radius:22px 22px 0 0;padding:10px 18px 12px;
+    box-shadow:0 -8px 24px -12px rgba(23,39,61,.28)}
+  .panel .handle{margin-bottom:11px}
+  .ptop{display:flex;align-items:center;justify-content:space-between}
+  .ptop b{font-size:13.5px;font-weight:700;letter-spacing:-.025em}
+  .toggle{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2);font-weight:600}
+  .sw{width:30px;height:18px;border-radius:10px;background:var(--trust);position:relative}
+  .sw::after{content:"";position:absolute;top:2px;right:2px;width:14px;height:14px;
+    border-radius:50%;background:#fff}
+  .slider{margin-top:14px}
+  .strack{height:5px;border-radius:3px;background:var(--field);position:relative}
+  .sfill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--trust);width:78%}
+  .stick{position:absolute;top:-3px;width:2px;height:11px;background:#C3D1E2;border-radius:1px}
+  .sknob{position:absolute;left:78%;top:50%;transform:translate(-50%,-50%);
+    width:19px;height:19px;border-radius:50%;background:var(--white);border:3px solid var(--trust);
+    box-shadow:0 2px 6px rgba(23,39,61,.25)}
+  .slabels{display:flex;justify-content:space-between;margin-top:9px;font-size:10.5px;
+    color:var(--ink-3);font-weight:600}
+  .legend{margin-top:13px;display:flex;gap:13px;flex-wrap:wrap;
+    border-top:1px solid var(--calm);padding-top:11px}
+  .lg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-2);font-weight:600}
+  .lg i{width:11px;height:11px;border-radius:50%;display:block}
+
+  .nav{flex:0 0 auto;display:flex;border-top:1px solid var(--calm);padding:9px 8px 16px;
+    background:var(--white)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
+    color:var(--ink-3);font-size:10.5px;font-weight:600;cursor:pointer}
+  .tab.on{color:var(--trust)}
+  .tab svg{width:23px;height:23px}
+
+  /* ── S7 사진 슬롯 ── */
+  .slots{margin-top:8px;display:flex;gap:9px}
+  .pslot{flex:1 1 0;aspect-ratio:3/4;border-radius:13px;overflow:hidden;background:var(--field);
+    position:relative}
+  .pslot svg{display:block;width:100%;height:100%}
+  .pslot.add{border:1.5px dashed #C3D1E2;background:#FBFDFF;display:grid;place-items:center;
+    color:var(--ink-3)}
+  .pslot .main{position:absolute;left:6px;top:6px;background:var(--trust);color:#fff;
+    font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:5px}
+  .notice{margin-top:16px;background:var(--field);border-radius:13px;padding:12px 14px;
+    display:flex;gap:9px}
+  .notice svg{flex:0 0 auto;color:var(--trust);margin-top:1px}
+  .notice p{font-size:11.5px;color:var(--ink-2);line-height:1.55}
+  .notice b{color:var(--ink);font-weight:700}
+
+  .minimap{margin-top:8px;border:1px solid var(--calm);border-radius:13px;overflow:hidden}
+  .minimap .art{height:104px;position:relative;background:#F4F8FD}
+  .minimap .art svg{position:absolute;inset:0;width:100%;height:100%}
+  .mmfoot{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;
+    border-top:1px solid var(--calm)}
+  .mmfoot b{font-size:12.5px;font-weight:600}
+  .mmfoot span{font-size:11.5px;color:var(--trust);font-weight:700}
+
+
+  /* ── S5 전체 보기 : 필터 · 사건 카드 ── */
+  .mtop{margin:6px 16px 0;display:flex;flex-direction:column;gap:9px}
+  .msearch{background:rgba(255,255,255,.96);border-radius:14px;padding:11px 14px;
+    display:flex;align-items:center;gap:9px;color:var(--ink-3);
+    box-shadow:0 6px 18px -8px rgba(23,39,61,.35)}
+  .msearch span{font-size:13px;flex:1 1 auto}
+  .mpills{display:flex;gap:7px}
+  .mpill{font-size:12px;font-weight:700;padding:7px 13px;border-radius:20px;
+    background:rgba(255,255,255,.96);color:var(--ink-2);
+    box-shadow:0 4px 12px -6px rgba(23,39,61,.3)}
+  .mpill.on{background:var(--trust);color:#fff}
+
+  .cards{display:flex;gap:10px;padding:0 16px 12px;overflow:hidden}
+  .ccard{flex:0 0 236px;background:var(--white);border-radius:17px;padding:11px;
+    display:flex;gap:11px;align-items:center;box-shadow:0 8px 22px -10px rgba(23,39,61,.35)}
+  .ccard.dimmed{flex:0 0 84px;opacity:.9}
+  .ccard .face{width:46px;height:56px;border-radius:11px;overflow:hidden;flex:0 0 auto}
+  .cc{flex:1 1 auto;min-width:0}
+  .cc-top{display:flex;align-items:center;gap:5px}
+  .cc-top b{font-size:13.5px;font-weight:700;letter-spacing:-.025em}
+  .cc-top span{font-size:10.5px;color:var(--ink-3)}
+  .cc-look{font-size:11px;color:var(--ink-2);margin-top:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cc-meta{display:flex;align-items:center;gap:6px;margin-top:6px}
+  .cc-meta .d{font-size:11px;font-weight:700;color:var(--trust)}
+  .tg{font-size:9.5px;font-weight:700;padding:2.5px 6px;border-radius:5px}
+  .tg.now{background:var(--care);color:#fff}
+  .tg.soon{background:var(--hope);color:var(--care-ink)}
+  .tg.long{background:var(--calm);color:var(--ink-2)}
+  .counthint{margin:0 16px 9px;align-self:flex-start;background:rgba(23,39,61,.62);
+    color:#fff;font-size:11px;font-weight:700;padding:5px 11px;border-radius:20px}
+
+  /* ── S4-2 제보 완료 ── */
+  .succ{flex:1 1 auto;overflow:hidden;padding:10px 20px 0;display:flex;
+    flex-direction:column;align-items:center;text-align:center}
+  .succ .mascot{width:104px;height:135px;display:block}
+  .succ h3{margin-top:6px;font-size:21px;font-weight:700;letter-spacing:-.035em}
+  .succ .sub{margin-top:8px;font-size:13px;color:var(--ink-2);line-height:1.6}
+  .sumcard{margin-top:20px;width:100%;border:1px solid var(--calm);border-radius:16px;
+    padding:14px 16px;display:flex;flex-direction:column;gap:10px;text-align:left}
+  .sr{display:flex;align-items:center;gap:10px;font-size:12.5px}
+  .sr dt{flex:0 0 46px;color:var(--ink-3);font-weight:600}
+  .sr dd{flex:1 1 auto;font-weight:500}
+  .simchip{font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;
+    background:#EAF2FF;color:var(--trust)}
+  .maplink{margin-top:13px;display:flex;align-items:center;justify-content:center;gap:5px;
+    font-size:12.5px;font-weight:700;color:var(--trust)}
+  .quote{margin-top:auto;margin-bottom:14px;font-size:12.5px;color:var(--care-ink);
+    line-height:1.65;background:var(--hope);border-radius:14px;padding:13px 16px;width:100%}
+  .quote b{display:block;font-weight:700}
+  .notifybox{background:var(--field);border-radius:15px;padding:13px 15px;text-align:left}
+  .notifybox b{font-size:13.5px;font-weight:700;letter-spacing:-.025em}
+  .notifybox p{font-size:11.5px;color:var(--ink-2);margin-top:3px;line-height:1.5}
+  .ghostlink{display:block;width:100%;text-align:center;margin-top:11px;
+    font-size:12.5px;font-weight:700;color:var(--ink-3);background:none;border:0;
+    font-family:inherit;cursor:pointer}
+
+  /* 설계 노트 */
+  .notes{margin-top:60px;padding-top:34px;border-top:1px solid var(--calm)}
+  .notes h2{font-size:19px;font-weight:700;letter-spacing:-.03em}
+  .ngrid{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px}
+  .ncard{background:var(--white);border:1px solid var(--calm);border-radius:20px;padding:20px 22px}
+  .ncard h4{font-size:14px;font-weight:700;letter-spacing:-.02em}
+  .ncard p{margin-top:9px;font-size:13px;color:var(--ink-2);line-height:1.65}
+
+  @media (max-width:820px){body{padding:36px 18px 60px}.frames{gap:38px;justify-content:center}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="gyeoti" viewBox="0 0 100 130">
+    <circle cx="50" cy="16" r="10" fill="none" stroke="#5A87C9" stroke-width="9"/>
+    <path d="M72 76c11 7 14 20 10 30-6-9-15-13-21-14z" fill="#FF9E9E"/>
+    <ellipse cx="38" cy="122" rx="10" ry="5.5" fill="#FBF8F4"/>
+    <ellipse cx="62" cy="122" rx="10" ry="5.5" fill="#FBF8F4"/>
+    <ellipse cx="50" cy="100" rx="24" ry="22" fill="#FBF8F4"/>
+    <rect x="24" y="60" width="52" height="22" rx="9" fill="#5A87C9"/>
+    <circle cx="50" cy="55" r="30" fill="#5A87C9"/>
+    <circle cx="50" cy="57" r="23.5" fill="#FBF8F4"/>
+    <ellipse cx="41" cy="55" rx="4" ry="5.4" fill="#22303F"/>
+    <ellipse cx="59" cy="55" rx="4" ry="5.4" fill="#22303F"/>
+    <circle cx="32.5" cy="65" r="4.4" fill="#FFB9B9"/>
+    <circle cx="67.5" cy="65" r="4.4" fill="#FFB9B9"/>
+    <path d="M45.5 66.5q4.5 4.5 9 0" fill="none" stroke="#22303F" stroke-width="2.2" stroke-linecap="round"/>
+    <circle cx="77" cy="82" r="8.5" fill="#FBF8F4"/>
+    <circle cx="23" cy="88" r="8.5" fill="#FBF8F4"/>
+  </symbol>
+</svg>
+
+<div class="page">
+
+  <div class="masthead">
+    <h1>S4 제보창 · S4-2 제보 완료 · S5 지도 · S7 실종자 등록</h1>
+    <p>제보창은 분석 전후가 이어져야 흐름이 읽히므로 AI 분석 시트를 함께 넣었습니다.
+       세 화면 모두 네비게이션 바 유무가 다릅니다. 작성 중인 화면은 네비바를 숨겨 입력값이 날아가는 사고를 막고,
+       지도는 탭이므로 네비바를 유지합니다.</p>
+  </div>
+
+  <div class="frames">
+
+    <!-- ═══════ S4 제보창 ═══════ -->
+    <div class="slot">
+      <div class="slot-name"><i style="background:#FF7E7E"></i>S4 · 제보창 (분석 전)</div>
+      <div class="phone">
+        <div class="status"><b>5:14</b>
+          <div class="bars"><s style="height:5px"></s><s style="height:7px"></s><s style="height:9px"></s><s style="height:11px"></s></div>
+        </div>
+
+        <div class="appbar">
+          <div class="ab-side">
+            <div class="icobtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </div>
+          </div>
+          <h2>제보하기</h2>
+          <span class="ab-side right"></span>
+        </div>
+
+        <div class="scroll">
+          <div class="target">
+            <div class="face"><svg viewBox="0 0 40 48"><rect width="40" height="48" fill="#F7D9D4"/><circle cx="20" cy="17" r="7.5" fill="#E9B7AF"/><path d="M5 48c0-8.5 6.6-13 15-13s15 4.5 15 13z" fill="#E9B7AF"/></svg></div>
+            <div>
+              <b>김하준 · 7세 남아</b>
+              <p>노란 후드티, 검정 백팩</p>
+            </div>
+          </div>
+
+          <div class="grp">
+            <div class="lab">목격한 사진 <u>*</u></div>
+            <div class="shot">
+              <svg class="ph" viewBox="0 0 324 186" preserveAspectRatio="xMidYMid slice">
+                <rect width="324" height="186" fill="#E7EEF7"/>
+                <rect y="132" width="324" height="54" fill="#DCE6F2"/>
+                <circle cx="162" cy="74" r="26" fill="#C6D5E8"/>
+                <path d="M108 148c0-29 24-46 54-46s54 17 54 46z" fill="#C6D5E8"/>
+              </svg>
+              <div class="retake">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 19v-5h5"/></svg>
+                다시 찍기
+              </div>
+            </div>
+            <p class="help">얼굴이 보이지 않아도 괜찮습니다. 옷차림과 주변이 함께 찍히면 도움이 됩니다.</p>
+          </div>
+
+          <div class="grp">
+            <div class="lab">자동으로 담긴 정보</div>
+            <div class="auto">
+              <div class="auto-row">
+                <div class="auto-ico">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+                </div>
+                <div class="auto-t">
+                  <b>남동구 만수동 872-3</b>
+                  <span>만수주공 앞 버스정류장</span>
+                </div>
+                <span class="edit">수정</span>
+              </div>
+              <div class="auto-row">
+                <div class="auto-ico">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>
+                </div>
+                <div class="auto-t">
+                  <b>오늘 오후 5시 12분</b>
+                  <span>사진 촬영 시각</span>
+                </div>
+                <span class="edit">수정</span>
+              </div>
+            </div>
+            <p class="help">나중에 올리는 사진이라면 시간을 실제 목격 시각으로 바꿔주세요.</p>
+          </div>
+
+          <div class="grp">
+            <div class="lab">AI 분석 결과 <u>*</u></div>
+            <div class="aslot">
+              <p>사진을 분석하면 등록 사진과의 유사도가<br>여기에 담깁니다</p>
+              <button class="analyze">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                사진 분석하기
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="foot">
+          <div class="two">
+            <button class="btn ghost">취소</button>
+            <button class="btn primary off">제보</button>
+          </div>
+          <p>분석을 마치면 제보할 수 있습니다</p>
+        </div>
+      </div>
+      <p class="slot-note">사진 외에 시민이 직접 입력할 것이 하나도 없습니다.
+        위치와 시간은 자동으로 담기고, 수정은 원할 때만 합니다. P4(배달기사)의 30초 제약을 충족하는 최소 구성입니다.</p>
+    </div>
+
+    <!-- ═══════ S4-1 AI 분석 결과 ═══════ -->
+    <div class="slot">
+      <div class="slot-name"><i style="background:#7FB3FF"></i>S4-1 · AI 분석 결과 (바텀시트)</div>
+      <div class="phone">
+        <div class="status"><b>5:14</b>
+          <div class="bars"><s style="height:5px"></s><s style="height:7px"></s><s style="height:9px"></s><s style="height:11px"></s></div>
+        </div>
+
+        <div class="appbar">
+          <div class="ab-side">
+            <div class="icobtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </div>
+          </div>
+          <h2>제보하기</h2>
+          <span class="ab-side right"></span>
+        </div>
+
+        <div class="scroll">
+          <div class="target">
+            <div class="face"><svg viewBox="0 0 40 48"><rect width="40" height="48" fill="#F7D9D4"/><circle cx="20" cy="17" r="7.5" fill="#E9B7AF"/><path d="M5 48c0-8.5 6.6-13 15-13s15 4.5 15 13z" fill="#E9B7AF"/></svg></div>
+            <div><b>김하준 · 7세 남아</b><p>노란 후드티, 검정 백팩</p></div>
+          </div>
+          <div class="grp">
+            <div class="lab">목격한 사진 <u>*</u></div>
+            <div class="shot">
+              <svg class="ph" viewBox="0 0 324 186" preserveAspectRatio="xMidYMid slice">
+                <rect width="324" height="186" fill="#E7EEF7"/><rect y="132" width="324" height="54" fill="#DCE6F2"/>
+                <circle cx="162" cy="74" r="26" fill="#C6D5E8"/>
+                <path d="M108 148c0-29 24-46 54-46s54 17 54 46z" fill="#C6D5E8"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="dim"></div>
+
+        <div class="sheet">
+          <div class="handle"></div>
+          <h3>분석 결과</h3>
+
+          <div class="gaugewrap">
+            <svg width="176" height="96" viewBox="0 0 176 96">
+              <path d="M16 88a72 72 0 0 1 144 0" fill="none" stroke="#EDF2F9" stroke-width="14" stroke-linecap="round"/>
+              <path d="M16 88a72 72 0 0 1 144 0" fill="none" stroke="#7FB3FF" stroke-width="14"
+                    stroke-linecap="round" stroke-dasharray="142 226"/>
+            </svg>
+            <div class="gval"><u>63</u><span>%</span></div>
+            <div class="glabel">보통 · 확인해볼 만합니다</div>
+          </div>
+
+          <div class="compare">
+            <div class="cmp">
+              <div class="box"><svg viewBox="0 0 100 96"><rect width="100" height="96" fill="#EDF2F9"/><circle cx="50" cy="36" r="17" fill="#C6D5E8"/><path d="M16 96c0-18 15-29 34-29s34 11 34 29z" fill="#C6D5E8"/></svg></div>
+              <u>등록 사진</u>
+            </div>
+            <div class="vs">vs</div>
+            <div class="cmp">
+              <div class="box"><svg viewBox="0 0 100 96"><rect width="100" height="96" fill="#E7EEF7"/><rect y="68" width="100" height="28" fill="#DCE6F2"/><circle cx="50" cy="34" r="15" fill="#C6D5E8"/><path d="M20 92c0-16 13-26 30-26s30 10 30 26z" fill="#C6D5E8"/></svg></div>
+              <u>내가 찍은 사진</u>
+            </div>
+          </div>
+
+          <div class="sheetinfo">
+            <dl class="si"><dt>위치</dt><dd>남동구 만수동 872-3<br>만수주공 앞 버스정류장</dd></dl>
+            <dl class="si"><dt>시간</dt><dd>오늘 오후 5시 12분</dd></dl>
+          </div>
+
+          <div class="reassure">
+            옷을 갈아입었거나 각도가 달라 낮게 나올 수 있습니다.
+            확신이 없어도 제보해 주세요. 확인은 보호자가 합니다.
+          </div>
+
+          <button class="btn trust" style="margin-top:14px">분석 확인</button>
+        </div>
+      </div>
+      <p class="slot-note">별도 화면이 아니라 바텀시트인 이유는 제보창 입력값이 살아 있는 채로 겹쳐 뜨기 때문입니다.
+        확신 없는 목격자에게 판단을 대신 져주는 장치라, 낮은 점수일 때의 안내 문구가 이 화면의 핵심입니다.</p>
+    </div>
+
+    <!-- ═══════ S4-2 제보 완료 ═══════ -->
+    <div class="slot">
+      <div class="slot-name"><i style="background:#FFE5E1"></i>S4-2 · 제보 완료</div>
+      <div class="phone">
+        <div class="status"><b>5:15</b>
+          <div class="bars"><s style="height:5px"></s><s style="height:7px"></s><s style="height:9px"></s><s style="height:11px"></s></div>
+        </div>
+
+        <div class="appbar">
+          <span class="ab-side"></span><h2></h2>
+          <div class="ab-side right">
+            <div class="icobtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="succ">
+          <svg class="mascot" viewBox="0 0 100 130"><use href="#gyeoti"/></svg>
+          <h3>제보가 전달되었습니다</h3>
+          <p class="sub">보호자에게 방금 알림이 갔습니다.<br>당신이 본 장면이 경로의 한 점이 됩니다.</p>
+
+          <div class="sumcard">
+            <dl class="sr"><dt>유사도</dt><dd><span class="simchip">63% · 보통</span></dd></dl>
+            <dl class="sr"><dt>위치</dt><dd>남동구 만수동 872-3</dd></dl>
+            <dl class="sr"><dt>시간</dt><dd>오늘 오후 5시 12분</dd></dl>
+          </div>
+
+          <div class="maplink">지도에서 경로 보기
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+          </div>
+
+          <div class="quote">
+            <b>&ldquo;당신의 작은 관심이 누군가의 내일이 됩니다&rdquo;</b>
+          </div>
+        </div>
+
+        <div class="foot">
+          <div class="notifybox">
+            <b>하준이가 발견되면 알려드릴까요?</b>
+            <p>결과를 알려드리고, 내 제보 이력도 남길 수 있습니다</p>
+          </div>
+          <button class="btn trust" style="margin-top:11px">로그인하고 알림 받기</button>
+          <button class="ghostlink">괜찮습니다</button>
+        </div>
+      </div>
+      <p class="slot-note">곁이가 처음 등장하는 화면입니다. 긴급 화면에서 물러났던 캐릭터가
+        안도의 순간에 나옵니다. ‘괜찮습니다’를 눌러도 제보는 그대로 유효합니다.</p>
+    </div>
+
+    <!-- ═══════ S5 지도 · 전체 보기 ═══════ -->
+    <div class="slot">
+      <div class="slot-name"><i style="background:#DEE6F0"></i>S5 · 지도 (기본 진입 · 전체 보기)</div>
+      <div class="phone">
+        <div class="mapfull">
+          <svg viewBox="0 0 360 662" preserveAspectRatio="xMidYMid slice">
+            <rect width="360" height="662" fill="#F4F8FD"/>
+            <g fill="#E7EEF7">
+              <rect x="10" y="40" width="86" height="66" rx="6"/><rect x="118" y="30" width="76" height="76" rx="6"/>
+              <rect x="216" y="42" width="74" height="64" rx="6"/><rect x="308" y="34" width="60" height="72" rx="6"/>
+              <rect x="14" y="132" width="80" height="86" rx="6"/><rect x="120" y="140" width="72" height="78" rx="6"/>
+              <rect x="218" y="130" width="70" height="88" rx="6"/><rect x="310" y="136" width="58" height="82" rx="6"/>
+              <rect x="10" y="248" width="84" height="76" rx="6"/><rect x="122" y="252" width="70" height="72" rx="6"/>
+              <rect x="220" y="246" width="68" height="78" rx="6"/><rect x="312" y="250" width="56" height="74" rx="6"/>
+              <rect x="16" y="356" width="76" height="84" rx="6"/><rect x="118" y="360" width="74" height="80" rx="6"/>
+              <rect x="216" y="352" width="72" height="88" rx="6"/><rect x="308" y="358" width="60" height="82" rx="6"/>
+              <rect x="12" y="472" width="82" height="78" rx="6"/><rect x="120" y="476" width="72" height="74" rx="6"/>
+              <rect x="218" y="470" width="70" height="80" rx="6"/><rect x="310" y="474" width="58" height="76" rx="6"/>
+              <rect x="14" y="580" width="80" height="70" rx="6"/><rect x="122" y="584" width="70" height="66" rx="6"/>
+              <rect x="220" y="578" width="68" height="72" rx="6"/><rect x="312" y="582" width="56" height="68" rx="6"/>
+            </g>
+            <g stroke="#DEE6F0" stroke-width="10" stroke-linecap="round">
+              <path d="M0 120h360"/><path d="M0 234h360"/><path d="M0 340h360"/><path d="M0 456h360"/><path d="M0 566h360"/>
+              <path d="M106 0v662"/><path d="M204 0v662"/><path d="M300 0v662"/>
+            </g>
+            <circle cx="178" cy="392" r="24" fill="#7FB3FF" opacity=".2"/>
+            <circle cx="178" cy="392" r="6.5" fill="#3B6CB7" stroke="#fff" stroke-width="2.6"/>
+            <circle cx="92" cy="286" r="34" fill="#FF7E7E" opacity=".14"/>
+            <path d="M92 264c-11.6 0-21 9.4-21 21 0 15 21 33 21 33s21-18 21-33c0-11.6-9.4-21-21-21z"
+                  fill="#FF7E7E" stroke="#fff" stroke-width="3.2"/>
+            <circle cx="92" cy="285" r="7" fill="#fff"/>
+            <path d="M268 178c-10 0-18 8-18 18 0 12.8 18 28 18 28s18-15.2 18-28c0-10-8-18-18-18z"
+                  fill="#FF7E7E" stroke="#fff" stroke-width="3"/>
+            <circle cx="268" cy="196" r="6" fill="#fff"/>
+            <path d="M148 512c-10 0-18 8-18 18 0 12.8 18 28 18 28s18-15.2 18-28c0-10-8-18-18-18z"
+                  fill="#FFA9A9" stroke="#fff" stroke-width="3"/>
+            <circle cx="148" cy="530" r="6" fill="#fff"/>
+            <path d="M312 452c-9 0-16.2 7.2-16.2 16.2C295.8 480 312 494 312 494s16.2-14 16.2-25.8C328.2 459.2 321 452 312 452z"
+                  fill="#C8D6E6" stroke="#fff" stroke-width="2.8"/>
+            <circle cx="312" cy="468" r="5.4" fill="#fff"/>
+            <path d="M56 604c-9 0-16.2 7.2-16.2 16.2C39.8 632 56 646 56 646s16.2-14 16.2-25.8C72.2 611.2 65 604 56 604z"
+                  fill="#C8D6E6" stroke="#fff" stroke-width="2.8"/>
+            <circle cx="56" cy="620" r="5.4" fill="#fff"/>
+          </svg>
+        </div>
+
+        <div class="mapchrome">
+          <div class="status on-map"><b>5:16</b>
+            <div class="bars"><s style="height:5px"></s><s style="height:7px"></s><s style="height:9px"></s><s style="height:11px"></s></div>
+          </div>
+
+          <div class="mtop">
+            <div class="msearch">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <span>지역 · 이름으로 찾기</span>
+            </div>
+            <div class="mpills">
+              <div class="mpill on">전체 14</div>
+              <div class="mpill">아동</div>
+              <div class="mpill">어르신</div>
+            </div>
+          </div>
+
+          <div class="mapspacer"></div>
+
+          <div class="locbtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8.4"/>
+            </svg>
+          </div>
+
+          <div class="counthint">이 지역 진행 중 5건 · 긴급도순</div>
+
+          <div class="cards">
+            <div class="ccard">
+              <div class="face"><svg viewBox="0 0 46 56"><rect width="46" height="56" fill="#EDF2F9"/><circle cx="23.0" cy="18" r="9" fill="#C6D5E8"/><path d="M6 56c0-15 7-16 17-16s17 1 17 16z" fill="#C6D5E8"/></svg></div>
+              <div class="cc">
+                <div class="cc-top"><b>김하준</b><span>7세 남아</span></div>
+                <div class="cc-look">노란 후드티, 검정 백팩</div>
+                <div class="cc-meta"><span class="d">1.2km</span><span class="tg now">3시간</span></div>
+              </div>
+            </div>
+            <div class="ccard">
+              <div class="face"><svg viewBox="0 0 46 56"><rect width="46" height="56" fill="#EDF2F9"/><circle cx="23.0" cy="18" r="9" fill="#C6D5E8"/><path d="M6 56c0-15 7-16 17-16s17 1 17 16z" fill="#C6D5E8"/></svg></div>
+              <div class="cc">
+                <div class="cc-top"><b>이순자</b><span>81세 여성</span></div>
+                <div class="cc-look">회색 등산복, 지팡이</div>
+                <div class="cc-meta"><span class="d">2.8km</span><span class="tg soon">9시간</span></div>
+              </div>
+            </div>
+            <div class="ccard dimmed"></div>
+          </div>
+
+          <div class="nav">
+            <div class="tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/></svg>홈</div>
+            <div class="tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="8" r="4"/><path d="M3.5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/><path d="M17 4.5a3.5 3.5 0 0 1 0 7"/></svg>실종자</div>
+            <div class="tab on">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>지도</div>
+            <div class="tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.2 3.6-6.8 8-6.8s8 2.6 8 6.8"/></svg>MY</div>
+          </div>
+        </div>
+      </div>
+      <p class="slot-note">사건을 고르지 않은 기본 상태입니다. 실종 위치 핀만 뜨고 경로는 그리지 않습니다.
+        여러 사건의 경로를 겹치면 선이 엉켜 아무것도 읽히지 않기 때문입니다.
+        골든타임 안의 사건은 핀 주위에 옅은 링이 돌아 한눈에 구분됩니다.</p>
+    </div>
+
+    <!-- ═══════ S5 지도 ═══════ -->
+    <div class="slot">
+      <div class="slot-name"><i style="background:#3B6CB7"></i>S5 · 지도 (사건 선택 후)</div>
+      <div class="phone">
+        <div class="mapfull">
+          <svg viewBox="0 0 360 662" preserveAspectRatio="xMidYMid slice">
+            <rect width="360" height="662" fill="#F4F8FD"/>
+            <g fill="#E7EEF7">
+              <rect x="10" y="40" width="86" height="66" rx="6"/><rect x="118" y="30" width="76" height="76" rx="6"/>
+              <rect x="216" y="42" width="74" height="64" rx="6"/><rect x="308" y="34" width="60" height="72" rx="6"/>
+              <rect x="14" y="132" width="80" height="86" rx="6"/><rect x="120" y="140" width="72" height="78" rx="6"/>
+              <rect x="218" y="130" width="70" height="88" rx="6"/><rect x="310" y="136" width="58" height="82" rx="6"/>
+              <rect x="10" y="248" width="84" height="76" rx="6"/><rect x="122" y="252" width="70" height="72" rx="6"/>
+              <rect x="220" y="246" width="68" height="78" rx="6"/><rect x="312" y="250" width="56" height="74" rx="6"/>
+              <rect x="16" y="356" width="76" height="84" rx="6"/><rect x="118" y="360" width="74" height="80" rx="6"/>
+              <rect x="216" y="352" width="72" height="88" rx="6"/><rect x="308" y="358" width="60" height="82" rx="6"/>
+              <rect x="12" y="472" width="82" height="78" rx="6"/><rect x="120" y="476" width="72" height="74" rx="6"/>
+              <rect x="218" y="470" width="70" height="80" rx="6"/><rect x="310" y="474" width="58" height="76" rx="6"/>
+              <rect x="14" y="580" width="80" height="70" rx="6"/><rect x="122" y="584" width="70" height="66" rx="6"/>
+              <rect x="220" y="578" width="68" height="72" rx="6"/><rect x="312" y="582" width="56" height="68" rx="6"/>
+            </g>
+            <g stroke="#DEE6F0" stroke-width="10" stroke-linecap="round">
+              <path d="M0 120h360"/><path d="M0 234h360"/><path d="M0 340h360"/><path d="M0 456h360"/><path d="M0 566h360"/>
+              <path d="M106 0v662"/><path d="M204 0v662"/><path d="M300 0v662"/>
+            </g>
+            <!-- 이동 경로 -->
+            <path d="M64 520 L152 404 L246 292 L292 176" fill="none" stroke="#7FB3FF"
+                  stroke-width="3.4" stroke-dasharray="8 6" stroke-linecap="round"/>
+            <!-- 내 위치 -->
+            <circle cx="178" cy="470" r="22" fill="#7FB3FF" opacity=".2"/>
+            <circle cx="178" cy="470" r="6.5" fill="#3B6CB7" stroke="#fff" stroke-width="2.6"/>
+            <!-- 저신뢰 제보 -->
+            <circle cx="122" cy="474" r="10" fill="#B3C2D4" stroke="#fff" stroke-width="2.4" opacity=".75"/>
+            <!-- 제보 핀 -->
+            <g stroke="#fff" stroke-width="2.8">
+              <circle cx="152" cy="404" r="15" fill="#7FB3FF"/>
+              <circle cx="246" cy="292" r="15" fill="#3B6CB7"/>
+              <circle cx="292" cy="176" r="15" fill="#3B6CB7"/>
+            </g>
+            <g fill="#fff" font-size="14" font-weight="700" text-anchor="middle" font-family="sans-serif">
+              <text x="152" y="409">1</text><text x="246" y="297">2</text><text x="292" y="181">3</text>
+            </g>
+            <!-- 실종 위치 -->
+            <path d="M64 494c-11.6 0-21 9.4-21 21 0 15 21 33 21 33s21-18 21-33c0-11.6-9.4-21-21-21z"
+                  fill="#FF7E7E" stroke="#fff" stroke-width="3.2"/>
+            <circle cx="64" cy="515" r="7" fill="#fff"/>
+          </svg>
+        </div>
+
+        <div class="mapchrome">
+          <div class="status on-map"><b>5:16</b>
+            <div class="bars"><s style="height:5px"></s><s style="height:7px"></s><s style="height:9px"></s><s style="height:11px"></s></div>
+          </div>
+
+          <div class="caseselect">
+            <div class="face"><svg viewBox="0 0 32 38"><rect width="32" height="38" fill="#EDF2F9"/><circle cx="16" cy="13" r="6" fill="#C6D5E8"/><path d="M4 38c0-7 5.4-11 12-11s12 4 12 11z" fill="#C6D5E8"/></svg></div>
+            <b>김하준 · 7세</b>
+            <span>3시간 12분</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8B9AAD" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 7 6-7"/></svg>
+          </div>
+
+          <div class="mapspacer"></div>
+
+          <div class="locbtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3.4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8.4"/>
+            </svg>
+          </div>
+
+          <div class="panel">
+            <div class="handle"></div>
+            <div class="ptop">
+              <b>제보 6건으로 복원한 경로</b>
+              <div class="toggle">60% 이상<span class="sw"></span></div>
+            </div>
+
+            <div class="slider">
+              <div class="strack">
+                <div class="sfill"></div>
+                <div class="stick" style="left:8%"></div>
+                <div class="stick" style="left:26%"></div>
+                <div class="stick" style="left:48%"></div>
+                <div class="stick" style="left:78%"></div>
+                <div class="sknob"></div>
+              </div>
+              <div class="slabels"><span>오후 2:40 실종</span><span>오후 5:12 현재</span></div>
+            </div>
+
+            <div class="legend">
+              <span class="lg"><i style="background:#FF7E7E"></i>실종 위치</span>
+              <span class="lg"><i style="background:#3B6CB7"></i>유사도 70%↑</span>
+              <span class="lg"><i style="background:#7FB3FF"></i>40~70%</span>
+              <span class="lg"><i style="background:#B3C2D4"></i>확인 필요</span>
+            </div>
+          </div>
+
+          <div class="nav">
+            <div class="tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/></svg>홈</div>
+            <div class="tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="10.5" cy="8" r="4"/><path d="M3.5 20c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/><path d="M17 4.5a3.5 3.5 0 0 1 0 7"/></svg>실종자</div>
+            <div class="tab on">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>지도</div>
+            <div class="tab">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c0-4.2 3.6-6.8 8-6.8s8 2.6 8 6.8"/></svg>MY</div>
+          </div>
+        </div>
+      </div>
+      <p class="slot-note">시간 슬라이더를 끌면 그 시점까지의 제보만 남고 경로가 줄어듭니다.
+        발표에서 가장 임팩트 있는 인터랙션이라, 하단 패널에서 가장 큰 면적을 줬습니다.</p>
+    </div>
+
+    <!-- ═══════ S7 실종자 등록 ═══════ -->
+    <div class="slot">
+      <div class="slot-name"><i style="background:#3B6CB7"></i>S7 · 실종자 등록 (로그인 필요)</div>
+      <div class="phone">
+        <div class="status"><b>2:41</b>
+          <div class="bars"><s style="height:5px"></s><s style="height:7px"></s><s style="height:9px"></s><s style="height:11px"></s></div>
+        </div>
+
+        <div class="appbar">
+          <div class="ab-side">
+            <div class="icobtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </div>
+          </div>
+          <h2>실종자 등록</h2>
+          <div class="ab-side right"><span class="textbtn">임시저장</span></div>
+        </div>
+
+        <div class="scroll">
+          <div class="notice">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/>
+            </svg>
+            <p><b>112 신고를 먼저 해주세요.</b> 곁애는 경찰 수색을 대신하지 않고,
+              주변 시민에게 함께 알리는 역할을 합니다.</p>
+          </div>
+
+          <div class="grp">
+            <div class="lab">사진 <u>*</u></div>
+            <div class="slots">
+              <div class="pslot">
+                <svg viewBox="0 0 78 104"><rect width="78" height="104" fill="#EDF2F9"/><circle cx="39" cy="36" r="16" fill="#C6D5E8"/><path d="M8 104c0-18 14-29 31-29s31 11 31 29z" fill="#C6D5E8"/></svg>
+                <span class="main">대표</span>
+              </div>
+              <div class="pslot">
+                <svg viewBox="0 0 78 104"><rect width="78" height="104" fill="#E7EEF7"/><rect y="72" width="78" height="32" fill="#DCE6F2"/><circle cx="39" cy="34" r="14" fill="#C6D5E8"/><path d="M12 100c0-16 12-26 27-26s27 10 27 26z" fill="#C6D5E8"/></svg>
+              </div>
+              <div class="pslot add">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              </div>
+            </div>
+            <p class="help">여러 장 올릴수록 AI 대조 정확도가 올라갑니다. 최근 사진, 전신 사진이 특히 도움이 됩니다.</p>
+          </div>
+
+          <div class="grp">
+            <div class="lab">이름 <u>*</u></div>
+            <div class="fld">김하준</div>
+          </div>
+
+          <div class="grp">
+            <div class="row2">
+              <div>
+                <div class="lab">나이 <u>*</u></div>
+                <div class="fld">7세</div>
+              </div>
+              <div>
+                <div class="lab">성별 <u>*</u></div>
+                <div class="fld">남<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B9AAD" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 7 6-7"/></svg></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grp">
+            <div class="lab">구분 <u>*</u></div>
+            <div class="chips">
+              <div class="chip on">아동</div>
+              <div class="chip">어르신</div>
+              <div class="chip">그 외</div>
+            </div>
+          </div>
+
+          <div class="grp">
+            <div class="lab">인상착의 <u>*</u></div>
+            <div class="ta">노란 후드티, 검정 백팩, 파란 운동화.
+              말수가 적고 버스·간판에 관심을 보이면 오래 서 있습니다.</div>
+            <p class="help">옷차림뿐 아니라 습관과 자주 가는 곳도 적어주세요. 옷은 갈아입어도 습관은 남습니다.</p>
+          </div>
+
+          <div class="grp">
+            <div class="lab">마지막 목격 위치 <u>*</u></div>
+            <div class="minimap">
+              <div class="art">
+                <svg viewBox="0 0 324 104" preserveAspectRatio="xMidYMid slice">
+                  <rect width="324" height="104" fill="#F4F8FD"/>
+                  <g fill="#E7EEF7">
+                    <rect x="14" y="10" width="68" height="34" rx="5"/><rect x="102" y="6" width="60" height="38" rx="5"/>
+                    <rect x="184" y="12" width="62" height="32" rx="5"/><rect x="266" y="8" width="50" height="36" rx="5"/>
+                    <rect x="18" y="66" width="60" height="34" rx="5"/><rect x="100" y="70" width="64" height="30" rx="5"/>
+                    <rect x="188" y="64" width="52" height="36" rx="5"/><rect x="258" y="68" width="58" height="32" rx="5"/>
+                  </g>
+                  <g stroke="#DEE6F0" stroke-width="7" stroke-linecap="round"><path d="M0 54h324"/><path d="M92 0v104"/><path d="M250 0v104"/></g>
+                  <path d="M162 30c-9 0-16.2 7.2-16.2 16.2C145.8 58 162 72 162 72s16.2-14 16.2-25.8C178.2 37.2 171 30 162 30z"
+                        fill="#FF7E7E" stroke="#fff" stroke-width="2.8"/>
+                  <circle cx="162" cy="46" r="5.2" fill="#fff"/>
+                </svg>
+              </div>
+              <div class="mmfoot"><b>인천 남동구 구월동 로데오거리</b><span>지도에서 조정</span></div>
+            </div>
+          </div>
+
+          <div class="grp">
+            <div class="lab">실종 일시 <u>*</u></div>
+            <div class="row2">
+              <div class="fld">9월 11일<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B9AAD" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 7 6-7"/></svg></div>
+              <div class="fld">오후 2:40<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B9AAD" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 7 6-7"/></svg></div>
+            </div>
+          </div>
+
+          <div class="grp">
+            <div class="lab">보호자 연락처 <u>*</u></div>
+            <div class="fld">010-••••-3821</div>
+            <p class="help">제보자에게는 공개되지 않습니다. 경찰과 곁애 운영팀만 확인합니다.</p>
+          </div>
+        </div>
+
+        <div class="foot">
+          <button class="btn trust">등록하기</button>
+          <p>등록 즉시 반경 5km 이내 사용자에게 알림이 갑니다</p>
+        </div>
+      </div>
+      <p class="slot-note">필수 항목만 남겨 2분 안에 끝나도록 했습니다.
+        상단 112 안내는 이 서비스가 경찰 신고를 대체하지 않는다는 것을 화면 안에서 밝히는 장치입니다.</p>
+    </div>
+
+  </div>
+
+  <!-- 설계 노트 -->
+  <section class="notes">
+    <h2>이 세 화면에서 내린 결정</h2>
+    <div class="ngrid">
+      <div class="ncard">
+        <h4>제보창에 입력란이 없습니다</h4>
+        <p>시민이 하는 일은 사진 한 장 찍는 것뿐입니다. 위치와 시간은 자동으로 담기고, 수정은 원할 때만 합니다.
+          입력란을 하나 늘릴 때마다 제보 하나가 사라진다고 보면 됩니다.</p>
+      </div>
+      <div class="ncard">
+        <h4>낮은 점수에 변명을 붙였습니다</h4>
+        <p>63%가 나왔을 때 “옷을 갈아입었거나 각도가 달라 낮게 나올 수 있습니다”라고 먼저 말합니다.
+          목격자가 신고를 망설이는 이유는 확신이 없어서이고, 그 부담을 AI가 대신 지는 것이 이 화면의 목적입니다.</p>
+      </div>
+      <div class="ncard">
+        <h4>시간 슬라이더가 지도의 주인공입니다</h4>
+        <p>핀만 찍힌 지도는 다른 서비스에도 있습니다. 시간을 끌어 경로가 자라나는 것을 보여주는 순간
+          ‘이동 경로 복원’이라는 말이 눈으로 증명됩니다. 눈금은 실제 제보가 있는 시각에 찍혀 있습니다.</p>
+      </div>
+      <div class="ncard">
+        <h4>등록 폼에 112 안내를 넣었습니다</h4>
+        <p>보호자가 앱만 믿고 신고를 미루는 사고를 막습니다. 심사에서 공적 절차와의 관계를 물을 때
+          화면 자체가 답이 되고, 서비스의 위치를 스스로 정확히 밝히는 장치이기도 합니다.</p>
+      </div>
+      <div class="ncard">
+        <h4>지도 기본 화면은 경로를 그리지 않습니다</h4>
+        <p>사건을 고르기 전에는 실종 위치 핀만 뜹니다. 경로는 사건 하나를 선택했을 때 의미가 생기는 정보라,
+          여러 개를 겹치면 선이 엉켜 아무것도 읽히지 않습니다. 골든타임 안의 사건만 핀에 옅은 링을 둘러 구분합니다.</p>
+      </div>
+      <div class="ncard">
+        <h4>제보 완료가 재참여의 유일한 고리입니다</h4>
+        <p>게스트 제보를 허용하면 제보자와의 연결이 끊깁니다. 이 화면에서 “발견되면 알려드릴까요?”로 한 번 묻고,
+          거절해도 제보는 그대로 유효합니다. 강제하지 않으면서 공백을 메우는 자리입니다.</p>
+      </div>
+    </div>
+  </section>
+
+</div>

@@ -1,122 +1,55 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+import 'app.dart';
+import 'core/config/env.dart';
+import 'core/link/link_source.dart';
+import 'core/map/kakao_map_init.dart';
+import 'firebase_options.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+  // 카카오맵 — env의 KAKAO_MAP_KEY가 있을 때만 초기화한다.
+  // 키가 없으면 지도 화면만 동작하지 않고, 앱은 정상 실행된다.
+  //
+  // 키는 `--dart-define-from-file=env/dev.json`으로 **컴파일 시점에** 박힌다.
+  // 파일만 고치고 핫 리스타트하면 값이 바뀌지 않아서, 여기서 한 번 찍어둔다.
+  final mapReady = await initKakaoMapSdk();
+  debugPrint(
+    mapReady
+        ? '카카오맵 SDK 초기화 완료'
+        : '카카오맵 키가 비어 있어 지도 초기화를 건너뜁니다. '
+              '--dart-define-from-file=env/dev.json 으로 실행했는지 확인하세요.',
+  );
+
+  // 카카오 로그인 — 지도와 같은 네이티브 앱 키다. 키가 없으면 초기화하지
+  // 않는다. 로그인 시트의 버튼만 동작하지 않고 앱은 그대로 돈다.
+  if (Env.kakaoNativeAppKey.isNotEmpty) {
+    await KakaoSdk.init(nativeAppKey: Env.kakaoNativeAppKey);
+  }
+
+  // Firebase — 푸시 알림(FCM)에 쓴다. 설정은 `flutterfire configure`가 만든
+  // lib/firebase_options.dart에 있고, 그 파일은 .gitignore에 걸려 있어서
+  // 새 PC에서는 한 번 다시 돌려야 한다(README의 Firebase 섹션).
+  //
+  // **초기화에 실패해도 앱은 뜬다.** 알림을 못 받는 것과 앱이 안 켜지는 것은
+  // 무게가 다르다. 이때는 SilentPushMessaging이 대신 물린다.
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
     );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  } on Object catch (error) {
+    debugPrint('Firebase 초기화 실패 — 푸시 알림 없이 계속합니다: $error');
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
+  runApp(
+    ProviderScope(
+      // 앱 링크·카카오톡 공유로 상세를 연다. 테스트는 이 줄을 타지 않는다.
+      overrides: [linkSourceProvider.overrideWithValue(const AppLinkSource())],
+      child: const GyeotaeApp(),
+    ),
+  );
 }
